@@ -1,0 +1,201 @@
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  BEMOR
+  DOCTOR
+  ADMIN
+  SUPERADMIN
+}
+
+model User {
+  id               String             @id @default(uuid())
+  email            String             @unique()
+  firstName        String
+  lastName         String
+  password String
+  age              Int
+  role             UserRole           @default(BEMOR)
+  profileImg       String?
+
+  doctorProfile    DoctorProfile?     @relation("UserDoctorProfile")
+
+  messagesSent     Message[]          @relation("MessagesSent")
+  messagesReceived Message[]          @relation("MessagesReceived")
+
+  questions        Question[]         @relation("UserQuestions")
+  doctorQuestions  Question[]         @relation("DoctorQuestions")
+  answers          Answer[]           @relation("DoctorAnswers")
+
+  meetingsAsUser   Meeting[]          @relation("MeetingsUser")
+  meetingsAsDoctor Meeting[]          @relation("MeetingsDoctor")
+
+  reviewsGiven     Review[]           @relation("ReviewsGiven")
+  reviewsReceived  Review[]           @relation("ReviewsReceived")
+
+  subscriptions    Subscription[]
+  paymentsMade     Payment[]          @relation("PaymentsMade")
+  paymentsReceived Payment[]          @relation("PaymentsReceived")
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt()
+}
+
+model DoctorCategory {
+  id        String          @id @default(uuid())
+  nameUz    String
+  nameRu    String
+  nameEn    String
+  doctors   DoctorProfile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model DoctorProfile {
+  id         String          @id @default(uuid())
+  doctor     User            @relation("UserDoctorProfile", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId   String          @unique
+
+  category   DoctorCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryId String?
+
+  bioUz      String?
+  bioRu      String?
+  bioEn      String?
+
+  rating     Float           @default(0)   /// umumiy o‘rtacha baho
+  salary     Decimal?
+
+  images     Json?     
+  videos     Json?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt()
+}
+
+model Message {
+  id          String   @id @default(uuid())
+
+  sender      User     @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId    String
+
+  receiver    User     @relation("MessagesReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId  String
+
+  messageUz   String?
+  messageRu   String?
+  messageEn   String?
+
+  fileUrl     String?
+  isRead      Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt()
+}
+
+model Question {
+  id        String   @id @default(uuid())
+
+  user      User     @relation("UserQuestions", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  doctor    User     @relation("DoctorQuestions", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId  String
+
+  questionUz String
+  questionRu String
+  questionEn String
+
+  answers   Answer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model Answer {
+  id         String    @id @default(uuid())
+
+  question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+
+  doctor     User      @relation("DoctorAnswers", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId   String
+
+  answerUz   String
+  answerRu   String
+  answerEn   String
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt()
+}
+
+model Meeting {
+  id          String   @id @default(uuid())
+
+  user        User     @relation("MeetingsUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  doctor      User     @relation("MeetingsDoctor", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId    String
+
+  scheduledAt DateTime?
+  duration    Int?
+  meetingLink String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
+}
+
+/// User → Doctor baholari
+model Review {
+  id        String   @id @default(uuid())
+
+  user      User     @relation("ReviewsGiven", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  doctor    User     @relation("ReviewsReceived", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId  String
+
+  rating    Int      /// 1 dan 5 gacha
+  comment   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  isTrial   Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+
+  user      User     @relation("PaymentsMade", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  doctor    User     @relation("PaymentsReceived", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId  String
+
+  amount    Decimal
+  status    String? @default("CASH")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}

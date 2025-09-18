@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_app
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 11201111
+      POSTGRES_DB: uylar_sotiladi
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine    
+    container_name: redis_app
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+ 
+  app:
+    build: .
+    container_name: prisma_auth
+    restart: always
+    ports:
+      - "4000:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://postgres:11201111@db:5432/uylar_sotiladi"
+      REDIS_HOST: "redis"
+    depends_on:
+      - db 
+      - redis
+    command: >
+      sh -c "
+        npx prisma generate &&
+        npx prisma migrate deploy &&
+        npm run start:prod
+      "
+
+volumes:
+  data:
+  redis-data:
