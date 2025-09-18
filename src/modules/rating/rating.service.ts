@@ -1,117 +1,95 @@
-// import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
-// import { PrismaService } from 'src/core/prisma/prisma.service';
-// import { CreateRatingDto } from './dto/create-rating.dto';
+// reviews.service.ts
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/core/prisma/prisma.service';
+import { CreateReviewDto } from './dto/create-rating.dto'; 
 
-// @Injectable()
-// export class RatingService {
-//   constructor(private prisma: PrismaService) {}
+@Injectable()
+export class ReviewsService {
+  constructor(private prisma: PrismaService) {}
 
-//   async create(userId: string, dto: CreateRatingDto) {
-//     const { houseId, cleanLines, location, accuracy } = dto;
+  async create(userId: string, dto: CreateReviewDto) {
+    // Doctor mavjudligini tekshirish
+    const doctor = await this.prisma.user.findUnique({
+      where: { id: dto.doctorId },
+    });
+    if (!doctor) throw new NotFoundException('Doctor topilmadi');
 
-//     const user = await this.prisma.users.findFirst({ where: { id: userId } });
-//     if (!user) throw new NotFoundException('User not found');
+    // Oldin baho berganmi?
+    const existing = await this.prisma.review.findFirst({
+      where: { userId, doctorId: dto.doctorId },
+    });
+    if (existing) throw new ForbiddenException('Siz allaqachon baho bergansiz, update qiling');
 
-//     const house = await this.prisma.housess.findFirst({ where: { id: houseId } });
-//     if (!house) throw new NotFoundException('House not found');
+    const review = await this.prisma.review.create({
+      data: {
+        userId,
+        doctorId: dto.doctorId,
+        rating: dto.rating,
+        comment: dto.comment,
+      },
+    });
 
-//     const oldRating = await this.prisma.rating.findFirst({
-//       where: { houseId, userId },
-//     });
-//     if (oldRating) {
-//       throw new ForbiddenException('You have already rated this house');
-//     }
+    await this.recalculateDoctorRating(dto.doctorId);
+    return review;
+  }
 
-//     return await this.prisma.rating.create({
-//       data: {
-//         houseId,
-//         userId,
-//         cleanLines,
-//         location,
-//         accuracy,
-//       },
-//       include: {
-//         user: { select: { firstName: true, lastName: true, email: true, role: true } },
-//         house: true,
-//       },
-//     });
-//   }
+  async update(userId: string, id: string, dto: CreateReviewDto) {
+    const review = await this.prisma.review.findUnique({ where: { id } });
+    if (!review) throw new NotFoundException('Review topilmadi');
+    if (review.userId !== userId) throw new ForbiddenException('Siz faqat o‘zingizning reviewni update qilasiz');
 
-//   async findAllLatest() {
-//     return await this.prisma.rating.findMany({
-//       orderBy: { id: 'desc' },
-//       take: 10,
-//       include: {
-//         house: true,
-//         user: { select: { firstName: true, lastName: true, email: true } },
-//       },
-//     });
-//   }
+    const updated = await this.prisma.review.update({
+      where: { id },
+      data: {
+        rating: dto.rating,
+        comment: dto.comment,
+      },
+    });
 
-//   async findAllBy(houseId: string, offset = 0, limit = 10) {
-//     const house = await this.prisma.housess.findFirst({ where: { id: houseId } });
-//     if (!house) throw new NotFoundException('House not found');
+    await this.recalculateDoctorRating(updated.doctorId);
+    return updated;
+  }
 
-//     return await this.prisma.rating.findMany({
-//       where: { houseId },
-//       skip: offset,
-//       take: limit,
-//       orderBy: { id: 'desc' },
-//       include: {
-//         user: { select: { firstName: true, lastName: true, role: true, email: true } },
-//       },
-//     });
-//   }
+  async remove(userId: string, id: string) {
+    const review = await this.prisma.review.findUnique({ where: { id } });
+    if (!review) throw new NotFoundException('Review topilmadi');
+    if (review.userId !== userId) throw new ForbiddenException('Siz faqat o‘zingizning reviewni o‘chira olasiz');
 
-//   async getAnalytics(houseId: string) {
-//     const house = await this.prisma.housess.findFirst({ where: { id: houseId } });
-//     if (!house) throw new NotFoundException('House not found');
+    await this.prisma.review.delete({ where: { id } });
+    await this.recalculateDoctorRating(review.doctorId);
+    return { message: 'O‘chirildi' };
+  }
 
-//     const ratings = await this.prisma.rating.findMany({ where: { houseId } });
-//     const total = ratings.length;
+  /// Doctor ratingni qayta hisoblash
+  private async recalculateDoctorRating(doctorId: string) {
+    const reviews = await this.prisma.review.findMany({
+      where: { doctorId },
+    });
 
-//     if (total === 0) {
-//       return {
-//         averageCleanLines: 0,
-//         averageLocation: 0,
-//         averageAccuracy: 0,
-//         totalRatings: 0,
-//       };
-//     }
+    const avg = reviews.length
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : 0;
 
-//     const avgCleanLines = ratings.reduce((s, r) => s + (r.cleanLines || 0), 0) / total;
-//     const avgLocation = ratings.reduce((s, r) => s + (r.location || 0), 0) / total;
-//     const avgAccuracy = ratings.reduce((s, r) => s + (r.accuracy || 0), 0) / total;
+    await this.prisma.doctorProfile.update({
+      where: { doctorId },
+      data: { rating: avg },
+    });
+  }
 
-//     return {
-//       averageCleanLines: +avgCleanLines.toFixed(2),
-//       averageLocation: +avgLocation.toFixed(2),
-//       averageAccuracy: +avgAccuracy.toFixed(2),
-//       totalRatings: total,
-//     };
-//   }
+  /// Top 10 doktor
+  async getTop10() {
+    return this.prisma.doctorProfile.findMany({
+      orderBy: { rating: 'desc' },
+      take: 10,
+      include: { doctor: true },
+    });
+  }
 
-//   async remove(id: number) {
-//     const rating = await this.prisma.rating.findFirst({ where: { id } });
-//     if (!rating) throw new NotFoundException('Rating not found');
-
-//     await this.prisma.rating.delete({ where: { id } });
-//     return { message: 'Rating deleted successfully' };
-//   }
-
-// async update(userId: string, id: number, dto: Partial<CreateRatingDto>) {
-//   const rating = await this.prisma.rating.findFirst({
-//     where: { id: id, userId },
-//   });
-//   if (!rating) throw new NotFoundException('Rating not found or not yours');
-
-//   return await this.prisma.rating.update({
-//     where: { id: id },
-//     data: {
-//       ...(dto.cleanLines !== undefined && { cleanLines: dto.cleanLines }),
-//       ...(dto.location !== undefined && { location: dto.location }),
-//       ...(dto.accuracy !== undefined && { accuracy: dto.accuracy }),
-//     },
-//   });
-// }
-// }
+  /// Eng yuqori rating doktor (1 ta)
+  async getBestDoctor() {
+    return this.prisma.doctorProfile.findFirst({
+      orderBy: { rating: 'desc' },
+      include: { doctor: true },
+    });
+  }
+}
