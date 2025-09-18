@@ -18,12 +18,12 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             echo "Creating project folder if it doesn't exist"
-            mkdir -p /home/ubuntu/exam
-            cd /home/ubuntu/exam
+            mkdir -p /home/ubuntu/Shifo_Yoli_Backend
+            cd /home/ubuntu/Shifo_Yoli_Backend
 
             if [ ! -d .git ]; then
               echo "Cloning repository"
-              git clone https://github.com/Asqaraliyev-Faxriddin/Learning-Management-System.git .
+              git clone https://github.com/Asqaraliyev-Faxriddin/Shifo_Yoli_Backend .
             else
               echo "Pulling latest changes"
               git pull origin main
