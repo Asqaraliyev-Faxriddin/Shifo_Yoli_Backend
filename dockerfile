@@ -8,12 +8,12 @@ RUN npm install --only=production
 COPY prisma ./prisma
 COPY . .
 
-# Build NestJS
+# NestJS build
 RUN npm run build
 
-# Prisma migration optional
-RUN npx prisma migrate dev --name init 
+# Prisma migrate (prod mode)
+RUN npx prisma generate
 
-EXPOSE 3000
+EXPOSE 4000
 
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:prod"]
