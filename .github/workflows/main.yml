@@ -20,32 +20,42 @@ jobs:
           username: ${{ secrets.DB_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            echo "Creating project folder if it doesn't exist"
+            echo "🔹 Updating server packages"
+            sudo apt-get update -y
+
+            echo "🔹 Installing Node.js & npm"
+            curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+
+            echo "🔹 Installing Docker Compose"
+            sudo apt-get install -y docker-compose
+
+            echo "🔹 Creating project folder if it doesn't exist"
             mkdir -p /home/ubuntu/Shifo_Yoli_Backend
             cd /home/ubuntu/Shifo_Yoli_Backend
 
             if [ ! -d .git ]; then
-              echo "Cloning repository"
+              echo "🔹 Cloning repository"
               git clone https://github.com/Asqaraliyev-Faxriddin/Shifo_Yoli_Backend .
             else
-              echo "Pulling latest changes"
+              echo "🔹 Pulling latest changes"
               git pull origin main
             fi
 
-            echo "Installing dependencies"
+            echo "🔹 Installing dependencies"
             npm install
 
-            echo "Generating Prisma client"
+            echo "🔹 Generating Prisma client"
             npx prisma generate
 
-            echo "Running migrations"
+            echo "🔹 Running migrations"
             npx prisma migrate deploy
 
-            echo "Stopping running containers"
-            docker compose down
+            echo "🔹 Stopping running containers"
+            docker-compose down
 
-            echo "Building containers"
-            docker compose build
+            echo "🔹 Building containers"
+            docker-compose build
 
-            echo "Starting containers"
-            docker compose up -d
+            echo "🔹 Starting containers"
+            docker-compose up -d
