@@ -24,10 +24,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    ports: ["4000:3000"]
+    ports: ["4000:4000"]
     env_file: [.env]
     environment:
-
+      PORT: 4000
       DATABASE_URL: ${DATABASE_URL}
       REDIS_HOST: redis
       REDIS_PORT: 6379
