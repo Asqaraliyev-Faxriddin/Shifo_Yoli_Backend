@@ -22,13 +22,13 @@ jobs:
           script: |
             echo "Creating project folder if it doesn't exist!"
 
-            if [ ! -d "Shifo_Yoli_Backend2/.git" ]; then
+            if [ ! -d "Shifo_Yoli_Backend/.git" ]; then
               echo "Cloning repository!" 
-            git clone  https://github.com/Asqaraliyev-Faxriddin/Shifo_Yoli_Backend2.git
+            git clone  https://github.com/Asqaraliyev-Faxriddin/Shifo_Yoli_Backend.git
 
             fi
 
-            cd  Shifo_Yoli_Backend2    # Shu yerda docker-compose.yml mavjud
+            cd  Shifo_Yoli_Backend    # Shu yerda docker-compose.yml mavjud
 
             echo "Pulling latest changes!"
             git reset --hard
