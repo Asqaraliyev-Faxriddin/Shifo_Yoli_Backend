@@ -59,7 +59,7 @@ jobs:
             docker-compose run --rm app sh -c "
               ./wait-for-it.sh db:5432 --timeout=30 --strict -- npx prisma generate &&
               ./wait-for-it.sh db:5432 --timeout=30 --strict -- npx prisma migrate deploy
-            "
-
+            "  
+ 
             echo "🔹 Running containers in detached mode"
             docker-compose up -d
