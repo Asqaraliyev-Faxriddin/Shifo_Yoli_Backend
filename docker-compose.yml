@@ -22,7 +22,7 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
- 
+
   app:
     build: .
     container_name: prisma_auth
@@ -32,15 +32,17 @@ services:
     env_file:
       - .env
     environment:
+      # DATABASE_URL va REDIS_HOST faqat qo'shimcha sifatida, .env dan olinadi
       DATABASE_URL: "postgresql://postgres:11201111@db:5432/uylar_sotiladi"
       REDIS_HOST: "redis"
     depends_on:
-      - db 
+      - db
       - redis
+    # wait-for-it.sh bilan DB tayyor bo'lishini kutadi
     command: >
       sh -c "
-        npx prisma generate &&
-        npx prisma migrate deploy &&
+        ./wait-for-it.sh db:5432 -- npx prisma generate &&
+        ./wait-for-it.sh db:5432 -- npx prisma migrate deploy &&
         npm run start:prod
       "
 
