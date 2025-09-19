@@ -42,7 +42,6 @@ services:
       CLIENT_SECRET: ${CLIENT_SECRET}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
 
-      Jwt_Ref: ${JWT_REFRESH_TOKEN_SECRET}
     command: >
       sh -c "
         npx prisma migrate deploy || npx prisma db push &&
