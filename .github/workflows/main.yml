@@ -45,11 +45,9 @@ jobs:
             echo "🔹 Installing dependencies"
             npm install
 
-            echo "🔹 Generating Prisma client"
-            npx prisma generate
-
-            echo "🔹 Running migrations"
-            npx prisma migrate deploy
+            echo "🔹 Downloading wait-for-it.sh"
+            curl -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
+            chmod +x wait-for-it.sh
 
             echo "🔹 Stopping running containers"
             docker-compose down
@@ -57,5 +55,11 @@ jobs:
             echo "🔹 Building containers"
             docker-compose build
 
-            echo "🔹 Starting containers"
+            echo "🔹 Starting containers with wait-for-it"
+            docker-compose run --rm app sh -c "
+              ./wait-for-it.sh db:5432 --timeout=30 --strict -- npx prisma generate &&
+              ./wait-for-it.sh db:5432 --timeout=30 --strict -- npx prisma migrate deploy
+            "
+
+            echo "🔹 Running containers in detached mode"
             docker-compose up -d
