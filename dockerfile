@@ -8,9 +8,8 @@ RUN npm install  # bu yerda devDependencies ham o‘rnatiladi
 
 COPY . .
 RUN npm run build
-RUN npx prisma generate
+RUN npx prisma migrate dev --name init
 
-# production stage
 FROM node:22-alpine AS prod
 
 WORKDIR /app
