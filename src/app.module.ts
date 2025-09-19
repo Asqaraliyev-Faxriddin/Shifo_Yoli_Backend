@@ -26,4 +26,4 @@ import { ProfileModule } from './modules/profile/profile.module';
     RedisModule,  SeaderModule,UserModule,JwtModule,ProfileModule]
 })
 export class AppModule {}
-  
+   
