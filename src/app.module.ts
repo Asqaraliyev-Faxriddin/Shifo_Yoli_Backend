@@ -13,6 +13,7 @@ import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { UserModule } from './modules/user/user.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { RatingModule } from './modules/rating/rating.module';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { ProfileModule } from './modules/profile/profile.module';
     }),
     ScheduleModule.forRoot(),
     PrismaModule, AuthModule,MailerModule,AuthModule,VerificationModule,
-    RedisModule,  SeaderModule,UserModule,JwtModule,ProfileModule]
+    RedisModule,  SeaderModule,UserModule,JwtModule,ProfileModule,RatingModule]
 })
 export class AppModule {}
    
