@@ -29,6 +29,7 @@ export declare class ProfileService {
             id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -42,6 +43,7 @@ export declare class ProfileService {
         age: number;
         id: string;
         role: import(".prisma/client").$Enums.UserRole;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -57,6 +59,7 @@ export declare class ProfileService {
             id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -72,6 +75,7 @@ export declare class ProfileService {
             id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
         };

@@ -24,7 +24,7 @@ import { AdminModule } from './modules/admin/admin.module';
     }),
     ScheduleModule.forRoot(),
     PrismaModule, AuthModule,MailerModule,AuthModule,VerificationModule,
-    RedisModule,  SeaderModule,JwtModule,ProfileModule,RatingModule, AdminModule]
+    RedisModule,  SeaderModule,JwtModule,AdminModule,ProfileModule,RatingModule, AdminModule]
 })
 export class AppModule {}
    

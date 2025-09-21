@@ -23,12 +23,6 @@ export class RegisterDto {
     @Length(8, 16)
     password: string;
 
-    @ApiProperty({
-        example: "Azamjon Faxriddinov",
-        minLength: 5,
-        maxLength: 50,
-        description: "Foydalanuvchining to'liq ismi",
-    })
 
 
     @ApiProperty({

@@ -24,6 +24,9 @@ export class AuthGuard implements CanActivate {
             let olduser =await this.prismaService.user.findFirst({where:{id:user.id}})
             if(!olduser) throw new NotFoundException("user not found")
             console.log(user);
+
+            let oldblock = await this.prismaService.blockedUsers.findFirst({where:{userId:user.id}})
+            if(oldblock) throw new UnauthorizedException("user blocked")
             
             request.user = user
             return true

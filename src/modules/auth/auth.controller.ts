@@ -14,14 +14,14 @@ export class AuthController {
 
   @Post("register")
   @ApiOperation({ summary: "Foydalanuvchini royxatdan otkazish" })
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  register(@Body() dto: RegisterDto,@Req() req) {
+    return this.authService.register(dto,req);
   }
 
   @Post("login")
   @ApiOperation({ summary: "Foydalanuvchini tizimga kiritish" })
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  login(@Body() dto: LoginDto,@Req() req) {
+    return this.authService.login(dto,req);
   }
 
   @Post("refresh-token")
@@ -47,6 +47,6 @@ export class AuthController {
   @Get("google/callback")
   @UseGuards(AuthGuard("google"))
   async googleAuthRedirect(@Req() req) {
-    return this.authService.googleLogin(req.user);
+    return this.authService.googleLogin(req.user,req);
   }
 }

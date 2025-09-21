@@ -50,12 +50,6 @@ __decorate([
         maxLength: 50,
         description: "Foydalanuvchining to'liq ismi",
     }),
-    (0, swagger_1.ApiProperty)({
-        example: "Azamjon Faxriddinov",
-        minLength: 5,
-        maxLength: 50,
-        description: "Foydalanuvchining to'liq ismi",
-    }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.Length)(5, 50),

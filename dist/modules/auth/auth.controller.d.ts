@@ -6,7 +6,7 @@ import { Reset_Password } from "./dto/reset-password";
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
-    register(dto: RegisterDto): Promise<{
+    register(dto: RegisterDto, req: any): Promise<{
         status: boolean;
         message: string;
         data: {
@@ -18,17 +18,22 @@ export declare class AuthController {
             id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
-        Tokens: string | {
+        tokens: string | {
             AccessToken: string;
             RefreshToken: string;
         };
     }>;
-    login(dto: LoginDto): Promise<string | {
-        AccessToken: string;
-        RefreshToken: string;
+    login(dto: LoginDto, req: any): Promise<{
+        status: boolean;
+        message: string;
+        tokens: string | {
+            AccessToken: string;
+            RefreshToken: string;
+        };
     }>;
     refresh(dto: RefreshTokenDto): Promise<{
         AccessToken: string | {
@@ -48,6 +53,7 @@ export declare class AuthController {
             id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -65,6 +71,7 @@ export declare class AuthController {
             id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
         };

@@ -26,11 +26,11 @@ let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
-    register(dto) {
-        return this.authService.register(dto);
+    register(dto, req) {
+        return this.authService.register(dto, req);
     }
-    login(dto) {
-        return this.authService.login(dto);
+    login(dto, req) {
+        return this.authService.login(dto, req);
     }
     refresh(dto) {
         return this.authService.RefresholdAcces(dto);
@@ -41,7 +41,7 @@ let AuthController = class AuthController {
     async googleAuth() {
     }
     async googleAuthRedirect(req) {
-        return this.authService.googleLogin(req.user);
+        return this.authService.googleLogin(req.user, req);
     }
 };
 exports.AuthController = AuthController;
@@ -49,16 +49,18 @@ __decorate([
     (0, common_1.Post)("register"),
     (0, swagger_1.ApiOperation)({ summary: "Foydalanuvchini royxatdan otkazish" }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [register_dto_1.RegisterDto]),
+    __metadata("design:paramtypes", [register_dto_1.RegisterDto, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "register", null);
 __decorate([
     (0, common_1.Post)("login"),
     (0, swagger_1.ApiOperation)({ summary: "Foydalanuvchini tizimga kiritish" }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [login_dto_1.LoginDto]),
+    __metadata("design:paramtypes", [login_dto_1.LoginDto, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "login", null);
 __decorate([

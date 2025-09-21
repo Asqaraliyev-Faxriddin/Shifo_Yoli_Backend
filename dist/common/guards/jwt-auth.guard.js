@@ -36,6 +36,9 @@ let AuthGuard = class AuthGuard {
             if (!olduser)
                 throw new common_1.NotFoundException("user not found");
             console.log(user);
+            let oldblock = await this.prismaService.blockedUsers.findFirst({ where: { userId: user.id } });
+            if (oldblock)
+                throw new common_1.UnauthorizedException("user blocked");
             request.user = user;
             return true;
         }

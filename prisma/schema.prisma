@@ -23,9 +23,11 @@ model User {
   age              Int
   role             UserRole           @default(BEMOR)
   profileImg       String?
+  isActive Boolean          @default(true)
 
   doctorProfile    DoctorProfile?     @relation("UserDoctorProfile")
 
+  devices          Device[]
   messagesSent     Message[]          @relation("MessagesSent")
   messagesReceived Message[]          @relation("MessagesReceived")
 
@@ -42,6 +44,7 @@ model User {
   subscriptions    Subscription[]
   paymentsMade     Payment[]          @relation("PaymentsMade")
   paymentsReceived Payment[]          @relation("PaymentsReceived")
+  blockedUser      BlockedUsers?
 
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt()
@@ -198,4 +201,39 @@ model Payment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
+}
+
+
+
+
+model BlockedUsers {
+
+  id       String   @id @default(uuid())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String   @unique
+  reason   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+
+}
+
+
+model Device {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  deviceType DeviceType @default(register)
+  deviceId  String   @unique   
+  name      String?            /// Qurilma nomi (iPhone 14, Samsung S23 va hok.)
+  platform  String?            /// OS turi: "ios", "android", "web"
+  address String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+
+enum DeviceType {
+  
+  register
+  login
 }

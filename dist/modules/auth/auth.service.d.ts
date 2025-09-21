@@ -1,21 +1,22 @@
-import { JwtService } from '@nestjs/jwt';
-import { Token_activate } from 'src/common/types/token';
-import { PrismaService } from 'src/core/prisma/prisma.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { VerificationService } from '../verification/verification.service';
-import { RefreshTokenDto } from './dto/refresh.token.dto';
-import { Reset_Password } from './dto/reset-password';
+import { JwtService } from "@nestjs/jwt";
+import { Token_activate } from "src/common/types/token";
+import { PrismaService } from "src/core/prisma/prisma.service";
+import { RegisterDto } from "./dto/register.dto";
+import { LoginDto } from "./dto/login.dto";
+import { VerificationService } from "../verification/verification.service";
+import { RefreshTokenDto } from "./dto/refresh.token.dto";
+import { Reset_Password } from "./dto/reset-password";
+import { Request } from "express";
 export declare class AuthService {
     private prisma;
     private jwtServise;
     private verificationService;
     constructor(prisma: PrismaService, jwtServise: JwtService, verificationService: VerificationService);
-    generateToken(payload: Token_activate, Token_status?: boolean): Promise<string | {
+    generateToken(payload: Token_activate, onlyAccess?: boolean): Promise<string | {
         AccessToken: string;
         RefreshToken: string;
     }>;
-    register(payload: Required<RegisterDto>): Promise<{
+    register(payload: Required<RegisterDto>, req: Request): Promise<{
         status: boolean;
         message: string;
         data: {
@@ -27,17 +28,22 @@ export declare class AuthService {
             id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
-        Tokens: string | {
+        tokens: string | {
             AccessToken: string;
             RefreshToken: string;
         };
     }>;
-    login(payload: LoginDto): Promise<string | {
-        AccessToken: string;
-        RefreshToken: string;
+    login(payload: LoginDto, req: Request): Promise<{
+        status: boolean;
+        message: string;
+        tokens: string | {
+            AccessToken: string;
+            RefreshToken: string;
+        };
     }>;
     RefresholdAcces(token: RefreshTokenDto): Promise<{
         AccessToken: string | {
@@ -57,23 +63,12 @@ export declare class AuthService {
             id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
     }>;
-    PhoneAndPasswordCheck(password: string, email: string): Promise<{
-        email: string;
-        password: string;
-        lastName: string;
-        firstName: string;
-        age: number;
-        id: string;
-        role: import(".prisma/client").$Enums.UserRole;
-        profileImg: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
-    googleLogin(user: any): Promise<{
+    googleLogin(user: any, req: Request): Promise<{
         status: boolean;
         message: string;
         data: {
@@ -85,6 +80,7 @@ export declare class AuthService {
             id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -93,4 +89,19 @@ export declare class AuthService {
             RefreshToken: string;
         };
     }>;
+    PhoneAndPasswordCheck(password: string, email: string): Promise<{
+        email: string;
+        password: string;
+        lastName: string;
+        firstName: string;
+        age: number;
+        id: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        profileImg: string | null;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    private saveDevice;
+    private detectPlatform;
 }

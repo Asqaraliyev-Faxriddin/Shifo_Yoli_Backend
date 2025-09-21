@@ -5,12 +5,12 @@ export declare class ReviewController {
     constructor(reviewService: ReviewService);
     create(req: any, dto: CreateReviewDto): Promise<{
         id: string;
-        rating: number;
-        comment: string | null;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         doctorId: string;
+        rating: number;
+        comment: string | null;
     }>;
     findAllByDoctor(doctorId: string, offset?: number, limit?: number): Promise<{
         total: number;
@@ -18,18 +18,18 @@ export declare class ReviewController {
         limit: number;
         items: ({
             user: {
-                id: string;
-                firstName: string;
                 lastName: string;
+                firstName: string;
+                id: string;
             };
         } & {
             id: string;
-            rating: number;
-            comment: string | null;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
             doctorId: string;
+            rating: number;
+            comment: string | null;
         })[];
     }>;
     getAnalytics(doctorId: string): Promise<{
@@ -45,66 +45,66 @@ export declare class ReviewController {
         distribution: Record<number, number>;
         top10: ({
             user: {
-                id: string;
-                firstName: string;
                 lastName: string;
+                firstName: string;
+                id: string;
             };
         } & {
             id: string;
-            rating: number;
-            comment: string | null;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
             doctorId: string;
+            rating: number;
+            comment: string | null;
         })[];
         best: {
             user: {
-                id: string;
-                firstName: string;
                 lastName: string;
+                firstName: string;
+                id: string;
             };
         } & {
             id: string;
-            rating: number;
-            comment: string | null;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
             doctorId: string;
+            rating: number;
+            comment: string | null;
         };
         worst: {
             user: {
-                id: string;
-                firstName: string;
                 lastName: string;
+                firstName: string;
+                id: string;
             };
         } & {
             id: string;
-            rating: number;
-            comment: string | null;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
             doctorId: string;
+            rating: number;
+            comment: string | null;
         };
     }>;
     update(req: any, id: string, dto: UpdateReviewDto): Promise<{
         id: string;
-        rating: number;
-        comment: string | null;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         doctorId: string;
+        rating: number;
+        comment: string | null;
     }>;
     remove(req: any, id: string): Promise<{
         id: string;
-        rating: number;
-        comment: string | null;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         doctorId: string;
+        rating: number;
+        comment: string | null;
     }>;
 }

@@ -18,9 +18,9 @@ const schedule_1 = require("@nestjs/schedule");
 const seader_module_1 = require("./core/prisma/seader/seader.module");
 const path_1 = require("path");
 const serve_static_1 = require("@nestjs/serve-static");
-const user_module_1 = require("./modules/user/user.module");
 const profile_module_1 = require("./modules/profile/profile.module");
 const rating_module_1 = require("./modules/rating/rating.module");
+const admin_module_1 = require("./modules/admin/admin.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,7 +33,7 @@ exports.AppModule = AppModule = __decorate([
             }),
             schedule_1.ScheduleModule.forRoot(),
             prisma_module_1.PrismaModule, auth_module_1.AuthModule, mailer_module_1.MailerModule, auth_module_1.AuthModule, verification_module_1.VerificationModule,
-            redis_module_1.RedisModule, seader_module_1.SeaderModule, user_module_1.UserModule, jwt_1.JwtModule, profile_module_1.ProfileModule, rating_module_1.RatingModule
+            redis_module_1.RedisModule, seader_module_1.SeaderModule, jwt_1.JwtModule, admin_module_1.AdminModule, profile_module_1.ProfileModule, rating_module_1.RatingModule, admin_module_1.AdminModule
         ]
     })
 ], AppModule);
