@@ -11,9 +11,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { SeaderModule } from './core/prisma/seader/seader.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { UserModule } from './modules/user/user.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { RatingModule } from './modules/rating/rating.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -24,7 +24,7 @@ import { RatingModule } from './modules/rating/rating.module';
     }),
     ScheduleModule.forRoot(),
     PrismaModule, AuthModule,MailerModule,AuthModule,VerificationModule,
-    RedisModule,  SeaderModule,UserModule,JwtModule,ProfileModule,RatingModule]
+    RedisModule,  SeaderModule,JwtModule,ProfileModule,RatingModule, AdminModule]
 })
 export class AppModule {}
    
