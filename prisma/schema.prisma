@@ -215,7 +215,7 @@ model BlockedUsers {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
 
-}
+} 
   
 
 model Device {
