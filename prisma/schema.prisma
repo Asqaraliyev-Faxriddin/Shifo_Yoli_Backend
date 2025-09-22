@@ -216,7 +216,7 @@ model BlockedUsers {
   updatedAt DateTime @updatedAt()
 
 }
-
+  
 
 model Device {
   id        String   @id @default(uuid())

@@ -33,7 +33,7 @@ services:
       REDIS_PORT: 6379
       PORT: 4000
       Jwt_Acc: ${Jwt_Acc}
-      JWT_Ref: super_secret_refresh_key
+      JWT_Ref: ${Jwt_Ref}
       JWT_Access: super_secret_access_key
 
       Jwt_Acc_in: ${Jwt_Acc_in}
