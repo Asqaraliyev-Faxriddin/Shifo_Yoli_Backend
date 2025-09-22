@@ -11,10 +11,14 @@ import { RedisModule } from 'src/core/prisma/redis/redis.module';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { PrismaModule } from 'src/core/prisma/prisma.module';
 import { GoogleStrategy } from './stratagies/google.strategy'; 
+import { PassportModule } from '@nestjs/passport';
 
 @Global()
 @Module({
-  imports:[ JwtModule.register(JwtAccesToken) ],
+  imports:[
+     JwtModule.register(JwtAccesToken),
+     PassportModule.register({ session: false }),
+     ],
   controllers: [AuthController],
   providers: [
     AuthService,

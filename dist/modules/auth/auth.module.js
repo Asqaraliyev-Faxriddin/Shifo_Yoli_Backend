@@ -18,13 +18,17 @@ const redis_service_1 = require("../../core/prisma/redis/redis.service");
 const mailer_service_1 = require("../../common/mailer/mailer.service");
 const prisma_service_1 = require("../../core/prisma/prisma.service");
 const google_strategy_1 = require("./stratagies/google.strategy");
+const passport_1 = require("@nestjs/passport");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Global)(),
     (0, common_1.Module)({
-        imports: [jwt_1.JwtModule.register(jwt_2.JwtAccesToken)],
+        imports: [
+            jwt_1.JwtModule.register(jwt_2.JwtAccesToken),
+            passport_1.PassportModule.register({ session: false }),
+        ],
         controllers: [auth_controller_1.AuthController],
         providers: [
             auth_service_1.AuthService,

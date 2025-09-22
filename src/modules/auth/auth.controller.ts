@@ -37,16 +37,16 @@ export class AuthController {
   }
 
   // Google OAuth redirect
-  @Get("google")
-  @UseGuards(AuthGuard("google"))
-  async googleAuth() {  
-    // faqat Google sahifasiga redirect qiladi
-  }
+    @Get("google")
+    @UseGuards(AuthGuard("google"))
+    async googleAuth() {  
+      // faqat Google sahifasiga redirect qiladi
+    }
 
-  // Google callback
-  @Get("google/callback")
-  @UseGuards(AuthGuard("google"))
-  async googleAuthRedirect(@Req() req) {
-    return this.authService.googleLogin(req.user,req);
-  }
+    // Google callback
+    @Get("google/callback")
+    @UseGuards(AuthGuard("google"))
+    async googleAuthRedirect(@Req() req) {
+      return this.authService.googleLogin(req.user,req);
+    }
 }

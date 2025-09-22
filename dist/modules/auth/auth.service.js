@@ -158,7 +158,7 @@ let AuthService = class AuthService {
             checkPassword = password === oldUser.password;
         }
         if (!checkPassword) {
-            throw new common_1.BadRequestException("Password Incorrect");
+            throw new common_1.BadRequestException("Password Incorrect or Email not found");
         }
         return oldUser;
     }

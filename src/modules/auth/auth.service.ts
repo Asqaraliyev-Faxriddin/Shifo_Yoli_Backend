@@ -42,7 +42,6 @@ export class AuthService {
     }
   }
 
-  // ================= REGISTER =================
   async register(payload: Required<RegisterDto>, req: Request) {
     const { firstName, lastName, otp, email, password, age } = payload;
 
@@ -65,7 +64,6 @@ export class AuthService {
       },
     });
 
-    // Qurilma haqida ma’lumot saqlash
     await this.saveDevice(user.id, req, DeviceType.register);
 
     const tokens = await this.generateToken({ id: user.id, role: user.role });
@@ -78,7 +76,6 @@ export class AuthService {
     };
   }
 
-  // ================= LOGIN =================
   async login(payload: LoginDto, req: Request) {
     const user = await this.PhoneAndPasswordCheck(payload.password, payload.email);
 
@@ -93,7 +90,6 @@ export class AuthService {
     };
   }
 
-  // ================= REFRESH TOKEN =================
   async RefresholdAcces(token: RefreshTokenDto) {
     try {
       const oldId = await this.jwtServise.verifyAsync(token.token, JwtRefreshToken);
@@ -114,7 +110,6 @@ export class AuthService {
     }
   }
 
-  // ================= RESET PASSWORD =================
   async reset_password(payload: Required<Reset_Password>) {
     const { otp, email, password } = payload;
 
@@ -141,7 +136,6 @@ export class AuthService {
     };
   }
 
-  // ================= GOOGLE LOGIN =================
   async googleLogin(user: any, req: Request) {
     if (!user) {
       throw new UnauthorizedException();
@@ -166,7 +160,6 @@ export class AuthService {
       });
     }
 
-    // Device yozib qo‘yish
     await this.saveDevice(existingUser.id, req, DeviceType.login);
 
     const tokens = await this.generateToken({
@@ -182,7 +175,6 @@ export class AuthService {
     };
   }
 
-  // ================= HELPER =================
   async PhoneAndPasswordCheck(password: string, email: string) {
     const oldUser = await this.prisma.user.findUnique({ where: { email } });
 
@@ -196,7 +188,7 @@ export class AuthService {
     }
 
     if (!checkPassword) {
-      throw new BadRequestException("Password Incorrect");
+      throw new BadRequestException("Password Incorrect or Email not found");
     }
 
     return oldUser;
@@ -232,7 +224,7 @@ export class AuthService {
     if (/fedora/i.test(userAgent)) return "fedora";
     if (/centos/i.test(userAgent)) return "centos";
     if (/red hat/i.test(userAgent)) return "redhat";
-    if (/linux/i.test(userAgent)) return "linux"; // fallback agar umumiy Linux bo‘lsa
+    if (/linux/i.test(userAgent)) return "linux"; 
   
     if (/googlebot/i.test(userAgent)) return "googlebot";
     if (/bingbot/i.test(userAgent)) return "bingbot";

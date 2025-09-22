@@ -1,5 +1,51 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateAdminDto } from './create-admin.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsOptional, IsString, IsInt, Min, Max } from "class-validator";
+import { Type } from "class-transformer";
 
-export class UpdateAdminDto extends PartialType(CreateAdminDto) {}
- 
+export class SearchUserDto {
+  @ApiProperty({ required: false, description: "Ism bo‘yicha qidirish", example: "Ali" })
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @ApiProperty({ required: false, description: "Familiya bo‘yicha qidirish", example: "Valiyev" })
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @ApiProperty({ required: false, description: "Email bo‘yicha qidirish", example: "user@example.com" })
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @ApiProperty({ required: false, description: "Yosh bo‘yicha minimal filter", example: 18 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(170)
+  ageFrom?: number;
+
+  @ApiProperty({ required: false, description: "Yosh bo‘yicha maksimal filter", example: 65 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(170)
+  ageTo?: number;
+
+  @ApiProperty({ required: false, description: "Har bir sahifada nechta yozuv bo‘lsin (limit)", example: 10, default: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit: number = 10;
+
+  @ApiProperty({ required: false, description: "Nechinchi sahifa (1 dan boshlanadi)", example: 1, default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page: number = 1;
+}

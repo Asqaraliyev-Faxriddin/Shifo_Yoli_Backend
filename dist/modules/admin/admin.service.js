@@ -37,29 +37,74 @@ let AdminService = class AdminService {
             },
         });
     }
-    async findAll() {
-        return this.prisma.user.findMany({
-            where: { role: client_1.UserRole.ADMIN },
-            select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                age: true,
-                profileImg: true,
-                role: true,
+    async searchUsers(dto, role) {
+        const { firstName, lastName, email, ageFrom, ageTo, page, limit } = dto;
+        const skip = (page - 1) * limit;
+        const where = { role };
+        if (email) {
+            where.email = { contains: email, mode: "insensitive" };
+        }
+        if (firstName) {
+            where.firstName = { contains: firstName, mode: "insensitive" };
+        }
+        if (lastName) {
+            where.lastName = { contains: lastName, mode: "insensitive" };
+        }
+        if (ageFrom || ageTo) {
+            where.age = {};
+            if (ageFrom)
+                where.age.gte = ageFrom;
+            if (ageTo)
+                where.age.lte = ageTo;
+        }
+        const [data, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+                select: {
+                    id: true,
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                    age: true,
+                    profileImg: true,
+                    role: true,
+                    createdAt: true,
+                },
+            }),
+            this.prisma.user.count({ where }),
+        ]);
+        return {
+            data,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
             },
-        });
+        };
     }
-    async findOne(id) {
+    async findAllAdmins(dto) {
+        return this.searchUsers(dto, client_1.UserRole.ADMIN);
+    }
+    async findAllDoctors(dto) {
+        return this.searchUsers(dto, client_1.UserRole.DOCTOR);
+    }
+    async findAllPatients(dto) {
+        return this.searchUsers(dto, client_1.UserRole.BEMOR);
+    }
+    async findOneAdmin(id) {
         const admin = await this.prisma.user.findUnique({
-            where: { id, role: client_1.UserRole.ADMIN },
+            where: { id },
         });
-        if (!admin)
+        if (!admin || admin.role !== client_1.UserRole.ADMIN) {
             throw new common_1.NotFoundException("Admin topilmadi");
+        }
         return admin;
     }
-    async update(id, dto, profileImgUrl) {
+    async updateAdmin(id, dto, profileImgUrl) {
         const admin = await this.prisma.user.findUnique({ where: { id } });
         if (!admin || admin.role !== client_1.UserRole.ADMIN) {
             throw new common_1.NotFoundException("Admin topilmadi");
@@ -75,12 +120,24 @@ let AdminService = class AdminService {
             },
         });
     }
-    async remove(id) {
-        const admin = await this.prisma.user.findUnique({
-            where: { id },
-        });
+    async deleteAdmin(id) {
+        const admin = await this.prisma.user.findUnique({ where: { id } });
         if (!admin || admin.role !== client_1.UserRole.ADMIN) {
             throw new common_1.NotFoundException("Admin topilmadi");
+        }
+        return this.prisma.user.delete({ where: { id } });
+    }
+    async deleteDoctor(id) {
+        const doctor = await this.prisma.user.findUnique({ where: { id } });
+        if (!doctor || doctor.role !== client_1.UserRole.DOCTOR) {
+            throw new common_1.NotFoundException("Doctor topilmadi");
+        }
+        return this.prisma.user.delete({ where: { id } });
+    }
+    async deletePatient(id) {
+        const patient = await this.prisma.user.findUnique({ where: { id } });
+        if (!patient || patient.role !== client_1.UserRole.BEMOR) {
+            throw new common_1.NotFoundException("Bemor topilmadi");
         }
         return this.prisma.user.delete({ where: { id } });
     }
@@ -111,6 +168,52 @@ let AdminService = class AdminService {
             throw new common_1.NotFoundException("User block qilinmagan");
         return this.prisma.blockedUsers.delete({
             where: { userId: dto.userId },
+        });
+    }
+    async createDoctor(dto, profileImgUrl) {
+        const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+        if (exists) {
+            throw new common_1.BadRequestException("Bunday email bilan foydalanuvchi mavjud");
+        }
+        return this.prisma.user.create({
+            data: {
+                email: dto.email,
+                firstName: dto.firstName,
+                lastName: dto.lastName,
+                password: dto.password,
+                age: dto.age,
+                profileImg: profileImgUrl ?? null,
+                role: client_1.UserRole.DOCTOR,
+                doctorProfile: {
+                    create: {
+                        category: {
+                            connect: { id: dto.categoryId },
+                        },
+                    },
+                },
+            },
+            include: {
+                doctorProfile: {
+                    include: { category: true },
+                },
+            },
+        });
+    }
+    async createPatient(dto, profileImgUrl) {
+        const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+        if (exists) {
+            throw new common_1.BadRequestException("Bunday email bilan foydalanuvchi mavjud");
+        }
+        return this.prisma.user.create({
+            data: {
+                email: dto.email,
+                firstName: dto.firstName,
+                lastName: dto.lastName,
+                password: dto.password,
+                age: dto.age,
+                profileImg: profileImgUrl ?? null,
+                role: client_1.UserRole.BEMOR,
+            },
         });
     }
 };

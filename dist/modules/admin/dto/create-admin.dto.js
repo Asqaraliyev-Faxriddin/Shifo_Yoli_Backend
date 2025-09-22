@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UnblockUserDto = exports.BlockUserDto = exports.UpdateBemorDto = exports.UpdateDoctorDto = exports.UpdateAdminDto = exports.CreateBemorDto = exports.CreateDoctorDto = exports.CreateAdminDto = exports.BaseUserDto = void 0;
+exports.CreatePatientDto = exports.CreateDoctorDto = exports.UnblockUserDto = exports.BlockUserDto = exports.UpdateBemorDto = exports.UpdateDoctorDto = exports.UpdateAdminDto = exports.CreateBemorDto = exports.CreateAdminDto = exports.BaseUserDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class BaseUserDto {
@@ -61,9 +61,6 @@ __decorate([
 class CreateAdminDto extends BaseUserDto {
 }
 exports.CreateAdminDto = CreateAdminDto;
-class CreateDoctorDto extends BaseUserDto {
-}
-exports.CreateDoctorDto = CreateDoctorDto;
 class CreateBemorDto extends BaseUserDto {
 }
 exports.CreateBemorDto = CreateBemorDto;
@@ -142,4 +139,124 @@ __decorate([
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], UnblockUserDto.prototype, "userId", void 0);
+class CreateDoctorDto {
+    email;
+    firstName;
+    lastName;
+    password;
+    age;
+    categoryId;
+    bio;
+    salary;
+    images;
+    videos;
+}
+exports.CreateDoctorDto = CreateDoctorDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "doctor@example.com" }),
+    (0, class_validator_1.IsEmail)(),
+    __metadata("design:type", String)
+], CreateDoctorDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "Ali" }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateDoctorDto.prototype, "firstName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "Valiyev" }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateDoctorDto.prototype, "lastName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "StrongPassword123" }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateDoctorDto.prototype, "password", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 35 }),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
+    (0, class_validator_1.Max)(170),
+    __metadata("design:type", Number)
+], CreateDoctorDto.prototype, "age", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "category-uuid", description: "Shifokor malakasi ID" }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateDoctorDto.prototype, "categoryId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: "Men 10 yillik kardiologman...",
+        description: "Shifokor bio (faqat bitta til, tizim o‘zi translate qiladi)",
+        required: false,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateDoctorDto.prototype, "bio", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 2000.0, description: "Maoshi", required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateDoctorDto.prototype, "salary", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: ["img1.jpg", "img2.png"],
+        description: "Shifokor suratlari",
+        required: false,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateDoctorDto.prototype, "images", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: ["video1.mp4", "video2.mp4"],
+        description: "Shifokor videolari",
+        required: false,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateDoctorDto.prototype, "videos", void 0);
+class CreatePatientDto {
+    email;
+    firstName;
+    lastName;
+    password;
+    age;
+}
+exports.CreatePatientDto = CreatePatientDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "patient@example.com" }),
+    (0, class_validator_1.IsEmail)(),
+    __metadata("design:type", String)
+], CreatePatientDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "Ali" }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreatePatientDto.prototype, "firstName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "Valiyev" }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreatePatientDto.prototype, "lastName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "StrongPassword123" }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreatePatientDto.prototype, "password", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 25 }),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
+    (0, class_validator_1.Max)(170),
+    __metadata("design:type", Number)
+], CreatePatientDto.prototype, "age", void 0);
 //# sourceMappingURL=create-admin.dto.js.map

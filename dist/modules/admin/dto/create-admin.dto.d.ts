@@ -8,8 +8,6 @@ export declare class BaseUserDto {
 }
 export declare class CreateAdminDto extends BaseUserDto {
 }
-export declare class CreateDoctorDto extends BaseUserDto {
-}
 export declare class CreateBemorDto extends BaseUserDto {
 }
 export declare class UpdateAdminDto {
@@ -29,4 +27,23 @@ export declare class BlockUserDto {
 }
 export declare class UnblockUserDto {
     userId: string;
+}
+export declare class CreateDoctorDto {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    age: number;
+    categoryId: string;
+    bio?: string;
+    salary?: number;
+    images?: any;
+    videos?: any;
+}
+export declare class CreatePatientDto {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    age: number;
 }

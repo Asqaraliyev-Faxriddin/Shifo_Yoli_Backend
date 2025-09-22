@@ -1,50 +1,124 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { AdminService } from './admin.service';
-import { CreateAdminDto, UpdateAdminDto } from './dto/create-admin.dto';
-import { BlockUserDto, UnblockUserDto } from './dto/create-admin.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  UploadedFile,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import axios from "axios";
+import * as FormData from "form-data";
+import { AdminService } from "./admin.service";
+import {
+  CreateAdminDto,
+  UpdateAdminDto,
+  BlockUserDto,
+  UnblockUserDto,
+} from "./dto/create-admin.dto";
+import { SearchUserDto } from "./dto/update-admin.dto";
 
-@Controller('admin')
+@ApiTags("Admin")
+@Controller("admin")
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  // ================= CREATE ADMIN =================
+  private readonly imgbbApiKey = "a22840e1237262e2beec1cf469a82155";
+  private readonly imgbbUploadUrl = "https://api.imgbb.com/1/upload";
+
+  private async uploadToImgbb(file?: Express.Multer.File): Promise<string | null> {
+    if (!file) return "";
+
+    const formData = new FormData();
+    formData.append("image", file.buffer.toString("base64"));
+
+    const response = await axios.post(this.imgbbUploadUrl, formData, {
+      headers: formData.getHeaders(),
+      params: { key: this.imgbbApiKey },
+    });
+
+    return response.data?.data?.url ?? null;
+  }
+
   @Post()
-  create(@Body() createAdminDto: CreateAdminDto) {
-    return this.adminService.create(createAdminDto);
+  @ApiOperation({ summary: "Yangi admin yaratish" })
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("profileImg"))
+  async create(
+    @Body() dto: CreateAdminDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    const profileImgUrl = await this.uploadToImgbb(file) || ""
+    return this.adminService.create(dto, profileImgUrl);
   }
 
-  // ================= FIND ALL =================
-  @Get()
-  findAll() {
-    return this.adminService.findAll();
+  @Post("admins")
+  @ApiOperation({ summary: "Adminlarni qidirish va ro‘yxatlash" })
+  findAllAdmins(@Body() dto: SearchUserDto) {
+    return this.adminService.findAllAdmins(dto);
   }
 
-  // ================= FIND ONE =================
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.adminService.findOne(id); // ID string sifatida qoldirildi
+  @Post("doctors")
+  @ApiOperation({ summary: "Doctorlarni qidirish va ro‘yxatlash" })
+  findAllDoctors(@Body() dto: SearchUserDto) {
+    return this.adminService.findAllDoctors(dto);
   }
 
-  // ================= UPDATE =================
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
-    return this.adminService.update(id, updateAdminDto);
+  @Post("patients")
+  @ApiOperation({ summary: "Bemorlarni qidirish va ro‘yxatlash" })
+  findAllPatients(@Body() dto: SearchUserDto) {
+    return this.adminService.findAllPatients(dto);
   }
 
-  // ================= REMOVE =================
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.adminService.remove(id);
+  @Get(":id")
+  @ApiOperation({ summary: "Bitta adminni topish" })
+  findOne(@Param("id") id: string) {
+    return this.adminService.findOneAdmin(id);
   }
 
-  // ================= BLOCK USER =================
-  @Post('block')
+  @Patch(":id")
+  @ApiOperation({ summary: "Adminni yangilash" })
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("profileImg"))
+  async update(
+    @Param("id") id: string,
+    @Body() dto: UpdateAdminDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    const profileImgUrl = await this.uploadToImgbb(file) || ""
+    return this.adminService.updateAdmin(id, dto, profileImgUrl);
+  }
+
+  @Delete(":id")
+  @ApiOperation({ summary: "Adminni o‘chirish" })
+  remove(@Param("id") id: string) {
+    return this.adminService.deleteAdmin(id);
+  }
+
+  @Delete("doctor/:id")
+  @ApiOperation({ summary: "Doctorni o‘chirish" })
+  removeDoctor(@Param("id") id: string) {
+    return this.adminService.deleteDoctor(id);
+  }
+
+  @Delete("bemor/:id")
+  @ApiOperation({ summary: "Bemorni o‘chirish" })
+  removePatient(@Param("id") id: string) {
+    return this.adminService.deletePatient(id);
+  }
+
+  @Post("block")
+  @ApiOperation({ summary: "Userni bloklash" })
   blockUser(@Body() dto: BlockUserDto) {
     return this.adminService.blockUser(dto);
   }
 
-  // ================= UNBLOCK USER =================
-  @Post('unblock')
+  @Post("unblock")
+  @ApiOperation({ summary: "Userni blokdan chiqarish" })
   unblockUser(@Body() dto: UnblockUserDto) {
     return this.adminService.unblockUser(dto);
   }

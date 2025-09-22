@@ -6,7 +6,9 @@ import {
   IsInt, 
   Min, 
   Max, 
-  IsUUID 
+  IsUUID, 
+  IsNotEmpty,
+  IsNumber
 } from "class-validator";
 
 export class BaseUserDto {
@@ -43,7 +45,6 @@ export class BaseUserDto {
 }
 
 export class CreateAdminDto extends BaseUserDto {}
-export class CreateDoctorDto extends BaseUserDto {}
 export class CreateBemorDto extends BaseUserDto {}
 
 export class UpdateAdminDto {
@@ -97,4 +98,94 @@ export class UnblockUserDto {
   @ApiProperty({ description: "Unblock qilinadigan user ID (UUID)" })
   @IsUUID()
   userId: string;
+}
+
+
+
+export class CreateDoctorDto {
+  @ApiProperty({ example: "doctor@example.com" })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ example: "Ali" })
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @ApiProperty({ example: "Valiyev" })
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty({ example: "StrongPassword123" })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @ApiProperty({ example: 35 })
+  @IsInt()
+  @Min(1)
+  @Max(170)
+  age: number;
+
+  @ApiProperty({ example: "category-uuid", description: "Shifokor malakasi ID" })
+  @IsString()
+  categoryId: string;
+
+  @ApiProperty({
+    example: "Men 10 yillik kardiologman...",
+    description: "Shifokor bio (faqat bitta til, tizim o‘zi translate qiladi)",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  bio?: string;
+
+  @ApiProperty({ example: 2000.0, description: "Maoshi", required: false })
+  @IsOptional()
+  @IsNumber()
+  salary?: number;
+
+  @ApiProperty({
+    example: ["img1.jpg", "img2.png"],
+    description: "Shifokor suratlari",
+    required: false,
+  })
+  @IsOptional()
+  images?: any;
+
+  @ApiProperty({
+    example: ["video1.mp4", "video2.mp4"],
+    description: "Shifokor videolari",
+    required: false,
+  })
+  @IsOptional()
+  videos?: any;
+}
+
+export class CreatePatientDto {
+  @ApiProperty({ example: "patient@example.com" })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ example: "Ali" })
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @ApiProperty({ example: "Valiyev" })
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty({ example: "StrongPassword123" })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @ApiProperty({ example: 25 })
+  @IsInt()
+  @Min(1)
+  @Max(170)
+  age: number;
 }
