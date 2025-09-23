@@ -5,7 +5,7 @@ import { MailerModule } from './common/mailer/mailer.module';
 import { VerificationModule } from './modules/verification/verification.module';
 import { RedisModule } from './core/prisma/redis/redis.module';
 import { JwtModule } from '@nestjs/jwt';
-import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleModule }  from '@nestjs/schedule';
  
 import { SeaderModule } from './core/prisma/seader/seader.module';
 import { join } from 'path';
