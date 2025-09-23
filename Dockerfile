@@ -7,7 +7,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY tsconfig.json tsconfig.build.json nest-cli.json ./
-
+ 
 COPY prisma ./prisma
 RUN npx prisma generate 
 
