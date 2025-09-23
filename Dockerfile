@@ -9,7 +9,7 @@ RUN npm ci
 COPY tsconfig.json tsconfig.build.json nest-cli.json ./
 
 COPY prisma ./prisma
-RUN npx prisma generate
+RUN npx prisma generate 
 
 # 4. Copy source code
 COPY src ./src
