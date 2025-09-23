@@ -41,6 +41,6 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/uploads ./uploads
 
 
-
+ 
 EXPOSE 4000
-CMD ["node", "dist/main.js"]
+CMD ["npm", "run","start:dev"]
