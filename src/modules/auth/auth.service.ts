@@ -93,24 +93,25 @@ export class AuthService {
   async RefresholdAcces(token: RefreshTokenDto) {
     try {
       const oldId = await this.jwtServise.verifyAsync(token.token, JwtRefreshToken);
-
+      
       if (!oldId) throw new UnauthorizedException();
-
+      
       const checkUser = await this.prisma.user.findFirst({ where: { id: oldId.id } });
       if (!checkUser) throw new UnauthorizedException();
-
+      
       const AccessToken = await this.generateToken(
         { id: checkUser.id, role: checkUser.role },
         true
       );
-
+      
       return { AccessToken };
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }
   }
-
+  
   async reset_password(payload: Required<Reset_Password>) {
+    
     const { otp, email, password } = payload;
 
     await this.verificationService.checkConfirmOtp({
@@ -137,6 +138,7 @@ export class AuthService {
   }
 
   async googleLogin(user: any, req: Request) {
+
     if (!user) {
       throw new UnauthorizedException();
     }

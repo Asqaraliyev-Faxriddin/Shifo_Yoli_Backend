@@ -5,12 +5,12 @@ export declare class AdminService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     create(createAdminDto: CreateAdminDto, profileImgUrl?: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -20,11 +20,11 @@ export declare class AdminService {
     private searchUsers;
     findAllAdmins(dto: SearchUserDto): Promise<{
         data: {
-            id: string;
             email: string;
-            firstName: string;
             lastName: string;
+            firstName: string;
             age: number;
+            id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             createdAt: Date;
@@ -38,11 +38,11 @@ export declare class AdminService {
     }>;
     findAllDoctors(dto: SearchUserDto): Promise<{
         data: {
-            id: string;
             email: string;
-            firstName: string;
             lastName: string;
+            firstName: string;
             age: number;
+            id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             createdAt: Date;
@@ -56,11 +56,11 @@ export declare class AdminService {
     }>;
     findAllPatients(dto: SearchUserDto): Promise<{
         data: {
-            id: string;
             email: string;
-            firstName: string;
             lastName: string;
+            firstName: string;
             age: number;
+            id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             createdAt: Date;
@@ -73,12 +73,12 @@ export declare class AdminService {
         };
     }>;
     findOneAdmin(id: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -86,12 +86,12 @@ export declare class AdminService {
         updatedAt: Date;
     }>;
     updateAdmin(id: string, dto: UpdateAdminDto, profileImgUrl?: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -99,12 +99,12 @@ export declare class AdminService {
         updatedAt: Date;
     }>;
     deleteAdmin(id: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -112,12 +112,12 @@ export declare class AdminService {
         updatedAt: Date;
     }>;
     deleteDoctor(id: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -125,12 +125,12 @@ export declare class AdminService {
         updatedAt: Date;
     }>;
     deletePatient(id: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -141,15 +141,15 @@ export declare class AdminService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        reason: string | null;
         userId: string;
+        reason: string | null;
     }>;
     unblockUser(dto: UnblockUserDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        reason: string | null;
         userId: string;
+        reason: string | null;
     }>;
     createDoctor(dto: CreateDoctorDto, profileImgUrl?: string): Promise<{
         doctorProfile: ({
@@ -165,23 +165,23 @@ export declare class AdminService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            bioUz: string | null;
-            bioRu: string | null;
-            bioEn: string | null;
+            doctorId: string;
             rating: number;
+            categoryId: string | null;
             salary: import("@prisma/client/runtime/library").Decimal | null;
             images: import("@prisma/client/runtime/library").JsonValue | null;
             videos: import("@prisma/client/runtime/library").JsonValue | null;
-            categoryId: string | null;
-            doctorId: string;
+            bioUz: string | null;
+            bioRu: string | null;
+            bioEn: string | null;
         }) | null;
     } & {
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -189,12 +189,12 @@ export declare class AdminService {
         updatedAt: Date;
     }>;
     createPatient(dto: CreatePatientDto, profileImgUrl?: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
