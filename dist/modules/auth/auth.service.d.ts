@@ -20,12 +20,12 @@ export declare class AuthService {
         status: boolean;
         message: string;
         data: {
-            id: string;
             email: string;
-            firstName: string;
-            lastName: string;
             password: string;
+            lastName: string;
+            firstName: string;
             age: number;
+            id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             isActive: boolean;
@@ -55,12 +55,12 @@ export declare class AuthService {
         status: boolean;
         message: string;
         data: {
-            id: string;
             email: string;
-            firstName: string;
-            lastName: string;
             password: string;
+            lastName: string;
+            firstName: string;
             age: number;
+            id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             isActive: boolean;
@@ -72,12 +72,12 @@ export declare class AuthService {
         status: boolean;
         message: string;
         data: {
-            id: string;
             email: string;
-            firstName: string;
-            lastName: string;
             password: string;
+            lastName: string;
+            firstName: string;
             age: number;
+            id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             isActive: boolean;
@@ -90,12 +90,12 @@ export declare class AuthService {
         };
     }>;
     PhoneAndPasswordCheck(password: string, email: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
