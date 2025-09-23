@@ -6,8 +6,7 @@ import { VerificationModule } from './modules/verification/verification.module';
 import { RedisModule } from './core/prisma/redis/redis.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
-// import { RatingModule } from './modules/rating/rating.module';
-
+ 
 import { SeaderModule } from './core/prisma/seader/seader.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
