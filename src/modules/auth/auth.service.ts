@@ -33,7 +33,7 @@ export class AuthService {
     const RefreshToken = await this.jwtServise.signAsync(payload, JwtRefreshToken);
 
     if (onlyAccess) {
-      return AccessToken;
+      return {AccessToken};
     } else {
       return {
         AccessToken,

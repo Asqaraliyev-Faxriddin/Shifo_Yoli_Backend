@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { ApiTags, ApiOperation } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
@@ -55,9 +55,17 @@ export class AuthController {
     async githubAuth() {  
     }
 
-    @Get("github/callback")
-    @UseGuards(AuthGuard("github"))
-    async githubAuthRedirect(@Req() req) {
-      return this.authService.googleLogin(req.user,req);
-    }
+  // auth.controller.ts ichida
+@Get("google/callback")
+@UseGuards(AuthGuard("google"))
+async googleCallback(@Req() req, @Res() res) {
+  const result = await this.authService.googleLogin(req.user, req);
+
+  const redirectUrl = `https://google-github.netlify.app/google/callback?` +
+    `accessToken=${result.tokens.AccessToken}&` +
+    `refreshToken=${result.tokens.RefreshToken}`;
+
+  return res.redirect(redirectUrl);
+}
+
 }
