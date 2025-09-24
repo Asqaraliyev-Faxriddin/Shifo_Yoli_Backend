@@ -39,6 +39,7 @@ let AuthController = class AuthController {
         return this.authService.reset_password(dto);
     }
     async googleAuth() {
+        return { url: "https://faxriddin.bobur-dev.uz/auth/google/callback" };
     }
     async googleAuthRedirect(req) {
         return this.authService.googleLogin(req.user, req);

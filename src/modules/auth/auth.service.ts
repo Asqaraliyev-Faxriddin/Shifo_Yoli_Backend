@@ -64,6 +64,8 @@ export class AuthService {
       },
     });
 
+
+      
     await this.saveDevice(user.id, req, DeviceType.register);
 
     const tokens = await this.generateToken({ id: user.id, role: user.role });
@@ -138,44 +140,53 @@ export class AuthService {
   }
 
   async googleLogin(user: any, req: Request) {
-
     if (!user) {
       throw new UnauthorizedException();
     }
-
+  
     const randomPassword = randomBytes(16).toString("hex");
-
+  
     let existingUser = await this.prisma.user.findUnique({
       where: { email: user.email },
     });
-
+  
     if (!existingUser) {
       existingUser = await this.prisma.user.create({
         data: {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          age: 0,
+          age: user.age ?? 0, 
+          profileImg: user.picture ?? "",
           role: UserRole.BEMOR,
           password: randomPassword,
         },
       });
+    } else {
+      existingUser = await this.prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          profileImg: user.picture ?? existingUser.profileImg,
+          age: user.age ?? existingUser.age,
+        },
+      });
     }
-
+  
     await this.saveDevice(existingUser.id, req, DeviceType.login);
-
+  
     const tokens = await this.generateToken({
       id: existingUser.id,
       role: existingUser.role,
     });
-
+  
     return {
       status: true,
-      message: "Google login successful",
+      message: 'Google login successful',
       data: existingUser,
       tokens,
     };
   }
+  
 
   async PhoneAndPasswordCheck(password: string, email: string) {
     const oldUser = await this.prisma.user.findUnique({ where: { email } });

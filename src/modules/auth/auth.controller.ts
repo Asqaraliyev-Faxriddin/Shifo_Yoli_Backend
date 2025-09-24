@@ -40,7 +40,6 @@ export class AuthController {
     @Get("google")
     @UseGuards(AuthGuard("google"))
     async googleAuth() {  
-      // faqat Google sahifasiga redirect qiladi
     }
 
     // Google callback
