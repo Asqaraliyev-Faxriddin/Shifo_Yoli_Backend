@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3 
 
-      - name: Deploy over SSH and run Docker Compose
+      - name: Deploy over SSH and run Docker Compose 
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DB_HOST }}

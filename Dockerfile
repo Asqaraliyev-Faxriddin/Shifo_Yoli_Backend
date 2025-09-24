@@ -13,7 +13,6 @@ RUN npx prisma generate
 
 # 4. Copy source code
 COPY src ./src
-COPY uploads ./uploads
 
 
 
@@ -38,7 +37,6 @@ COPY --from=builder /app/prisma ./prisma
 # 4. Copy the compiled app
 COPY --from=builder /app/dist ./dist
 
-COPY --from=builder /app/uploads ./uploads
 
 
  
