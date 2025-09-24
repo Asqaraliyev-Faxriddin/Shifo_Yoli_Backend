@@ -74,6 +74,9 @@ let AdminController = class AdminController {
     unblockUser(dto) {
         return this.adminService.unblockUser(dto);
     }
+    nimadir() {
+        return this.adminService.nimadir();
+    }
 };
 exports.AdminController = AdminController;
 __decorate([
@@ -171,6 +174,13 @@ __decorate([
     __metadata("design:paramtypes", [create_admin_dto_1.UnblockUserDto]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "unblockUser", null);
+__decorate([
+    (0, common_1.Get)("devices/fret/fdf"),
+    (0, swagger_1.ApiOperation)({ summary: "Barcha qurilmalarni olish" }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "nimadir", null);
 exports.AdminController = AdminController = __decorate([
     (0, swagger_1.ApiTags)("Admin"),
     (0, common_1.Controller)("admin"),

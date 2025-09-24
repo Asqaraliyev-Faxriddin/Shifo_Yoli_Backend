@@ -21,15 +21,29 @@ let GoogleStrategy = class GoogleStrategy extends (0, passport_1.PassportStrateg
             clientID: process.env.CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,
             callbackURL: process.env.GOOGLE_CALLBACK_URL,
-            scope: ['email', 'profile'],
+            scope: [
+                'email',
+                'profile',
+                'https://www.googleapis.com/auth/user.birthday.read',
+            ],
         });
     }
     async validate(accessToken, refreshToken, profile, done) {
-        const { name, emails } = profile;
+        const { name, emails, photos, _json } = profile;
+        let age = null;
+        if (_json && _json.birthdays && _json.birthdays.length > 0) {
+            const birthYear = _json.birthdays[0].date.year;
+            if (birthYear) {
+                const currentYear = new Date().getFullYear();
+                age = currentYear - birthYear;
+            }
+        }
         const user = {
-            email: emails[0].value,
-            firstName: name.givenName,
-            lastName: name.familyName,
+            email: emails?.[0]?.value,
+            firstName: name?.givenName,
+            lastName: name?.familyName,
+            picture: photos?.[0]?.value,
+            age,
             accessToken,
         };
         done(null, user);

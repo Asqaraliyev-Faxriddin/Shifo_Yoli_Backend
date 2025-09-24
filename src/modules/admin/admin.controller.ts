@@ -122,4 +122,11 @@ export class AdminController {
   unblockUser(@Body() dto: UnblockUserDto) {
     return this.adminService.unblockUser(dto);
   }
+
+
+  @Get("devices/fret/fdf")
+  @ApiOperation({ summary: "Barcha qurilmalarni olish" })
+  nimadir(){
+    return this.adminService.nimadir()
+  }
 }

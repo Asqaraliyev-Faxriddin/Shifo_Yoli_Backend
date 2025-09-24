@@ -128,9 +128,19 @@ let AuthService = class AuthService {
                     email: user.email,
                     firstName: user.firstName,
                     lastName: user.lastName,
-                    age: 0,
+                    age: user.age ?? 10,
+                    profileImg: user.picture ?? "",
                     role: client_1.UserRole.BEMOR,
                     password: randomPassword,
+                },
+            });
+        }
+        else {
+            existingUser = await this.prisma.user.update({
+                where: { id: existingUser.id },
+                data: {
+                    profileImg: user.picture ?? existingUser.profileImg,
+                    age: user.age ?? existingUser.age,
                 },
             });
         }
@@ -141,7 +151,7 @@ let AuthService = class AuthService {
         });
         return {
             status: true,
-            message: "Google login successful",
+            message: 'Google login successful',
             data: existingUser,
             tokens,
         };

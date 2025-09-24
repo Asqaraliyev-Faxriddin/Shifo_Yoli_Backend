@@ -201,4 +201,32 @@ export declare class AdminService {
         createdAt: Date;
         updatedAt: Date;
     }>;
+    nimadir(): Promise<{
+        data: ({
+            user: {
+                email: string;
+                password: string;
+                lastName: string;
+                firstName: string;
+                age: number;
+                id: string;
+                role: import(".prisma/client").$Enums.UserRole;
+                profileImg: string | null;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string | null;
+            deviceType: import(".prisma/client").$Enums.DeviceType;
+            deviceId: string;
+            platform: string | null;
+            address: string | null;
+            userId: string;
+        })[];
+        total: number;
+    }>;
 }

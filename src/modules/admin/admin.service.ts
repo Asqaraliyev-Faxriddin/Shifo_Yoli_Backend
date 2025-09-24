@@ -138,8 +138,7 @@ private async searchUsers(dto: SearchUserDto, role: UserRole) {
     });
   }
 
-  // ================= DELETE ADMIN =================
-  async deleteAdmin(id: string) {
+   async deleteAdmin(id: string) {
     const admin = await this.prisma.user.findUnique({ where: { id } });
     if (!admin || admin.role !== UserRole.ADMIN) {
       throw new NotFoundException("Admin topilmadi");
@@ -147,7 +146,6 @@ private async searchUsers(dto: SearchUserDto, role: UserRole) {
     return this.prisma.user.delete({ where: { id } });
   }
 
-  // ================= DELETE DOCTOR =================
   async deleteDoctor(id: string) {
     const doctor = await this.prisma.user.findUnique({ where: { id } });
     if (!doctor || doctor.role !== UserRole.DOCTOR) {
@@ -156,7 +154,6 @@ private async searchUsers(dto: SearchUserDto, role: UserRole) {
     return this.prisma.user.delete({ where: { id } });
   }
 
-  // ================= DELETE BEMOR =================
   async deletePatient(id: string) {
     const patient = await this.prisma.user.findUnique({ where: { id } });
     if (!patient || patient.role !== UserRole.BEMOR) {
@@ -165,7 +162,6 @@ private async searchUsers(dto: SearchUserDto, role: UserRole) {
     return this.prisma.user.delete({ where: { id } });
   }
 
-  // ================= BLOCK USER =================
   async blockUser(dto: BlockUserDto) {
     const user = await this.prisma.user.findUnique({
       where: { id: dto.userId },
@@ -187,7 +183,6 @@ private async searchUsers(dto: SearchUserDto, role: UserRole) {
     });
   }
 
-  // ================= UNBLOCK USER =================
   async unblockUser(dto: UnblockUserDto) {
     const blocked = await this.prisma.blockedUsers.findUnique({
       where: { userId: dto.userId },
@@ -212,14 +207,14 @@ private async searchUsers(dto: SearchUserDto, role: UserRole) {
         email: dto.email,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        password: dto.password, // ❗ keyinchalik hash qilinsin
+        password: dto.password, 
         age: dto.age,
         profileImg: profileImgUrl ?? null,
         role: UserRole.DOCTOR,
         doctorProfile: {
           create: {
             category: {
-              connect: { id: dto.categoryId }, // doctor kategoriyasini ulash
+              connect: { id: dto.categoryId }, 
             },
           },
         },
@@ -232,7 +227,6 @@ private async searchUsers(dto: SearchUserDto, role: UserRole) {
     });
   }
 
-// ================= CREATE PATIENT =================
 async createPatient(dto: CreatePatientDto, profileImgUrl?: string) {
   const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
   if (exists) {
@@ -244,12 +238,20 @@ async createPatient(dto: CreatePatientDto, profileImgUrl?: string) {
       email: dto.email,
       firstName: dto.firstName,
       lastName: dto.lastName,
-      password: dto.password, // ❗ keyinchalik hash qilinsin
+      password: dto.password, 
       age: dto.age,
       profileImg: profileImgUrl ?? null,
       role: UserRole.BEMOR,
     },
   });
+}
+
+async nimadir(){
+  let data = await this.prisma.device.findMany({include:{user:true}})
+  let total = await this.prisma.device.count()
+
+  return {data,total}
+
 }
 
 

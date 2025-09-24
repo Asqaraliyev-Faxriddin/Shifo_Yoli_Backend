@@ -216,6 +216,11 @@ let AdminService = class AdminService {
             },
         });
     }
+    async nimadir() {
+        let data = await this.prisma.device.findMany({ include: { user: true } });
+        let total = await this.prisma.device.count();
+        return { data, total };
+    }
 };
 exports.AdminService = AdminService;
 exports.AdminService = AdminService = __decorate([

@@ -36,13 +36,13 @@ __decorate([
     __metadata("design:type", String)
 ], SearchUserDto.prototype, "lastName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ required: false, description: "Email bo‘yicha qidirish", example: "user@example.com" }),
+    (0, swagger_1.ApiPropertyOptional)({ required: false, description: "Email bo‘yicha qidirish", example: "user@example.com" }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], SearchUserDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ required: false, description: "Yosh bo‘yicha minimal filter", example: 18 }),
+    (0, swagger_1.ApiPropertyOptional)({ required: false, description: "Yosh bo‘yicha minimal filter", example: 18 }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsInt)(),
@@ -51,7 +51,7 @@ __decorate([
     __metadata("design:type", Number)
 ], SearchUserDto.prototype, "ageFrom", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ required: false, description: "Yosh bo‘yicha maksimal filter", example: 65 }),
+    (0, swagger_1.ApiPropertyOptional)({ required: false, description: "Yosh bo‘yicha maksimal filter", example: 65 }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsInt)(),
@@ -60,7 +60,7 @@ __decorate([
     __metadata("design:type", Number)
 ], SearchUserDto.prototype, "ageTo", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ required: false, description: "Har bir sahifada nechta yozuv bo‘lsin (limit)", example: 10, default: 10 }),
+    (0, swagger_1.ApiPropertyOptional)({ required: false, description: "Har bir sahifada nechta yozuv bo‘lsin (limit)", example: 10, default: 10 }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsInt)(),
@@ -69,7 +69,7 @@ __decorate([
     __metadata("design:type", Number)
 ], SearchUserDto.prototype, "limit", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ required: false, description: "Nechinchi sahifa (1 dan boshlanadi)", example: 1, default: 1 }),
+    (0, swagger_1.ApiPropertyOptional)({ required: false, description: "Nechinchi sahifa (1 dan boshlanadi)", example: 1, default: 1 }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsInt)(),

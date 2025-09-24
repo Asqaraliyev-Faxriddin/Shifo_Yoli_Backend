@@ -156,7 +156,7 @@ export class AuthService {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          age: user.age ?? 0, 
+          age: user.age ?? 10, 
           profileImg: user.picture ?? "",
           role: UserRole.BEMOR,
           password: randomPassword,
