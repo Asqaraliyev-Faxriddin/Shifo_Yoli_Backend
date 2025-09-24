@@ -54,7 +54,7 @@ export class AuthController {
     @UseGuards(AuthGuard("github"))
     async githubAuth() {  
     }
-
+  
   // auth.controller.ts ichida
 @Get("google/callback")
 @UseGuards(AuthGuard("google"))
