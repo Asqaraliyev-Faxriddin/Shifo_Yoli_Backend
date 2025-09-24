@@ -56,7 +56,7 @@ export class AuthController {
     }
   
   // auth.controller.ts ichida
-@Get("google/callback")
+@Get("github/callback")
 @UseGuards(AuthGuard("google"))
 async googleCallback(@Req() req, @Res() res) {
   const result = await this.authService.googleLogin(req.user, req);
