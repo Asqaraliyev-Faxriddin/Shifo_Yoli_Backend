@@ -208,9 +208,31 @@ export class AuthService {
   }
 
   private async saveDevice(userId: string, req: Request, type: DeviceType) {
+   
+    if (!req) return;                                     
+   
     const userAgent = req.headers["user-agent"] || "unknown";
     const ip =
       req.ip || (req.headers["x-forwarded-for"] as string) || "unknown";
+
+
+      let oldtru = await this.prisma.device.findFirst({
+        where:{
+          address:ip,
+      
+        }
+      })
+
+      let oldtru2 = await this.prisma.device.findFirst({
+        where:{
+          name:userAgent,
+      
+        }
+      })
+
+      if(oldtru || oldtru2){
+        return
+      }
 
     await this.prisma.device.create({
       data: {

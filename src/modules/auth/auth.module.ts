@@ -12,6 +12,7 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 import { PrismaModule } from 'src/core/prisma/prisma.module';
 import { GoogleStrategy } from './stratagies/google.strategy'; 
 import { PassportModule } from '@nestjs/passport';
+import { GithubStrategy } from './stratagies/github.strategy';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ import { PassportModule } from '@nestjs/passport';
     RedisService,
     AppMailerService,
     PrismaService,
+    GithubStrategy,
     GoogleStrategy
   ]
 })
