@@ -13,15 +13,20 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { ProfileModule } from './modules/profile/profile.module';
 import { RatingModule } from './modules/rating/rating.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [
+  imports: [ 
 
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), "uploads", "documents"),
       serveRoot: "/document/file", 
     }),
     ScheduleModule.forRoot(),
+    ConfigModule.forRoot({isGlobal:true})
+      
+    ,
+
     PrismaModule, AuthModule,MailerModule,AuthModule,VerificationModule,
     RedisModule,  SeaderModule,JwtModule,AdminModule,ProfileModule,RatingModule, AdminModule]
 })

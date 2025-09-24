@@ -4,7 +4,7 @@ import { Strategy, VerifyCallback } from 'passport-github2';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
-
+ 
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor() {
@@ -12,7 +12,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
 
         clientID: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-      callbackURL: 'https://faxriddin.bobur-dev.uz/auth/github/callback',
+      callbackURL: process.env.GITHUB_CALLBACK_URL as string,
       scope: ['user:email'], // faqat email olish uchun yetarli
     });
   }

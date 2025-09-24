@@ -80,4 +80,26 @@ export declare class AuthController {
             RefreshToken: string;
         };
     }>;
+    githubAuth(): Promise<void>;
+    githubAuthRedirect(req: any): Promise<{
+        status: boolean;
+        message: string;
+        data: {
+            email: string;
+            password: string;
+            lastName: string;
+            firstName: string;
+            age: number;
+            id: string;
+            role: import(".prisma/client").$Enums.UserRole;
+            profileImg: string | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+        tokens: string | {
+            AccessToken: string;
+            RefreshToken: string;
+        };
+    }>;
 }

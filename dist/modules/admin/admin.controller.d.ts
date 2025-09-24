@@ -8,12 +8,12 @@ export declare class AdminController {
     private readonly imgbbUploadUrl;
     private uploadToImgbb;
     create(dto: CreateAdminDto, file?: Express.Multer.File): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -22,11 +22,11 @@ export declare class AdminController {
     }>;
     findAllAdmins(dto: SearchUserDto): Promise<{
         data: {
-            id: string;
             email: string;
-            firstName: string;
             lastName: string;
+            firstName: string;
             age: number;
+            id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             createdAt: Date;
@@ -40,11 +40,11 @@ export declare class AdminController {
     }>;
     findAllDoctors(dto: SearchUserDto): Promise<{
         data: {
-            id: string;
             email: string;
-            firstName: string;
             lastName: string;
+            firstName: string;
             age: number;
+            id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             createdAt: Date;
@@ -58,11 +58,11 @@ export declare class AdminController {
     }>;
     findAllPatients(dto: SearchUserDto): Promise<{
         data: {
-            id: string;
             email: string;
-            firstName: string;
             lastName: string;
+            firstName: string;
             age: number;
+            id: string;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             createdAt: Date;
@@ -75,12 +75,12 @@ export declare class AdminController {
         };
     }>;
     findOne(id: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -88,12 +88,12 @@ export declare class AdminController {
         updatedAt: Date;
     }>;
     update(id: string, dto: UpdateAdminDto, file?: Express.Multer.File): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -101,12 +101,12 @@ export declare class AdminController {
         updatedAt: Date;
     }>;
     remove(id: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -114,12 +114,12 @@ export declare class AdminController {
         updatedAt: Date;
     }>;
     removeDoctor(id: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -127,12 +127,12 @@ export declare class AdminController {
         updatedAt: Date;
     }>;
     removePatient(id: string): Promise<{
-        id: string;
         email: string;
-        firstName: string;
-        lastName: string;
         password: string;
+        lastName: string;
+        firstName: string;
         age: number;
+        id: string;
         role: import(".prisma/client").$Enums.UserRole;
         profileImg: string | null;
         isActive: boolean;
@@ -143,25 +143,25 @@ export declare class AdminController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        reason: string | null;
         userId: string;
+        reason: string | null;
     }>;
     unblockUser(dto: UnblockUserDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        reason: string | null;
         userId: string;
+        reason: string | null;
     }>;
     nimadir(): Promise<{
         data: ({
             user: {
-                id: string;
                 email: string;
-                firstName: string;
-                lastName: string;
                 password: string;
+                lastName: string;
+                firstName: string;
                 age: number;
+                id: string;
                 role: import(".prisma/client").$Enums.UserRole;
                 profileImg: string | null;
                 isActive: boolean;

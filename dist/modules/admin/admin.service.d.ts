@@ -221,11 +221,11 @@ export declare class AdminService {
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
+            userId: string;
             deviceType: import(".prisma/client").$Enums.DeviceType;
             deviceId: string;
             platform: string | null;
             address: string | null;
-            userId: string;
         })[];
         total: number;
     }>;

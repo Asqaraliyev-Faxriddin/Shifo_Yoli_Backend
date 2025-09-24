@@ -19,6 +19,7 @@ const mailer_service_1 = require("../../common/mailer/mailer.service");
 const prisma_service_1 = require("../../core/prisma/prisma.service");
 const google_strategy_1 = require("./stratagies/google.strategy");
 const passport_1 = require("@nestjs/passport");
+const github_strategy_1 = require("./stratagies/github.strategy");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -37,6 +38,7 @@ exports.AuthModule = AuthModule = __decorate([
             redis_service_1.RedisService,
             mailer_service_1.AppMailerService,
             prisma_service_1.PrismaService,
+            github_strategy_1.GithubStrategy,
             google_strategy_1.GoogleStrategy
         ]
     })
