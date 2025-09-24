@@ -10,8 +10,8 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor() {
     super({
 
-      clientID: 'Ov23linhi55EGdywrBJ8',
-      clientSecret: 'afc292f4a5b4ebb30fa53ae2e3e8c86c172260d4',
+        clientID: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
       callbackURL: 'https://faxriddin.bobur-dev.uz/auth/github/callback',
       scope: ['user:email'], // faqat email olish uchun yetarli
     });
@@ -31,7 +31,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       picture: photos?.[0]?.value,
       accessToken,
     };
-    
+
     done(null, user);
   }
 }
