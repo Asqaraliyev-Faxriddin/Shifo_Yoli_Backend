@@ -4,7 +4,7 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import * as dotenv from 'dotenv';
 
 
-dotenv.config();
+dotenv.config();   
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
