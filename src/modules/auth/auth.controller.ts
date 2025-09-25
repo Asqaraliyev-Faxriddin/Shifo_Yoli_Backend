@@ -45,8 +45,16 @@ export class AuthController {
     // Google callback
     @Get("google/callback")
     @UseGuards(AuthGuard("google"))
-    async googleAuthRedirect(@Req() req) {
-      return this.authService.googleLogin(req.user,req);
+    async googleAuthRedirect(@Req() req,@Res() res) {
+      const result = await this.authService.googleLogin(req.user, req);
+
+      const redirectUrl = `https://google-github.netlify.app/google/callback?` +
+        `accessToken=${result.tokens.AccessToken}&` +
+        `refreshToken=${result.tokens.RefreshToken}`;
+    
+      return res.redirect(redirectUrl);
+
+      
     }
 
 
