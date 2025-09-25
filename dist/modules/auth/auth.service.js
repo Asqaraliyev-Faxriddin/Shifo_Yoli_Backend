@@ -32,7 +32,7 @@ let AuthService = class AuthService {
         const AccessToken = await this.jwtServise.signAsync(payload, jwt_2.JwtAccesToken);
         const RefreshToken = await this.jwtServise.signAsync(payload, jwt_2.JwtRefreshToken);
         if (onlyAccess) {
-            return AccessToken;
+            return { AccessToken };
         }
         else {
             return {

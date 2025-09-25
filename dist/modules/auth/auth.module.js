@@ -11,36 +11,41 @@ const common_1 = require("@nestjs/common");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
 const jwt_1 = require("@nestjs/jwt");
-const jwt_2 = require("../../common/config/jwt");
-const verification_service_1 = require("../verification/verification.service");
-const sms_service_1 = require("../../common/services/sms.service");
-const redis_service_1 = require("../../core/prisma/redis/redis.service");
-const mailer_service_1 = require("../../common/mailer/mailer.service");
-const prisma_service_1 = require("../../core/prisma/prisma.service");
-const google_strategy_1 = require("./stratagies/google.strategy");
 const passport_1 = require("@nestjs/passport");
+const config_1 = require("@nestjs/config");
+const verification_module_1 = require("../verification/verification.module");
+const redis_module_1 = require("../../core/prisma/redis/redis.module");
+const prisma_module_1 = require("../../core/prisma/prisma.module");
+const mailer_module_1 = require("../../common/mailer/mailer.module");
+const google_strategy_1 = require("./stratagies/google.strategy");
 const github_strategy_1 = require("./stratagies/github.strategy");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
-    (0, common_1.Global)(),
     (0, common_1.Module)({
         imports: [
-            jwt_1.JwtModule.register(jwt_2.JwtAccesToken),
+            config_1.ConfigModule,
+            prisma_module_1.PrismaModule,
+            redis_module_1.RedisModule,
+            mailer_module_1.MailerModule,
+            verification_module_1.VerificationModule,
             passport_1.PassportModule.register({ session: false }),
+            jwt_1.JwtModule.registerAsync({
+                inject: [config_1.ConfigService],
+                useFactory: async (config) => ({
+                    secret: config.get('Jwt_Acc'),
+                    signOptions: { expiresIn: config.get('Jwt_Acc_in') },
+                }),
+            }),
         ],
         controllers: [auth_controller_1.AuthController],
         providers: [
             auth_service_1.AuthService,
-            verification_service_1.VerificationService,
-            sms_service_1.SmsService,
-            redis_service_1.RedisService,
-            mailer_service_1.AppMailerService,
-            prisma_service_1.PrismaService,
+            google_strategy_1.GoogleStrategy,
             github_strategy_1.GithubStrategy,
-            google_strategy_1.GoogleStrategy
-        ]
+        ],
+        exports: [auth_service_1.AuthService],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

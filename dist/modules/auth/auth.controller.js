@@ -40,13 +40,21 @@ let AuthController = class AuthController {
     }
     async googleAuth() {
     }
-    async googleAuthRedirect(req) {
-        return this.authService.googleLogin(req.user, req);
+    async googleAuthRedirect(req, res) {
+        const result = await this.authService.googleLogin(req.user, req);
+        const redirectUrl = `https://google-github.netlify.app/google/callback?` +
+            `accessToken=${result.tokens.AccessToken}&` +
+            `refreshToken=${result.tokens.RefreshToken}`;
+        return res.redirect(redirectUrl);
     }
     async githubAuth() {
     }
-    async githubAuthRedirect(req) {
-        return this.authService.googleLogin(req.user, req);
+    async googleCallback(req, res) {
+        const result = await this.authService.googleLogin(req.user, req);
+        const redirectUrl = `https://google-github.netlify.app/google/callback?` +
+            `accessToken=${result.tokens.AccessToken}&` +
+            `refreshToken=${result.tokens.RefreshToken}`;
+        return res.redirect(redirectUrl);
     }
 };
 exports.AuthController = AuthController;
@@ -95,8 +103,9 @@ __decorate([
     (0, common_1.Get)("google/callback"),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)("google")),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "googleAuthRedirect", null);
 __decorate([
@@ -110,10 +119,11 @@ __decorate([
     (0, common_1.Get)("github/callback"),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)("github")),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
-], AuthController.prototype, "githubAuthRedirect", null);
+], AuthController.prototype, "googleCallback", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)("Authentication"),
     (0, common_1.Controller)("auth"),

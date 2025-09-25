@@ -22,7 +22,10 @@ export declare class AuthController {
             createdAt: Date;
             updatedAt: Date;
         };
-        tokens: string | {
+        tokens: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
             AccessToken: string;
             RefreshToken: string;
         };
@@ -30,13 +33,19 @@ export declare class AuthController {
     login(dto: LoginDto, req: any): Promise<{
         status: boolean;
         message: string;
-        tokens: string | {
+        tokens: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
             AccessToken: string;
             RefreshToken: string;
         };
     }>;
     refresh(dto: RefreshTokenDto): Promise<{
-        AccessToken: string | {
+        AccessToken: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
             AccessToken: string;
             RefreshToken: string;
         };
@@ -59,47 +68,7 @@ export declare class AuthController {
         };
     }>;
     googleAuth(): Promise<void>;
-    googleAuthRedirect(req: any): Promise<{
-        status: boolean;
-        message: string;
-        data: {
-            email: string;
-            password: string;
-            lastName: string;
-            firstName: string;
-            age: number;
-            id: string;
-            role: import(".prisma/client").$Enums.UserRole;
-            profileImg: string | null;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-        tokens: string | {
-            AccessToken: string;
-            RefreshToken: string;
-        };
-    }>;
+    googleAuthRedirect(req: any, res: any): Promise<any>;
     githubAuth(): Promise<void>;
-    githubAuthRedirect(req: any): Promise<{
-        status: boolean;
-        message: string;
-        data: {
-            email: string;
-            password: string;
-            lastName: string;
-            firstName: string;
-            age: number;
-            id: string;
-            role: import(".prisma/client").$Enums.UserRole;
-            profileImg: string | null;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-        tokens: string | {
-            AccessToken: string;
-            RefreshToken: string;
-        };
-    }>;
+    googleCallback(req: any, res: any): Promise<any>;
 }

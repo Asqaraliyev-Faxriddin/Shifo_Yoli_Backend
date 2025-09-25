@@ -12,7 +12,10 @@ export declare class AuthService {
     private jwtServise;
     private verificationService;
     constructor(prisma: PrismaService, jwtServise: JwtService, verificationService: VerificationService);
-    generateToken(payload: Token_activate, onlyAccess?: boolean): Promise<string | {
+    generateToken(payload: Token_activate, onlyAccess?: boolean): Promise<{
+        AccessToken: string;
+        RefreshToken?: undefined;
+    } | {
         AccessToken: string;
         RefreshToken: string;
     }>;
@@ -32,7 +35,10 @@ export declare class AuthService {
             createdAt: Date;
             updatedAt: Date;
         };
-        tokens: string | {
+        tokens: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
             AccessToken: string;
             RefreshToken: string;
         };
@@ -40,13 +46,19 @@ export declare class AuthService {
     login(payload: LoginDto, req: Request): Promise<{
         status: boolean;
         message: string;
-        tokens: string | {
+        tokens: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
             AccessToken: string;
             RefreshToken: string;
         };
     }>;
     RefresholdAcces(token: RefreshTokenDto): Promise<{
-        AccessToken: string | {
+        AccessToken: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
             AccessToken: string;
             RefreshToken: string;
         };
@@ -84,7 +96,10 @@ export declare class AuthService {
             createdAt: Date;
             updatedAt: Date;
         };
-        tokens: string | {
+        tokens: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
             AccessToken: string;
             RefreshToken: string;
         };

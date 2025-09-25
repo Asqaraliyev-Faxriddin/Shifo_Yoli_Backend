@@ -1,35 +1,42 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtAccesToken } from 'src/common/config/jwt';
-import { VerificationService } from '../verification/verification.service';
-import { SmsService } from 'src/common/services/sms.service';
-import { RedisService } from 'src/core/prisma/redis/redis.service';
-import { AppMailerService } from 'src/common/mailer/mailer.service';
-import { RedisModule } from 'src/core/prisma/redis/redis.module';
-import { PrismaService } from 'src/core/prisma/prisma.service';
-import { PrismaModule } from 'src/core/prisma/prisma.module';
-import { GoogleStrategy } from './stratagies/google.strategy'; 
 import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { VerificationModule } from '../verification/verification.module';
+import { RedisModule } from 'src/core/prisma/redis/redis.module';
+import { PrismaModule } from 'src/core/prisma/prisma.module';
+import { MailerModule } from 'src/common/mailer/mailer.module';
+
+import { GoogleStrategy } from './stratagies/google.strategy';
 import { GithubStrategy } from './stratagies/github.strategy';
 
-@Global()
 @Module({
-  imports:[
-     JwtModule.register(JwtAccesToken),
-     PassportModule.register({ session: false }),
-     ],
+  imports: [
+    ConfigModule,
+    PrismaModule,
+    RedisModule,
+    MailerModule,
+    VerificationModule,
+
+    PassportModule.register({ session: false }),
+
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        secret: config.get<string>('Jwt_Acc'),
+        signOptions: { expiresIn: config.get<string>('Jwt_Acc_in') },
+      }),
+    }),
+  ],
   controllers: [AuthController],
   providers: [
     AuthService,
-    VerificationService,
-    SmsService,
-    RedisService,
-    AppMailerService,
-    PrismaService,
+    GoogleStrategy,
     GithubStrategy,
-    GoogleStrategy
-  ]
+  ],
+  exports: [AuthService], 
 })
 export class AuthModule {}
