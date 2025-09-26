@@ -8,6 +8,7 @@ import {
   Param,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
@@ -21,9 +22,13 @@ import {
   UnblockUserDto,
 } from "./dto/create-admin.dto";
 import { SearchUserDto } from "./dto/update-admin.dto";
+import { AuthGuard } from "@nestjs/passport";
+import { Roles } from "src/common/decorators/Roles.decorator";
 
 @ApiTags("Admin")
 @Controller("admin")
+@UseGuards(AuthGuard)
+@Roles("ADMIN")
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

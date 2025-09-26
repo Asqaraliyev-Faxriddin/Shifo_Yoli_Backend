@@ -14,6 +14,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { RatingModule } from './modules/rating/rating.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
+import { MessagesGateway } from './messages..gateway';
 
 @Module({
   imports: [ 
@@ -28,7 +29,9 @@ import { ConfigModule } from '@nestjs/config';
     ,
 
     PrismaModule, AuthModule,MailerModule,AuthModule,VerificationModule,
-    RedisModule,  SeaderModule,JwtModule,AdminModule,ProfileModule,RatingModule, AdminModule]
+    RedisModule,  SeaderModule,JwtModule,AdminModule,ProfileModule,RatingModule, AdminModule],
+
+    providers:[MessagesGateway]
 })
 export class AppModule {}
    

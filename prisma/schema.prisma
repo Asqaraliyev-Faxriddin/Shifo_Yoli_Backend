@@ -237,3 +237,14 @@ enum DeviceType {
   register
   login
 }
+
+
+
+model Messages {
+  id Int @id @default(autoincrement())
+  message String
+  senderId String
+  receiverId String
+
+  createdAt DateTime @default(now())
+}
