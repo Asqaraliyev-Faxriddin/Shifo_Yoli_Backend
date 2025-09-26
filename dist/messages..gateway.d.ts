@@ -5,8 +5,12 @@ export declare class MessagesGateway {
     constructor(prisma: PrismaService);
     server: Server;
     handleConnection(client: any): void;
-    handleMessage(data: {
-        username: string;
+    handleRegister(data: {
+        userId: string;
+    }, client: Socket): Promise<void>;
+    handlePrivateMessage(data: {
+        senderId: string;
+        receiverId: string;
         message: string;
     }, client: Socket): Promise<void>;
 }

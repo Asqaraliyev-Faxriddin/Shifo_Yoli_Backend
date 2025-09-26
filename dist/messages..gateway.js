@@ -25,14 +25,17 @@ let MessagesGateway = class MessagesGateway {
     handleConnection(client) {
         console.log("Client connected: ", client.id);
     }
-    async handleMessage(data, client) {
+    async handleRegister(data, client) {
+        client.data.userId = data.userId;
+    }
+    async handlePrivateMessage(data, client) {
         let message = await this.prisma.messages.create({
             data: {
-                username: data.username,
+                senderId: data.senderId,
+                receiverId: data.receiverId,
                 message: data.message
             }
         });
-        this.server.emit('NewMessage', message);
     }
 };
 exports.MessagesGateway = MessagesGateway;
@@ -41,13 +44,21 @@ __decorate([
     __metadata("design:type", socket_io_1.Server)
 ], MessagesGateway.prototype, "server", void 0);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('SendMessage'),
+    (0, websockets_1.SubscribeMessage)('register'),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
     __metadata("design:returntype", Promise)
-], MessagesGateway.prototype, "handleMessage", null);
+], MessagesGateway.prototype, "handleRegister", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('SendPrivateMessage'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], MessagesGateway.prototype, "handlePrivateMessage", null);
 exports.MessagesGateway = MessagesGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(2121, { cors: { origin: "*" } }),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])

@@ -22,13 +22,13 @@ import {
   UnblockUserDto,
 } from "./dto/create-admin.dto";
 import { SearchUserDto } from "./dto/update-admin.dto";
-import { AuthGuard } from "@nestjs/passport";
 import { Roles } from "src/common/decorators/Roles.decorator";
+import { AuthGuard } from "src/common/guards/jwt-auth.guard";
 
 @ApiTags("Admin")
 @Controller("admin")
 @UseGuards(AuthGuard)
-@Roles("ADMIN")
+@Roles("SUPERADMIN")
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

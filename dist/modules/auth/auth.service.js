@@ -177,17 +177,16 @@ let AuthService = class AuthService {
             return;
         const userAgent = req.headers["user-agent"] || "unknown";
         const ip = req.ip || req.headers["x-forwarded-for"] || "unknown";
-        let oldtru = await this.prisma.device.findFirst({
+        const existingDevice = await this.prisma.device.findFirst({
             where: {
-                address: ip,
-            }
+                userId,
+                OR: [
+                    { address: ip },
+                    { name: userAgent },
+                ],
+            },
         });
-        let oldtru2 = await this.prisma.device.findFirst({
-            where: {
-                name: userAgent,
-            }
-        });
-        if (oldtru || oldtru2) {
+        if (existingDevice) {
             return;
         }
         await this.prisma.device.create({
