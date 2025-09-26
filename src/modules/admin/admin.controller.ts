@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import axios from "axios";
 import * as FormData from "form-data";
 import { AdminService } from "./admin.service";
@@ -28,6 +28,7 @@ import { AuthGuard } from "src/common/guards/jwt-auth.guard";
 @ApiTags("Admin")
 @Controller("admin")
 @UseGuards(AuthGuard)
+@ApiBearerAuth()
 @Roles("SUPERADMIN")
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
