@@ -15,6 +15,7 @@ import { RatingModule } from './modules/rating/rating.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
 import { MessagesGateway } from './messages..gateway';
+import { MessageModule } from './modules/message/message.module';
 
 @Module({
   imports: [ 
@@ -29,7 +30,7 @@ import { MessagesGateway } from './messages..gateway';
     ,
 
     PrismaModule, AuthModule,MailerModule,AuthModule,VerificationModule,
-    RedisModule,  SeaderModule,JwtModule,AdminModule,ProfileModule,RatingModule, AdminModule],
+    RedisModule,  SeaderModule,JwtModule,AdminModule,ProfileModule,RatingModule, AdminModule, MessageModule],
 
     providers:[MessagesGateway]
 })

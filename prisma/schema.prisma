@@ -28,13 +28,10 @@ model User {
   doctorProfile    DoctorProfile?     @relation("UserDoctorProfile")
 
   devices          Device[]
-  messagesSent     Message[]          @relation("MessagesSent")
-  messagesReceived Message[]          @relation("MessagesReceived")
 
-  questions        Question[]         @relation("UserQuestions")
-  doctorQuestions  Question[]         @relation("DoctorQuestions")
-  answers          Answer[]           @relation("DoctorAnswers")
-
+  ChatParticipant ChatParticipant[]
+  Message         Message[]
+  
   meetingsAsUser   Meeting[]          @relation("MeetingsUser")
   meetingsAsDoctor Meeting[]          @relation("MeetingsDoctor")
 
@@ -66,15 +63,15 @@ model DoctorProfile {
   doctor     User            @relation("UserDoctorProfile", fields: [doctorId], references: [id], onDelete: Cascade)
   doctorId   String          @unique
 
-  category   DoctorCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  categoryId String?
+  category   DoctorCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
 
   bioUz      String?
   bioRu      String?
   bioEn      String?
 
-  rating     Float           @default(0)   /// umumiy o‘rtacha baho
-  salary     Decimal?
+  rating     Float           @default(0)  
+  salary    DoctorSalary[]
 
   images     Json?     
   videos     Json?
@@ -83,61 +80,23 @@ model DoctorProfile {
   updatedAt  DateTime @updatedAt()
 }
 
-model Message {
-  id          String   @id @default(uuid())
 
-  sender      User     @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
-  senderId    String
+model DoctorSalary {
+  id          String        @id @default(uuid())
+  doctor      DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId    String        @unique
 
-  receiver    User     @relation("MessagesReceived", fields: [receiverId], references: [id], onDelete: Cascade)
-  receiverId  String
+  daily       Decimal?      // 1 kunga maosh
+  weekly      Decimal?      // 1 haftaga maosh
+  monthly     Decimal?      // 1 oyga maosh
+  yearly      Decimal?      // 1 yilga maosh
 
-  messageUz   String?
-  messageRu   String?
-  messageEn   String?
-
-  fileUrl     String?
-  isRead      Boolean   @default(false)
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt()
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt()
 }
 
-model Question {
-  id        String   @id @default(uuid())
 
-  user      User     @relation("UserQuestions", fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
 
-  doctor    User     @relation("DoctorQuestions", fields: [doctorId], references: [id], onDelete: Cascade)
-  doctorId  String
-
-  questionUz String
-  questionRu String
-  questionEn String
-
-  answers   Answer[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-}
-
-model Answer {
-  id         String    @id @default(uuid())
-
-  question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  questionId String
-
-  doctor     User      @relation("DoctorAnswers", fields: [doctorId], references: [id], onDelete: Cascade)
-  doctorId   String
-
-  answerUz   String
-  answerRu   String
-  answerEn   String
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt()
-}
 
 model Meeting {
   id          String   @id @default(uuid())
@@ -156,7 +115,6 @@ model Meeting {
   updatedAt   DateTime @updatedAt()
 }
 
-/// User → Doctor baholari
 model Review {
   id        String   @id @default(uuid())
 
@@ -166,7 +124,7 @@ model Review {
   doctor    User     @relation("ReviewsReceived", fields: [doctorId], references: [id], onDelete: Cascade)
   doctorId  String
 
-  rating    Int      /// 1 dan 5 gacha
+  rating    Int    
   comment   String?
 
   createdAt DateTime @default(now())
@@ -176,7 +134,7 @@ model Review {
 model Subscription {
   id        String   @id @default(uuid())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade,onUpdate: Cascade)
   userId    String
 
   startDate DateTime @default(now())
@@ -185,6 +143,7 @@ model Subscription {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
+  Payments Payment[]
 }
 
 model Payment {
@@ -195,41 +154,43 @@ model Payment {
 
   doctor    User     @relation("PaymentsReceived", fields: [doctorId], references: [id], onDelete: Cascade)
   doctorId  String
-
   amount    Decimal
   status    String? @default("CASH")
+  subcriptionId String
+  Subcription Subscription @relation(fields: [subcriptionId], references: [id], onDelete: Cascade,onUpdate: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
 }
-
 
 
 
 model BlockedUsers {
-
-  id       String   @id @default(uuid())
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())      
+   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String   @unique
-  reason   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-
-} 
-  
-
-model Device {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  deviceType DeviceType @default(register)
-  deviceId  String   @unique   
-  name      String?            
-  platform  String?          
-  address String?
+  reason    String?
+  deviceId  String?
+  device    Device?  @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
 }
+
+model Device {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  deviceType DeviceType @default(register)
+  deviceId   String   @unique   
+  name       String?            
+  platform   String?          
+  address    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt()
+
+  blockedUsers BlockedUsers[]   
+}
+
 
 
 enum DeviceType {
@@ -238,13 +199,52 @@ enum DeviceType {
   login
 }
 
+model Chat {
+  id          String             @id @default(uuid())
+  participants ChatParticipant[]
+
+  messages    Message[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
+
+  @@unique([id]) 
+}
+
+model ChatParticipant {
+  id      String @id @default(uuid())
+
+  chat    Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId  String
+
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+
+  @@unique([chatId, userId]) 
 
 
-model Messages {
-  id Int @id @default(autoincrement())
-  message String
-  senderId String
-  receiverId String
+}
+
+
+
+
+model Message {
+  id        String   @id @default(uuid())
+
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId    String
+
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId  String
+
+  text_ru      String?
+  text_en      String?
+  text_uz      String?
+
+  fileUrl   Json?
+  Video_Url Json?
+  isRead    Boolean  @default(false)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
 }
