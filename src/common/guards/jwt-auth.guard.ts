@@ -32,6 +32,8 @@ export class AuthGuard implements CanActivate {
             return true
 
         } catch (error) {
+
+          if(error.message = "user blocked") throw new UnauthorizedException("Siz bloklangansiz blokdan chiqish uchun @Asqaraliyev_Faxriddin bilan bog'laning")
             throw new UnauthorizedException()
         }
 
