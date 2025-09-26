@@ -25,10 +25,11 @@ import { SearchUserDto } from "./dto/update-admin.dto";
 import { Roles } from "src/common/decorators/Roles.decorator";
 import { AuthGuard } from "src/common/guards/jwt-auth.guard";
 import { UserRole } from "@prisma/client";
+import { RolesGuard } from "src/common/guards/roles.guard";
 
 @ApiTags("Admin")
 @Controller("admin")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard,RolesGuard)
 @ApiBearerAuth()
 @Roles(UserRole.SUPERADMIN)
 export class AdminController {
