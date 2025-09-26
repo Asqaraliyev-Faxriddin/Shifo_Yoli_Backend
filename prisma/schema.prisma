@@ -224,8 +224,8 @@ model Device {
   userId    String
   deviceType DeviceType @default(register)
   deviceId  String   @unique   
-  name      String?            /// Qurilma nomi (iPhone 14, Samsung S23 va hok.)
-  platform  String?            /// OS turi: "ios", "android", "web"
+  name      String?            
+  platform  String?          
   address String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()

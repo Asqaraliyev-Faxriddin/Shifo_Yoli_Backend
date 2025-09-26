@@ -24,12 +24,13 @@ import {
 import { SearchUserDto } from "./dto/update-admin.dto";
 import { Roles } from "src/common/decorators/Roles.decorator";
 import { AuthGuard } from "src/common/guards/jwt-auth.guard";
+import { UserRole } from "@prisma/client";
 
 @ApiTags("Admin")
 @Controller("admin")
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
-@Roles("SUPERADMIN")
+@Roles(UserRole.SUPERADMIN)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
@@ -51,6 +52,7 @@ export class AdminController {
   }
 
   @Post()
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Yangi admin yaratish" })
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("profileImg"))
@@ -63,6 +65,7 @@ export class AdminController {
   }
 
   @Post("admins")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Adminlarni qidirish va ro‘yxatlash" })
   findAllAdmins(@Body() dto: SearchUserDto) {
     return this.adminService.findAllAdmins(dto);
@@ -75,18 +78,21 @@ export class AdminController {
   }
 
   @Post("patients")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Bemorlarni qidirish va ro‘yxatlash" })
   findAllPatients(@Body() dto: SearchUserDto) {
     return this.adminService.findAllPatients(dto);
   }
 
   @Get(":id")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Bitta adminni topish" })
   findOne(@Param("id") id: string) {
     return this.adminService.findOneAdmin(id);
   }
 
   @Patch(":id")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Adminni yangilash" })
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("profileImg"))
@@ -100,30 +106,35 @@ export class AdminController {
   }
 
   @Delete(":id")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Adminni o‘chirish" })
   remove(@Param("id") id: string) {
     return this.adminService.deleteAdmin(id);
   }
 
   @Delete("doctor/:id")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Doctorni o‘chirish" })
   removeDoctor(@Param("id") id: string) {
     return this.adminService.deleteDoctor(id);
   }
 
   @Delete("bemor/:id")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Bemorni o‘chirish" })
   removePatient(@Param("id") id: string) {
     return this.adminService.deletePatient(id);
   }
 
   @Post("block")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Userni bloklash" })
   blockUser(@Body() dto: BlockUserDto) {
     return this.adminService.blockUser(dto);
   }
 
   @Post("unblock")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Userni blokdan chiqarish" })
   unblockUser(@Body() dto: UnblockUserDto) {
     return this.adminService.unblockUser(dto);
@@ -131,6 +142,7 @@ export class AdminController {
 
 
   @Get("devices/fret/fdf")
+@Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: "Barcha qurilmalarni olish" })
   nimadir(){
     return this.adminService.nimadir()
