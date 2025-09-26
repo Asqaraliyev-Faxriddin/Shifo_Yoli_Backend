@@ -21,6 +21,8 @@ const FormData = require("form-data");
 const admin_service_1 = require("./admin.service");
 const create_admin_dto_1 = require("./dto/create-admin.dto");
 const update_admin_dto_1 = require("./dto/update-admin.dto");
+const Roles_decorator_1 = require("../../common/decorators/Roles.decorator");
+const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 let AdminController = class AdminController {
     adminService;
     constructor(adminService) {
@@ -184,6 +186,8 @@ __decorate([
 exports.AdminController = AdminController = __decorate([
     (0, swagger_1.ApiTags)("Admin"),
     (0, common_1.Controller)("admin"),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard),
+    (0, Roles_decorator_1.Roles)("SUPERADMIN"),
     __metadata("design:paramtypes", [admin_service_1.AdminService])
 ], AdminController);
 //# sourceMappingURL=admin.controller.js.map

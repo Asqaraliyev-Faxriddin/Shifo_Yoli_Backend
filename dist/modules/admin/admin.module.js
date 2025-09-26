@@ -10,13 +10,23 @@ exports.AdminModule = void 0;
 const common_1 = require("@nestjs/common");
 const admin_service_1 = require("./admin.service");
 const admin_controller_1 = require("./admin.controller");
+const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const jwt_1 = require("@nestjs/jwt");
+const config_1 = require("@nestjs/config");
 let AdminModule = class AdminModule {
 };
 exports.AdminModule = AdminModule;
 exports.AdminModule = AdminModule = __decorate([
     (0, common_1.Module)({
+        imports: [jwt_1.JwtModule.registerAsync({
+                inject: [config_1.ConfigService],
+                useFactory: async (config) => ({
+                    secret: config.get('Jwt_Acc'),
+                    signOptions: { expiresIn: config.get('Jwt_Acc_in') },
+                }),
+            })],
         controllers: [admin_controller_1.AdminController],
-        providers: [admin_service_1.AdminService],
+        providers: [admin_service_1.AdminService, jwt_auth_guard_1.AuthGuard],
     })
 ], AdminModule);
 //# sourceMappingURL=admin.module.js.map
