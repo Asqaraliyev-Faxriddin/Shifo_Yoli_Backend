@@ -147,7 +147,7 @@ class CreateDoctorDto {
     age;
     categoryId;
     bio;
-    salary;
+    dailySalary;
     images;
     videos;
 }
@@ -177,7 +177,7 @@ __decorate([
 ], CreateDoctorDto.prototype, "password", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 35 }),
-    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(1),
     (0, class_validator_1.Max)(170),
     __metadata("design:type", Number)
@@ -190,7 +190,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({
         example: "Men 10 yillik kardiologman...",
-        description: "Shifokor bio (faqat bitta til, tizim o‘zi translate qiladi)",
+        description: "Shifokor bio (faqat bitta til, tizim translate qiladi)",
         required: false,
     }),
     (0, class_validator_1.IsOptional)(),
@@ -198,28 +198,33 @@ __decorate([
     __metadata("design:type", String)
 ], CreateDoctorDto.prototype, "bio", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 2000.0, description: "Maoshi", required: false }),
-    (0, class_validator_1.IsOptional)(),
+    (0, swagger_1.ApiProperty)({
+        example: 200.0,
+        description: "Kunlik maosh",
+        required: true,
+    }),
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
-], CreateDoctorDto.prototype, "salary", void 0);
+], CreateDoctorDto.prototype, "dailySalary", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: ["img1.jpg", "img2.png"],
-        description: "Shifokor suratlari",
+        type: "array",
+        items: { type: "string", format: "binary" },
+        description: "Shifokor suratlari (files)",
         required: false,
     }),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Object)
+    __metadata("design:type", Array)
 ], CreateDoctorDto.prototype, "images", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: ["video1.mp4", "video2.mp4"],
-        description: "Shifokor videolari",
+        type: "array",
+        items: { type: "string", format: "binary" },
+        description: "Shifokor videolari (files)",
         required: false,
     }),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Object)
+    __metadata("design:type", Array)
 ], CreateDoctorDto.prototype, "videos", void 0);
 class CreatePatientDto {
     email;

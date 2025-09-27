@@ -33,13 +33,15 @@ let AuthGuard = class AuthGuard {
             if (!user)
                 throw new common_1.UnauthorizedException();
             let olduser = await this.prismaService.user.findFirst({ where: { id: user.id } });
-            if (!olduser)
-                throw new common_1.NotFoundException("user not found");
-            console.log(user);
+            let oldblock = await this.prismaService.blockedUsers.findFirst({ where: { userId: user.id } });
+            if (oldblock)
+                throw new common_1.UnauthorizedException("user blocked");
             request.user = user;
             return true;
         }
         catch (error) {
+            if (error.message = "user blocked")
+                throw new common_1.UnauthorizedException("Siz bloklangansiz blokdan chiqish uchun @Asqaraliyev_Faxriddin bilan bog'laning");
             throw new common_1.UnauthorizedException();
         }
     }
@@ -53,4 +55,4 @@ exports.AuthGuard = AuthGuard = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [jwt_1.JwtService, prisma_service_1.PrismaService])
 ], AuthGuard);
-//# sourceMappingURL=jwt-auth.guard.js.map
+//# sourceMappingURL=block.guard.js.map

@@ -120,6 +120,22 @@ let AdminService = class AdminService {
             },
         });
     }
+    async updatePatient(id, dto, profileImgUrl) {
+        const admin = await this.prisma.user.findUnique({ where: { id } });
+        if (!admin || admin.role !== client_1.UserRole.BEMOR) {
+            throw new common_1.NotFoundException("Bemor topilmadi");
+        }
+        return this.prisma.user.update({
+            where: { id },
+            data: {
+                firstName: dto.firstName ?? admin.firstName,
+                lastName: dto.lastName ?? admin.lastName,
+                password: dto.password ?? admin.password,
+                age: dto.age ?? admin.age,
+                profileImg: profileImgUrl ?? admin.profileImg,
+            },
+        });
+    }
     async deleteAdmin(id) {
         const admin = await this.prisma.user.findUnique({ where: { id } });
         if (!admin || admin.role !== client_1.UserRole.ADMIN) {
@@ -170,7 +186,7 @@ let AdminService = class AdminService {
             where: { userId: dto.userId },
         });
     }
-    async createDoctor(dto, profileImgUrl) {
+    async createDoctor(dto, profileImgUrl, images, videos) {
         const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
         if (exists) {
             throw new common_1.BadRequestException("Bunday email bilan foydalanuvchi mavjud");
@@ -182,19 +198,30 @@ let AdminService = class AdminService {
                 lastName: dto.lastName,
                 password: dto.password,
                 age: dto.age,
-                profileImg: profileImgUrl ?? null,
+                profileImg: profileImgUrl ?? undefined,
                 role: client_1.UserRole.DOCTOR,
                 doctorProfile: {
                     create: {
                         category: {
                             connect: { id: dto.categoryId },
                         },
+                        bioUz: dto.bio ?? undefined,
+                        images: images && Object.keys(images).length ? images : undefined,
+                        videos: videos && Object.keys(videos).length ? videos : undefined,
+                        salary: {
+                            create: {
+                                daily: dto.dailySalary,
+                                weekly: dto.dailySalary * 7,
+                                monthly: dto.dailySalary * 30,
+                                yearly: dto.dailySalary * 365,
+                            },
+                        },
                     },
                 },
             },
             include: {
                 doctorProfile: {
-                    include: { category: true },
+                    include: { category: true, salary: true },
                 },
             },
         });

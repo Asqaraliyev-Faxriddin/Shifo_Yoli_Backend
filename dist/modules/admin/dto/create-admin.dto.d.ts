@@ -36,9 +36,9 @@ export declare class CreateDoctorDto {
     age: number;
     categoryId: string;
     bio?: string;
-    salary?: number;
-    images?: any;
-    videos?: any;
+    dailySalary: number;
+    images?: Express.Multer.File[];
+    videos?: Express.Multer.File[];
 }
 export declare class CreatePatientDto {
     email: string;

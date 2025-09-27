@@ -23,6 +23,8 @@ const create_admin_dto_1 = require("./dto/create-admin.dto");
 const update_admin_dto_1 = require("./dto/update-admin.dto");
 const Roles_decorator_1 = require("../../common/decorators/Roles.decorator");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const client_1 = require("@prisma/client");
+const roles_guard_1 = require("../../common/guards/roles.guard");
 let AdminController = class AdminController {
     adminService;
     constructor(adminService) {
@@ -83,6 +85,7 @@ let AdminController = class AdminController {
 exports.AdminController = AdminController;
 __decorate([
     (0, common_1.Post)(),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Yangi admin yaratish" }),
     (0, swagger_1.ApiConsumes)("multipart/form-data"),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)("profileImg")),
@@ -94,6 +97,7 @@ __decorate([
 ], AdminController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)("admins"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Adminlarni qidirish va ro‘yxatlash" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -110,6 +114,7 @@ __decorate([
 ], AdminController.prototype, "findAllDoctors", null);
 __decorate([
     (0, common_1.Post)("patients"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Bemorlarni qidirish va ro‘yxatlash" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -118,6 +123,7 @@ __decorate([
 ], AdminController.prototype, "findAllPatients", null);
 __decorate([
     (0, common_1.Get)(":id"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Bitta adminni topish" }),
     __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
@@ -126,6 +132,7 @@ __decorate([
 ], AdminController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(":id"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Adminni yangilash" }),
     (0, swagger_1.ApiConsumes)("multipart/form-data"),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)("profileImg")),
@@ -138,6 +145,7 @@ __decorate([
 ], AdminController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(":id"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Adminni o‘chirish" }),
     __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
@@ -146,6 +154,7 @@ __decorate([
 ], AdminController.prototype, "remove", null);
 __decorate([
     (0, common_1.Delete)("doctor/:id"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Doctorni o‘chirish" }),
     __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
@@ -154,6 +163,7 @@ __decorate([
 ], AdminController.prototype, "removeDoctor", null);
 __decorate([
     (0, common_1.Delete)("bemor/:id"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Bemorni o‘chirish" }),
     __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
@@ -162,6 +172,7 @@ __decorate([
 ], AdminController.prototype, "removePatient", null);
 __decorate([
     (0, common_1.Post)("block"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Userni bloklash" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -170,6 +181,7 @@ __decorate([
 ], AdminController.prototype, "blockUser", null);
 __decorate([
     (0, common_1.Post)("unblock"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Userni blokdan chiqarish" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -178,6 +190,7 @@ __decorate([
 ], AdminController.prototype, "unblockUser", null);
 __decorate([
     (0, common_1.Get)("devices/fret/fdf"),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Barcha qurilmalarni olish" }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -186,8 +199,9 @@ __decorate([
 exports.AdminController = AdminController = __decorate([
     (0, swagger_1.ApiTags)("Admin"),
     (0, common_1.Controller)("admin"),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard),
-    (0, Roles_decorator_1.Roles)("SUPERADMIN"),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard, roles_guard_1.RolesGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
     __metadata("design:paramtypes", [admin_service_1.AdminService])
 ], AdminController);
 //# sourceMappingURL=admin.controller.js.map

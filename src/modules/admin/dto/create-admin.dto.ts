@@ -10,6 +10,8 @@ import {
   IsNotEmpty,
   IsNumber
 } from "class-validator";
+import { Express } from "express";
+
 
 export class BaseUserDto {
   @ApiProperty()
@@ -123,7 +125,7 @@ export class CreateDoctorDto {
   password: string;
 
   @ApiProperty({ example: 35 })
-  @IsInt()
+  @IsNumber()
   @Min(1)
   @Max(170)
   age: number;
@@ -134,34 +136,41 @@ export class CreateDoctorDto {
 
   @ApiProperty({
     example: "Men 10 yillik kardiologman...",
-    description: "Shifokor bio (faqat bitta til, tizim o‘zi translate qiladi)",
+    description: "Shifokor bio (faqat bitta til, tizim translate qiladi)",
     required: false,
   })
   @IsOptional()
   @IsString()
   bio?: string;
 
-  @ApiProperty({ example: 2000.0, description: "Maoshi", required: false })
-  @IsOptional()
+  @ApiProperty({
+    example: 200.0,
+    description: "Kunlik maosh",
+    required: true,
+  })
   @IsNumber()
-  salary?: number;
+  dailySalary: number; 
 
   @ApiProperty({
-    example: ["img1.jpg", "img2.png"],
-    description: "Shifokor suratlari",
+    type: "array",
+    items: { type: "string", format: "binary" },
+    description: "Shifokor suratlari (files)",
     required: false,
   })
   @IsOptional()
-  images?: any;
+  images?: Express.Multer.File[];
 
   @ApiProperty({
-    example: ["video1.mp4", "video2.mp4"],
-    description: "Shifokor videolari",
+    type: "array",
+    items: { type: "string", format: "binary" },
+    description: "Shifokor videolari (files)",
     required: false,
   })
   @IsOptional()
-  videos?: any;
+  videos?: Express.Multer.File[];
 }
+
+
 
 export class CreatePatientDto {
   @ApiProperty({ example: "patient@example.com" })

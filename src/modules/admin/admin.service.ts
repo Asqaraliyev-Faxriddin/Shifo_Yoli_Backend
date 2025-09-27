@@ -19,7 +19,7 @@ import { UserRole } from "@prisma/client";
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // ================= CREATE ADMIN =================
+
   async create(createAdminDto: CreateAdminDto, profileImgUrl?: string) {
     const exists = await this.prisma.user.findUnique({
       where: { email: createAdminDto.email },
@@ -41,7 +41,7 @@ export class AdminService {
     });
   }
 
-// ================= SEARCH USERS (universal) =================
+
 private async searchUsers(dto: SearchUserDto, role: UserRole) {
   const { firstName, lastName, email, ageFrom, ageTo, page, limit } = dto;
 
@@ -138,6 +138,26 @@ private async searchUsers(dto: SearchUserDto, role: UserRole) {
     });
   }
 
+  async updatePatient(id: string, dto: UpdateAdminDto, profileImgUrl?: string) {
+    const admin = await this.prisma.user.findUnique({ where: { id } });
+    if (!admin || admin.role !== UserRole.BEMOR) {
+      throw new NotFoundException("Bemor topilmadi");
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        firstName: dto.firstName ?? admin.firstName,
+        lastName: dto.lastName ?? admin.lastName,
+        password: dto.password ?? admin.password,
+        age: dto.age ?? admin.age,
+        profileImg: profileImgUrl ?? admin.profileImg,
+      },
+    });
+  }
+
+
+
    async deleteAdmin(id: string) {
     const admin = await this.prisma.user.findUnique({ where: { id } });
     if (!admin || admin.role !== UserRole.ADMIN) {
@@ -196,37 +216,49 @@ private async searchUsers(dto: SearchUserDto, role: UserRole) {
 
 
 
-  async createDoctor(dto: CreateDoctorDto, profileImgUrl?: string) {
+  async createDoctor(dto: CreateDoctorDto,profileImgUrl?: string,images?: any,videos?: any,)  {
+    // Email tekshirish
     const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (exists) {
       throw new BadRequestException("Bunday email bilan foydalanuvchi mavjud");
     }
-
+  
     return this.prisma.user.create({
       data: {
         email: dto.email,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        password: dto.password, 
+        password: dto.password,
         age: dto.age,
-        profileImg: profileImgUrl ?? null,
+        profileImg: profileImgUrl ?? undefined, 
         role: UserRole.DOCTOR,
         doctorProfile: {
           create: {
             category: {
-              connect: { id: dto.categoryId }, 
+              connect: { id: dto.categoryId },
+            },
+            bioUz: dto.bio ?? undefined,
+            images: images && Object.keys(images).length ? images : undefined,
+            videos: videos && Object.keys(videos).length ? videos : undefined,
+            salary: {
+              create: {
+                daily: dto.dailySalary,
+                weekly: dto.dailySalary * 7,
+                monthly: dto.dailySalary * 30,
+                yearly: dto.dailySalary * 365,
+              },
             },
           },
         },
       },
       include: {
         doctorProfile: {
-          include: { category: true },
+          include: { category: true, salary: true },
         },
       },
     });
   }
-
+  
 async createPatient(dto: CreatePatientDto, profileImgUrl?: string) {
   const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
   if (exists) {

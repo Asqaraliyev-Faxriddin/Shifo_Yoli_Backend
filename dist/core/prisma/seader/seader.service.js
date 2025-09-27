@@ -32,7 +32,7 @@ let SeaderService = class SeaderService {
                     lastName: "Asqaraliyev",
                     age: 15,
                     email: 'asqaraliyevfaxriddin2011@gmail.com',
-                    role: client_1.UserRole.ADMIN,
+                    role: client_1.UserRole.SUPERADMIN,
                     password
                 },
                 {

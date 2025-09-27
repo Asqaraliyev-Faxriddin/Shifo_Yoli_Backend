@@ -144,6 +144,7 @@ export declare class AdminController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        deviceId: string | null;
         reason: string | null;
     }>;
     unblockUser(dto: UnblockUserDto): Promise<{
@@ -151,6 +152,7 @@ export declare class AdminController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        deviceId: string | null;
         reason: string | null;
     }>;
     nimadir(): Promise<{

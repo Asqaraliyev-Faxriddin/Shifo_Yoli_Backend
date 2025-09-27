@@ -22,7 +22,7 @@ const profile_module_1 = require("./modules/profile/profile.module");
 const rating_module_1 = require("./modules/rating/rating.module");
 const admin_module_1 = require("./modules/admin/admin.module");
 const config_1 = require("@nestjs/config");
-const messages__gateway_1 = require("./messages..gateway");
+const message_module_1 = require("./modules/message/message.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -36,9 +36,8 @@ exports.AppModule = AppModule = __decorate([
             schedule_1.ScheduleModule.forRoot(),
             config_1.ConfigModule.forRoot({ isGlobal: true }),
             prisma_module_1.PrismaModule, auth_module_1.AuthModule, mailer_module_1.MailerModule, auth_module_1.AuthModule, verification_module_1.VerificationModule,
-            redis_module_1.RedisModule, seader_module_1.SeaderModule, jwt_1.JwtModule, admin_module_1.AdminModule, profile_module_1.ProfileModule, rating_module_1.RatingModule, admin_module_1.AdminModule
+            redis_module_1.RedisModule, seader_module_1.SeaderModule, jwt_1.JwtModule, admin_module_1.AdminModule, profile_module_1.ProfileModule, rating_module_1.RatingModule, admin_module_1.AdminModule, message_module_1.MessageModule
         ],
-        providers: [messages__gateway_1.MessagesGateway]
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

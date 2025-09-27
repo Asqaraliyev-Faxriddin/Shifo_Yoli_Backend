@@ -98,6 +98,19 @@ export declare class AdminService {
         createdAt: Date;
         updatedAt: Date;
     }>;
+    updatePatient(id: string, dto: UpdateAdminDto, profileImgUrl?: string): Promise<{
+        email: string;
+        password: string;
+        lastName: string;
+        firstName: string;
+        age: number;
+        id: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        profileImg: string | null;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
     deleteAdmin(id: string): Promise<{
         email: string;
         password: string;
@@ -142,6 +155,7 @@ export declare class AdminService {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        deviceId: string | null;
         reason: string | null;
     }>;
     unblockUser(dto: UnblockUserDto): Promise<{
@@ -149,9 +163,10 @@ export declare class AdminService {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        deviceId: string | null;
         reason: string | null;
     }>;
-    createDoctor(dto: CreateDoctorDto, profileImgUrl?: string): Promise<{
+    createDoctor(dto: CreateDoctorDto, profileImgUrl?: string, images?: any, videos?: any): Promise<{
         doctorProfile: ({
             category: {
                 id: string;
@@ -160,15 +175,24 @@ export declare class AdminService {
                 nameUz: string;
                 nameRu: string;
                 nameEn: string;
-            } | null;
+            };
+            salary: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                doctorId: string;
+                daily: import("@prisma/client/runtime/library").Decimal | null;
+                weekly: import("@prisma/client/runtime/library").Decimal | null;
+                monthly: import("@prisma/client/runtime/library").Decimal | null;
+                yearly: import("@prisma/client/runtime/library").Decimal | null;
+            }[];
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             doctorId: string;
             rating: number;
-            categoryId: string | null;
-            salary: import("@prisma/client/runtime/library").Decimal | null;
+            categoryId: string;
             images: import("@prisma/client/runtime/library").JsonValue | null;
             videos: import("@prisma/client/runtime/library").JsonValue | null;
             bioUz: string | null;
