@@ -8,6 +8,11 @@ export class DoctorCategoryService {
 
   // CREATE
   async create(createDto: CreateCategory, img?: string) {
+
+    let oldCategory = await this.prisma.doctorCategory.findFirst({where:{name:createDto.name}})
+
+    if(oldCategory) throw new NotFoundException(`Bu kategoriya avval yaratilgan`)
+
     return this.prisma.doctorCategory.create({
       data: {
         name: createDto.name,
@@ -58,7 +63,15 @@ export class DoctorCategoryService {
   // UPDATE
   async update(id: string, updateDto: UpdateCategory, img?: string) {
     const category = await this.prisma.doctorCategory.findUnique({ where: { id } });
-    if (!category) throw new NotFoundException(`DoctorCategory with id ${id} not found`);
+    if (!category) throw new NotFoundException(`Bu kategoriya topilmadi`);
+
+    if(updateDto.name){
+      let oldCategory = await this.prisma.doctorCategory.findFirst({where:{name:updateDto.name}})
+      if(oldCategory) throw new NotFoundException(`Bu kategoriya avval yaratilgan`)
+
+    }
+
+
 
     return this.prisma.doctorCategory.update({
       where: { id },
@@ -73,7 +86,7 @@ export class DoctorCategoryService {
   // REMOVE
   async remove(id: string) {
     const category = await this.prisma.doctorCategory.findUnique({ where: { id } });
-    if (!category) throw new NotFoundException(`DoctorCategory with id ${id} not found`);
+    if (!category) throw new NotFoundException(`Bu kategoriya topilmadi`);
 
     return this.prisma.doctorCategory.delete({
       where: { id },
