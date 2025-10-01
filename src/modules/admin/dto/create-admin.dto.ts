@@ -55,6 +55,7 @@ export class CreateAdminDto extends BaseUserDto {}
 export class CreateDoctorDto extends BaseUserDto {
   @ApiProperty({ description: "Kategoriya ID", example: "uuid-category" })
   @IsUUID()
+  @Type(() => String)
   categoryId: string;
 
   @ApiProperty({ description: "Doktor biografiyasi", example: "10 yillik tajribaga ega shifokor" })
@@ -65,6 +66,7 @@ export class CreateDoctorDto extends BaseUserDto {
 
   @ApiProperty({ description: "Kunlik maosh", example: 100000 })
   @IsNumber()
+  @Type(() => Number) // string -> number
   dailySalary: number;
 
   @ApiProperty({ type: "array", items: { type: "string", format: "binary" }, required: false, description: "Doktor rasmlari" })
