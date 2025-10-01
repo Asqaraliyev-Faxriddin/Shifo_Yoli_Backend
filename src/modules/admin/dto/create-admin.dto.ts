@@ -37,9 +37,7 @@ export class BaseUserDto {
   password: string;
 
   @ApiProperty({ description: "Yoshi", example: 25, minimum: 1, maximum: 170 })
-  @IsInt()
-  @Min(1)
-  @Max(170)
+  @IsNumber()
   @Type(() => Number)
   age: number;
 
