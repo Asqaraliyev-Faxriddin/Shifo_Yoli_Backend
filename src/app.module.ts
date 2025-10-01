@@ -22,6 +22,7 @@ import { DoctorCategoryModule } from './modules/doctor-category/doctor-category.
 import { DoctorProfileModule } from './modules/doctor-profile/doctor-profile.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { MeetingModule } from './modules/meeting/meeting.module';
 
 @Module({
   imports: [ 
@@ -36,7 +37,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     ,
 
     PrismaModule, AuthModule,MailerModule,AuthModule,VerificationModule,
-    RedisModule,  SeaderModule,JwtModule,ProfileModule,AdminModule,RatingModule, MessageModule, DeviceModule, DoctorCategoryModule, DoctorProfileModule, NotificationModule],
+    RedisModule,  SeaderModule,JwtModule,ProfileModule,AdminModule,RatingModule, MessageModule, DeviceModule, DoctorCategoryModule, DoctorProfileModule, NotificationModule, MeetingModule],
 
 
 })

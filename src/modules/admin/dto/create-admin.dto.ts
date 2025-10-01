@@ -10,7 +10,8 @@ import {
   Min, 
   Max, 
   IsUUID, 
-  IsNumber 
+  IsNumber, 
+  IsNotEmpty
 } from "class-validator";
 import { Transform, Type } from "class-transformer";
 import { Express } from "express";
@@ -54,10 +55,10 @@ export class CreateDoctorDto extends BaseUserDto {
   @IsUUID()
   categoryId: string;
 
-  @ApiPropertyOptional({ description: "Doktor biografiyasi", example: "10 yillik tajribaga ega shifokor" })
-  @IsOptional()
+  @ApiProperty({ description: "Doktor biografiyasi", example: "10 yillik tajribaga ega shifokor" })
+  @IsNotEmpty()
   @IsString()
-  bio?: string;
+  bio: string;
 
   @ApiProperty({ description: "Kunlik maosh", example: 100000 })
   @IsNumber()

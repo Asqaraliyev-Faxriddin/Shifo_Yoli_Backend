@@ -57,7 +57,7 @@ import {
           doctorProfile: {
             create: {
               categoryId: dto.categoryId,
-              bioUz: dto.bio,
+              bio: dto.bio,
               images: dto.images ? JSON.stringify(dto.images) : "[]",
               videos: dto.videos ? JSON.stringify(dto.videos) : "[]",
               salary: {

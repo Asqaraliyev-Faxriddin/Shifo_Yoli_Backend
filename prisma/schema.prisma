@@ -53,7 +53,7 @@ model DoctorCategory {
   doctors   DoctorProfile[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
+  updatedAt DateTime @updatedAt() 
 } 
 
 model DoctorProfile {
@@ -64,13 +64,11 @@ model DoctorProfile {
   category   DoctorCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId String
 
-  bioUz      String?
-  bioRu      String?
-  bioEn      String?
+  bio      String
+
 
   published Boolean @default(false)
 
-  rating     Float           @default(0)  
   salary    DoctorSalary[]
 
   images     Json? @default("[]")    
@@ -86,6 +84,7 @@ model DoctorSalary {
   doctor      DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   doctorId    String        @unique
 
+  free        Boolean       @default(false) 
   daily       Decimal?      // 1 kunga maosh
   weekly      Decimal?      // 1 haftaga maosh
   monthly     Decimal?      // 1 oyga maosh
