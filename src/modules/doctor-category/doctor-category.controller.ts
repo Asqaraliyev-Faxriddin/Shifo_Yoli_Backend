@@ -34,7 +34,7 @@ import {
     constructor(private readonly service: DoctorCategoryService) {}
   
     // CREATE CATEGORY + IMG UPLOAD
-    @Post()
+    @Post("create")
     @UseInterceptors(FileInterceptor('img'))
     @ApiOperation({ summary: 'Yangi kategoriya yaratish (rasm bilan)' })
     @ApiConsumes('multipart/form-data')
@@ -74,14 +74,14 @@ import {
     }
   
     // GET ALL
-    @Get()
+    @Get("all")
     @ApiOperation({ summary: 'Barcha kategoriyalarni olish' })
     async findAll(@Query() query: CategoryAllDto) {
       return this.service.findAll(query);
     }
   
     // GET ONE
-    @Get(':id')
+    @Get('one/:id')
     @ApiOperation({ summary: 'Bitta kategoriya olish' })
     async findOne(@Param('id') id: string) {
       return this.service.findOne(id);
@@ -129,7 +129,7 @@ import {
     }
   
     // DELETE
-    @Delete(':id')
+    @Delete('delete/:id')
     @ApiOperation({ summary: 'Kategoriya o‘chirish' })
     @ApiResponse({ status: 200, description: 'Kategoriya o‘chirildi' })
     async remove(@Param('id') id: string) {

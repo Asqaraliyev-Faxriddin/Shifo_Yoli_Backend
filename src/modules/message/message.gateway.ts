@@ -15,7 +15,7 @@
     
     @WebSocketGateway({
         cors: { origin: '*' },
-        path: '/chat/socket.io/',
+        path: '/chat/socket.io/',    
     })
     export class MessageGateway
         implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
