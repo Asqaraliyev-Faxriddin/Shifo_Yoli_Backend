@@ -55,9 +55,9 @@ export class CreateAdminDto  {
     example: "@example.com",
     description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
 })
-@IsString()
-@IsEmail()
-@IsNotEmpty()
+// @IsString()
+// @IsEmail()
+// @IsNotEmpty()
 email: string;
 
 @ApiProperty({
@@ -66,9 +66,9 @@ email: string;
     maxLength: 16,
     description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
 })
-@IsNotEmpty()
-@IsString()
-@Length(8, 16)
+// @IsNotEmpty()
+// @IsString()
+// @Length(8, 16)
 password: string;
 
 
@@ -79,9 +79,9 @@ password: string;
     maxLength: 50,
     description: "Foydalanuvchining to'liq ismi",
 })
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
+// @IsString()
+// @IsNotEmpty()
+// @Length(5, 50)
 lastName: string;
 
 
@@ -91,19 +91,19 @@ lastName: string;
     maxLength: 50,
     description: "Foydalanuvchining to'liq ismi",
 })
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
+// @IsString()
+// @IsNotEmpty()
+// @Length(5, 50)
 firstName: string;
 
 @ApiProperty()
-@IsNumber()
-@IsNotEmpty()
+// @IsNumber()
+// @IsNotEmpty()
 age:number
 
 @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
 @IsOptional()
-profileImg?: Express.Multer.File;
+profileImg?: string;
 }
 
 export class CreateDoctorDto  {
