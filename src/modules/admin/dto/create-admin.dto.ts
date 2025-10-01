@@ -25,6 +25,7 @@ export class BaseUserDto {
 
   @ApiProperty({ description: "Foydalanuvchi ismi", example: "Ali" })
   @IsString()
+  @Type(() => String)
   firstName: string;
 
   @ApiProperty({ description: "Foydalanuvchi familiyasi", example: "Valiyev" })
@@ -39,6 +40,7 @@ export class BaseUserDto {
   @IsInt()
   @Min(1)
   @Max(170)
+  @Type(() => Number)
   age: number;
 
   @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
@@ -58,6 +60,7 @@ export class CreateDoctorDto extends BaseUserDto {
   @ApiProperty({ description: "Doktor biografiyasi", example: "10 yillik tajribaga ega shifokor" })
   @IsNotEmpty()
   @IsString()
+  @Type(() => String)
   bio: string;
 
   @ApiProperty({ description: "Kunlik maosh", example: 100000 })

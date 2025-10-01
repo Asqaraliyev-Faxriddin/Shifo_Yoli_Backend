@@ -9,6 +9,7 @@ import {
     Query,
     UploadedFile,
     UseInterceptors,
+    UseGuards,
   } from '@nestjs/common';
   import { DoctorCategoryService } from './doctor-category.service';
   import {
@@ -27,9 +28,14 @@ import {
     ApiBody,
     ApiResponse,
   } from '@nestjs/swagger';
+import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/Roles.decorator';
   
   @ApiTags('Doctor Categories')
   @Controller('doctor-category')
+  @UseGuards(AuthGuard,RolesGuard)
+  @Roles('ADMIN','SUPERADMIN')
   export class DoctorCategoryController {
     constructor(private readonly service: DoctorCategoryService) {}
   

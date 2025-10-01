@@ -10,6 +10,7 @@ import {
   UploadedFiles,
   UseInterceptors,
   UploadedFile,
+  UseGuards,
 } from '@nestjs/common';
 import { DoctorProfileService } from './doctor-profile.service';
 import {
@@ -24,7 +25,13 @@ import { ApiTags, ApiOperation, ApiResponse, ApiConsumes } from '@nestjs/swagger
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/Roles.decorator';
+import { UserRole } from '@prisma/client';
 
+@UseGuards(AuthGuard,RolesGuard)
+@Roles(UserRole.DOCTOR, UserRole.SUPERADMIN, UserRole.ADMIN)
 @ApiTags('Doctor Profile')
 @Controller('doctor-profile')
 export class DoctorProfileController {
