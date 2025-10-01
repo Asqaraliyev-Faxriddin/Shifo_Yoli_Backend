@@ -11,7 +11,8 @@ import {
   Max, 
   IsUUID, 
   IsNumber, 
-  IsNotEmpty
+  IsNotEmpty,
+  Length
 } from "class-validator";
 import { Transform, Type } from "class-transformer";
 import { Express } from "express";
@@ -49,27 +50,56 @@ export class BaseUserDto {
 
 // ==================== CREATE DTO ====================
 export class CreateAdminDto  { 
-  @ApiProperty({ description: "Foydalanuvchi email manzili", example: "user@example.com" })
+
+  @ApiProperty({
+    example: "@example.com",
+    description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
+})
+@IsString()
 @IsEmail()
+@IsNotEmpty()
 email: string;
 
-@ApiProperty({ description: "Foydalanuvchi ismi", example: "Ali" })
+@ApiProperty({
+    example: "superPassword123",
+    minLength: 8,
+    maxLength: 16,
+    description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
+})
+@IsNotEmpty()
 @IsString()
-@Type(() => String)
-firstName: string;
-
-@ApiProperty({ description: "Foydalanuvchi familiyasi", example: "Valiyev" })
-@IsString()
-lastName: string;
-
-@ApiProperty({ description: "Parol", example: "StrongPass123" })
-@IsString()
+@Length(8, 16)
 password: string;
 
-@ApiProperty({ description: "Yoshi", example: 25, minimum: 1, maximum: 170 })
+
+
+@ApiProperty({
+    example: "Azamjon Faxriddinov",
+    minLength: 5,
+    maxLength: 50,
+    description: "Foydalanuvchining to'liq ismi",
+})
+@IsString()
+@IsNotEmpty()
+@Length(5, 50)
+lastName: string;
+
+
+@ApiProperty({
+    example: "Azamjon Faxriddinov",
+    minLength: 5,
+    maxLength: 50,
+    description: "Foydalanuvchining to'liq ismi",
+})
+@IsString()
+@IsNotEmpty()
+@Length(5, 50)
+firstName: string;
+
+@ApiProperty()
 @IsNumber()
-@Type(() => Number)
-age: number;
+@IsNotEmpty()
+age:number
 
 @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
 @IsOptional()
@@ -78,27 +108,56 @@ profileImg?: Express.Multer.File;
 
 export class CreateDoctorDto  {
   
-  @ApiProperty({ description: "Foydalanuvchi email manzili", example: "user@example.com" })
-  @IsEmail()
-  email: string;
+  
+  @ApiProperty({
+    example: "@example.com",
+    description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
+})
+@IsString()
+@IsEmail()
+@IsNotEmpty()
+email: string;
 
-  @ApiProperty({ description: "Foydalanuvchi ismi", example: "Ali" })
-  @IsString()
-  @Type(() => String)
-  firstName: string;
+@ApiProperty({
+    example: "superPassword123",
+    minLength: 8,
+    maxLength: 16,
+    description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
+})
+@IsNotEmpty()
+@IsString()
+@Length(8, 16)
+password: string;
 
-  @ApiProperty({ description: "Foydalanuvchi familiyasi", example: "Valiyev" })
-  @IsString()
-  lastName: string;
 
-  @ApiProperty({ description: "Parol", example: "StrongPass123" })
-  @IsString()
-  password: string;
 
-  @ApiProperty({ description: "Yoshi", example: 25, minimum: 1, maximum: 170 })
-  @IsNumber()
-  @Type(() => Number)
-  age: number;
+@ApiProperty({
+    example: "Azamjon Faxriddinov",
+    minLength: 5,
+    maxLength: 50,
+    description: "Foydalanuvchining to'liq ismi",
+})
+@IsString()
+@IsNotEmpty()
+@Length(5, 50)
+lastName: string;
+
+
+@ApiProperty({
+    example: "Azamjon Faxriddinov",
+    minLength: 5,
+    maxLength: 50,
+    description: "Foydalanuvchining to'liq ismi",
+})
+@IsString()
+@IsNotEmpty()
+@Length(5, 50)
+firstName: string;
+
+@ApiProperty()
+@IsNumber()
+@IsNotEmpty()
+age:number
 
   @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
   @IsOptional()
@@ -134,27 +193,56 @@ export class CreateDoctorDto  {
 export class CreatePatientDto {
 
 
-  @ApiProperty({ description: "Foydalanuvchi email manzili", example: "user@example.com" })
-  @IsEmail()
-  email: string;
 
-  @ApiProperty({ description: "Foydalanuvchi ismi", example: "Ali" })
-  @IsString()
-  @Type(() => String)
-  firstName: string;
+  @ApiProperty({
+    example: "@example.com",
+    description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
+})
+@IsString()
+@IsEmail()
+@IsNotEmpty()
+email: string;
 
-  @ApiProperty({ description: "Foydalanuvchi familiyasi", example: "Valiyev" })
-  @IsString()
-  lastName: string;
+@ApiProperty({
+    example: "superPassword123",
+    minLength: 8,
+    maxLength: 16,
+    description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
+})
+@IsNotEmpty()
+@IsString()
+@Length(8, 16)
+password: string;
 
-  @ApiProperty({ description: "Parol", example: "StrongPass123" })
-  @IsString()
-  password: string;
 
-  @ApiProperty({ description: "Yoshi", example: 25, minimum: 1, maximum: 170 })
-  @IsNumber()
-  @Type(() => Number)
-  age: number;
+
+@ApiProperty({
+    example: "Azamjon Faxriddinov",
+    minLength: 5,
+    maxLength: 50,
+    description: "Foydalanuvchining to'liq ismi",
+})
+@IsString()
+@IsNotEmpty()
+@Length(5, 50)
+lastName: string;
+
+
+@ApiProperty({
+    example: "Azamjon Faxriddinov",
+    minLength: 5,
+    maxLength: 50,
+    description: "Foydalanuvchining to'liq ismi",
+})
+@IsString()
+@IsNotEmpty()
+@Length(5, 50)
+firstName: string;
+
+@ApiProperty()
+@IsNumber()
+@IsNotEmpty()
+age:number
 
   @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
   @IsOptional()
@@ -164,27 +252,56 @@ export class CreatePatientDto {
 
 // ==================== UPDATE DTO ====================
 export class UpdateUserDto {
-  @ApiPropertyOptional({ description: "Ism" })
-  @IsOptional()
-  @IsString()
-  firstName?: string;
+ 
+  @ApiProperty({
+    example: "@example.com",
+    description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
+})
+@IsString()
+@IsEmail()
+@IsNotEmpty()
+email: string;
 
-  @ApiPropertyOptional({ description: "Familiya" })
-  @IsOptional()
-  @IsString()
-  lastName?: string;
+@ApiProperty({
+    example: "superPassword123",
+    minLength: 8,
+    maxLength: 16,
+    description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
+})
+@IsNotEmpty()
+@IsString()
+@Length(8, 16)
+password: string;
 
-  @ApiPropertyOptional({ description: "Parol" })
-  @IsOptional()
-  @IsString()
-  password?: string;
 
-  @ApiPropertyOptional({ description: "Yoshi" })
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(170)
-  age?: number;
+
+@ApiProperty({
+    example: "Azamjon Faxriddinov",
+    minLength: 5,
+    maxLength: 50,
+    description: "Foydalanuvchining to'liq ismi",
+})
+@IsString()
+@IsNotEmpty()
+@Length(5, 50)
+lastName: string;
+
+
+@ApiProperty({
+    example: "Azamjon Faxriddinov",
+    minLength: 5,
+    maxLength: 50,
+    description: "Foydalanuvchining to'liq ismi",
+})
+@IsString()
+@IsNotEmpty()
+@Length(5, 50)
+firstName: string;
+
+@ApiProperty()
+@IsNumber()
+@IsNotEmpty()
+age:number
 
   @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
   @IsOptional()
