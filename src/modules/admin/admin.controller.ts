@@ -115,6 +115,8 @@ import { UserRole } from "@prisma/client";
     @Get("doctors")
     @ApiOperation({ summary: "Get all doctors" })
     async findAllDoctors(@Query() dto: SearchUserDto) {
+
+      
       return this.adminService.findAllDoctors(dto);
     }
   

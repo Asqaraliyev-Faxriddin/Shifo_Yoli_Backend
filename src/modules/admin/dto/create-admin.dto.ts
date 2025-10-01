@@ -48,9 +48,64 @@ export class BaseUserDto {
 
 
 // ==================== CREATE DTO ====================
-export class CreateAdminDto extends BaseUserDto {}
+export class CreateAdminDto  { 
+  @ApiProperty({ description: "Foydalanuvchi email manzili", example: "user@example.com" })
+@IsEmail()
+email: string;
 
-export class CreateDoctorDto extends BaseUserDto {
+@ApiProperty({ description: "Foydalanuvchi ismi", example: "Ali" })
+@IsString()
+@Type(() => String)
+firstName: string;
+
+@ApiProperty({ description: "Foydalanuvchi familiyasi", example: "Valiyev" })
+@IsString()
+lastName: string;
+
+@ApiProperty({ description: "Parol", example: "StrongPass123" })
+@IsString()
+password: string;
+
+@ApiProperty({ description: "Yoshi", example: 25, minimum: 1, maximum: 170 })
+@IsNumber()
+@Type(() => Number)
+age: number;
+
+@ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
+@IsOptional()
+profileImg?: Express.Multer.File;
+}
+
+export class CreateDoctorDto  {
+  
+  @ApiProperty({ description: "Foydalanuvchi email manzili", example: "user@example.com" })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ description: "Foydalanuvchi ismi", example: "Ali" })
+  @IsString()
+  @Type(() => String)
+  firstName: string;
+
+  @ApiProperty({ description: "Foydalanuvchi familiyasi", example: "Valiyev" })
+  @IsString()
+  lastName: string;
+
+  @ApiProperty({ description: "Parol", example: "StrongPass123" })
+  @IsString()
+  password: string;
+
+  @ApiProperty({ description: "Yoshi", example: 25, minimum: 1, maximum: 170 })
+  @IsNumber()
+  @Type(() => Number)
+  age: number;
+
+  @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
+  @IsOptional()
+  profileImg?: Express.Multer.File;
+
+  
+  
   @ApiProperty({ description: "Kategoriya ID", example: "uuid-category" })
   @IsUUID()
   @Type(() => String)
@@ -76,7 +131,35 @@ export class CreateDoctorDto extends BaseUserDto {
   videos?: Express.Multer.File[];
 }
 
-export class CreatePatientDto extends BaseUserDto {}
+export class CreatePatientDto {
+
+
+  @ApiProperty({ description: "Foydalanuvchi email manzili", example: "user@example.com" })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ description: "Foydalanuvchi ismi", example: "Ali" })
+  @IsString()
+  @Type(() => String)
+  firstName: string;
+
+  @ApiProperty({ description: "Foydalanuvchi familiyasi", example: "Valiyev" })
+  @IsString()
+  lastName: string;
+
+  @ApiProperty({ description: "Parol", example: "StrongPass123" })
+  @IsString()
+  password: string;
+
+  @ApiProperty({ description: "Yoshi", example: 25, minimum: 1, maximum: 170 })
+  @IsNumber()
+  @Type(() => Number)
+  age: number;
+
+  @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
+  @IsOptional()
+  profileImg?: Express.Multer.File;
+}
 
 
 // ==================== UPDATE DTO ====================
