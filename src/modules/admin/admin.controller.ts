@@ -10,6 +10,7 @@ import {
     UploadedFile,
     UseInterceptors,
     UseGuards,
+    Req,
   } from "@nestjs/common";
   import { FileInterceptor } from "@nestjs/platform-express";
   import axios from "axios";
@@ -38,8 +39,8 @@ import { UserRole } from "@prisma/client";
   @ApiBearerAuth()
   @ApiTags("Admin") // ✅ Swagger gruppa nomi
   @Controller("admin")
-  @UseGuards(AuthGuard,RolesGuard)
-  @Roles(UserRole.SUPERADMIN)
+  // @UseGuards(AuthGuard,RolesGuard)
+  // @Roles(UserRole.SUPERADMIN)
   export class AdminController {
     constructor(private readonly adminService: AdminService) {}
   
@@ -97,15 +98,16 @@ import { UserRole } from "@prisma/client";
     @ApiOperation({ summary: "Create Patient" })
     @ApiConsumes("multipart/form-data")
     @ApiBody({ type: CreatePatientDto })
-    async createPatient(
-      @Body() dto: CreatePatientDto,
-      @UploadedFile() file?: Express.Multer.File,
-    ) {
+    async createPatient(@Body() dto: CreatePatientDto,@Req() req,@UploadedFile() file?: Express.Multer.File ) {
+
+      // console.log();
+      
       const profileImgUrl = file ? await this.uploadImage(file) : undefined;
       return this.adminService.createPatient(dto, profileImgUrl);
+
+      return req.body
     }
   
-    // ===================== SEARCH =====================
     @Get("admins")
     @ApiOperation({ summary: "Get all admins" })
     async findAllAdmins(@Query() dto: SearchUserDto) {
@@ -126,7 +128,6 @@ import { UserRole } from "@prisma/client";
       return this.adminService.findAllPatients(dto);
     }
   
-    // ===================== UPDATE =====================
     @Put("update/:id")
     @ApiOperation({ summary: "Update user" })
     @ApiParam({ name: "id", description: "User ID" })
@@ -139,14 +140,12 @@ import { UserRole } from "@prisma/client";
       return this.adminService.updateUser(id, dto, profileImgUrl);
     }
   
-    // ===================== DELETE =====================
     @Delete("delete")
     @ApiOperation({ summary: "Delete user" })
     async deleteUser(@Body() dto: DeleteUserDto) {
       return this.adminService.deleteUser(dto);
     }
   
-    // ===================== WALLET =====================
     @Post("wallet/add")
     @ApiOperation({ summary: "Add funds to wallet" })
     async addFunds(@Body() dto: UserPaymentDto) {

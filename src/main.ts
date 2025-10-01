@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { BlockGuard } from './common/guards/block.guard';
 import { AllExceptionsFilter } from './common/interceptors/tizim-xatolilari';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { TelegramInterceptor } from './common/interceptors/bot.intervertors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,7 +28,7 @@ async function bootstrap() {
   .addBearerAuth()
   .build()
   
-
+app.useGlobalInterceptors(new TelegramInterceptor())
   app.useWebSocketAdapter(new IoAdapter(app));
 
   app.enableCors()
