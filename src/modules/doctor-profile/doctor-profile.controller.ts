@@ -21,7 +21,7 @@ import {
   AddVideoDto,
   RemoveVideoDto,
 } from './dto/create-doctor-profile.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -30,6 +30,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/Roles.decorator';
 import { UserRole } from '@prisma/client';
 
+@ApiBearerAuth()
 @UseGuards(AuthGuard,RolesGuard)
 @Roles(UserRole.DOCTOR, UserRole.SUPERADMIN, UserRole.ADMIN)
 @ApiTags('Doctor Profile')

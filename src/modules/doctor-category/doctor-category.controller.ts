@@ -27,11 +27,13 @@ import {
     ApiConsumes,
     ApiBody,
     ApiResponse,
+    ApiBearerAuth,
   } from '@nestjs/swagger';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/Roles.decorator';
   
+  @ApiBearerAuth()
   @ApiTags('Doctor Categories')
   @Controller('doctor-category')
   @UseGuards(AuthGuard,RolesGuard)

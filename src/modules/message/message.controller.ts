@@ -4,7 +4,9 @@ import { CreateMessageDto,CreateChatDto } from './dto/create-message.dto';
 import { Request } from 'express';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('messages')
 export class MessageController {
   constructor(private readonly svc: MessageService,private prisma:PrismaService) {}
