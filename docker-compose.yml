@@ -1,0 +1,60 @@
+# docker-compose.yml
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      # only checks server accepts TCP connections
+      test: ["CMD-SHELL", "pg_isready -q -h 127.0.0.1 -p 5432 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["4000:4000"]
+    env_file: [.env] 
+    environment:  
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 4000
+      Jwt_Acc: ${Jwt_Acc}
+      JWT_Ref: ${Jwt_Ref}
+      JWT_Access: super_secret_access_key
+
+      Jwt_Acc_in: ${Jwt_Acc_in}
+      Jwt_Ref_in: ${Jwt_Ref_in}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      CLIENT_ID: ${CLIENT_ID}
+      CLIENT_SECRET: ${CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+
+    command: >
+      sh -c "
+        npx prisma migrate deploy || npx prisma db push &&
+        node dist/main.js
+      "
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis-data:/data
+
+volumes:
+  db-data:
+  redis-data:

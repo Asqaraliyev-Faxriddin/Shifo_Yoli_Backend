@@ -1,0 +1,272 @@
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  BEMOR
+  DOCTOR
+  ADMIN
+  SUPERADMIN
+}
+ 
+model User {
+  id               String             @id @default(uuid())
+  email            String             @unique()
+  firstName        String
+  lastName         String
+  password String
+  age              Int
+  role             UserRole           @default(BEMOR)
+  profileImg       String?
+  isActive Boolean          @default(true)
+
+  doctorProfile    DoctorProfile?     @relation("UserDoctorProfile")
+
+  devices          Device[]
+  wallet           Wallet?
+
+  ChatParticipant ChatParticipant[]
+  Message         Message[]
+  UserNotification UserNotification[]
+  
+  meetingsAsUser   Meeting[]          @relation("MeetingsUser")
+  meetingsAsDoctor Meeting[]          @relation("MeetingsDoctor")
+
+  reviewsGiven     Review[]           @relation("ReviewsGiven")
+  reviewsReceived  Review[]           @relation("ReviewsReceived")
+
+  blockedUser      BlockedUsers?
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt()
+}
+
+model DoctorCategory {
+  id        String          @id @default(uuid())
+  name    String @unique()
+  img String? 
+  doctors   DoctorProfile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+} 
+
+model DoctorProfile {
+  id         String          @id @default(uuid())
+  doctor     User            @relation("UserDoctorProfile", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId   String          @unique
+
+  category   DoctorCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+
+  bioUz      String?
+  bioRu      String?
+  bioEn      String?
+
+  published Boolean @default(false)
+
+  rating     Float           @default(0)  
+  salary    DoctorSalary[]
+
+  images     Json? @default("[]")    
+  videos     Json?  @default("[]")
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt()
+}
+
+
+model DoctorSalary {
+  id          String        @id @default(uuid())
+  doctor      DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId    String        @unique
+
+  daily       Decimal?      // 1 kunga maosh
+  weekly      Decimal?      // 1 haftaga maosh
+  monthly     Decimal?      // 1 oyga maosh
+  yearly      Decimal?      // 1 yilga maosh
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt()
+}
+
+
+
+
+model Meeting {
+  id          String   @id @default(uuid())
+
+  user        User     @relation("MeetingsUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  doctor      User     @relation("MeetingsDoctor", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId    String
+
+  scheduledAt DateTime?
+  duration    Int?
+  meetingLink String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
+}
+
+model Review {
+  id        String   @id @default(uuid())
+
+  user      User     @relation("ReviewsGiven", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  doctor    User     @relation("ReviewsReceived", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId  String
+
+  rating    Int    
+  comment   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @unique
+
+  balance   Decimal  @default(0) // hisobdagi mablag‘
+
+  transactions WalletTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model WalletTransaction {
+  id        String   @id @default(uuid())
+  wallet    Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  walletId  String
+
+  type      TransactionType
+  amount    Decimal
+  source    PaymentType? @default(COMPANY)
+  meta      Json?
+
+  createdAt DateTime @default(now())
+}
+
+
+model UserNotification {
+  id             String        @id @default(uuid())
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  message String?
+  isRead         Boolean       @default(false)
+  readAt         DateTime?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt()
+}
+
+
+enum TransactionType {
+  CREDIT  // Hisobga tushdi
+  DEBIT   // Hisobdan chiqdi
+}
+
+enum PaymentType {
+  COMPANY  
+  USER_PAYMENT   
+}
+
+
+
+
+model BlockedUsers {
+  id        String   @id @default(uuid())      
+   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?  @unique
+  reason    String?
+  deviceId  String?
+  device    Device?  @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model Device {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  deviceType DeviceType @default(register)
+  deviceId   String   @unique   
+  name       String?            
+  platform   String?          
+  address    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt()
+
+  blockedUsers BlockedUsers[]   
+}
+
+
+
+enum DeviceType {
+  
+  register
+  login
+}
+
+model Chat {
+  id          String             @id @default(uuid())
+  participants ChatParticipant[]
+
+  messages    Message[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
+
+  @@unique([id]) 
+}
+
+model ChatParticipant {
+  id      String @id @default(uuid())
+
+  chat    Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId  String
+
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+
+  @@unique([chatId, userId]) 
+
+
+}
+
+
+
+enum MessageType {
+  TEXT
+  FILE
+  VIDEO
+}
+
+model Message {
+  id        String   @id @default(uuid())
+
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId    String
+
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId  String
+
+  message   String?
+
+  type      MessageType @default(TEXT) 
+
+  isRead    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
