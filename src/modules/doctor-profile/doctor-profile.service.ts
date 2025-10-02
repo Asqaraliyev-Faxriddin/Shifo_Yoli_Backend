@@ -32,16 +32,8 @@ export class DoctorProfileService {
     }
   }
 
-  // ✅ Email yuborish methodi
 
-
-  // ✅ Yangi profil yaratish
-  async create(
-    userId: string,
-    dto: CreateDoctorProfileDto,
-    images?: string[],
-    videos?: string[],
-  ) {
+  async create(userId: string,dto: CreateDoctorProfileDto,images?: string[], videos?: string[],) {
     await this.prisma.doctorProfile.create({
       data: {
         bio: dto.bio,

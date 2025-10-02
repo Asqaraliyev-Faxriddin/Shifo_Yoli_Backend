@@ -50,13 +50,15 @@ import {
   
       return this.prisma.user.create({
         data: {
-          ...dto,
+          email: dto.email,
           password: hashed,
-          profileImg: profileImgUrl ?? null,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          age: dto.age,
           role: UserRole.DOCTOR,
           doctorProfile: {
             create: {
-              categoryId: dto.categoryId,
+              categoryId: dto.categoryId, // ✅ shu yerda
               bio: dto.bio,
               images: dto.images ? JSON.stringify(dto.images) : "[]",
               videos: dto.videos ? JSON.stringify(dto.videos) : "[]",
@@ -77,6 +79,7 @@ import {
           wallet: true,
         },
       });
+      
     }
   
     async createPatient(dto: CreatePatientDto, profileImgUrl?: string) {
