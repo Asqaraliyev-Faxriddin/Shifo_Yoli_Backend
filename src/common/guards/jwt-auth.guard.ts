@@ -26,16 +26,20 @@ export class AuthGuard implements CanActivate {
             console.log(user);
 
             let oldblock = await this.prismaService.blockedUsers.findFirst({where:{userId:user.id}})
-            if(oldblock) throw new UnauthorizedException("user blocked")
+            console.log(1,oldblock);
+            
+            if(oldblock) throw new UnauthorizedException("Siz bloklangansiz blokdan chiqish uchun @Asqaraliyev_Faxriddin bilan bog'laning")
             
             request.user = user
             return true
 
         } catch (error) {
 
-          if(error.message = "user blocked") throw new UnauthorizedException("Siz bloklangansiz blokdan chiqish uchun @Asqaraliyev_Faxriddin bilan bog'laning")
-            
-            throw new UnauthorizedException()
+          
+             throw new UnauthorizedException(error.message)
+          
+        
+
         }
 
   } 

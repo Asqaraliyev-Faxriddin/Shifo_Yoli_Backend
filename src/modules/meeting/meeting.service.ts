@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
-import { CreateMeetingDto, UpdateMeetingDto } from './dto/create-meeting.dto';
+import { CreateMeetingDto, UpdateMeetingDto, SendMessageDto } from './dto/create-meeting.dto';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -8,19 +8,16 @@ export class MeetingService {
   constructor(private prisma: PrismaService) {}
 
   // ✅ Yangi meeting yaratish
-  async create(dto: CreateMeetingDto) {
+  async create(dto: CreateMeetingDto, currentUserId: string) {
     const meeting = await this.prisma.meeting.create({
       data: {
-        userId: dto.userId,
-        doctorId: dto.doctorId,
+        userId: currentUserId, // token orqali keladi
+        doctorId: dto.targetId, // kimga qo‘ng‘iroq qilinmoqda
         scheduledAt: dto.scheduledAt,
         duration: dto.duration,
-        meetingLink: `https://myapp.com/meet/${crypto.randomUUID()}`, // avtomatik link
+        meetingLink: `https://google-github/meet/${crypto.randomUUID()}`, // avtomatik link
       },
-      include: {
-        user: true,
-        doctor: true,
-      },
+      include: { user: true, doctor: true },
     });
 
     return {
@@ -30,16 +27,34 @@ export class MeetingService {
     };
   }
 
-  // ✅ Barcha meetinglarni olish
-  async findAll() {
+  // ✅ Oddiy user uchun – faqat o‘zining meetinglari
+  async findAllForUser(userId: string) {
+    const meetings = await this.prisma.meeting.findMany({
+      where: { userId },
+      include: {
+        user: true,
+        doctor: true,
+        messages: {
+          include: { sender: { select: { id: true, firstName: true, lastName: true } } },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Foydalanuvchining uchrashuvlari',
+      data: meetings,
+    };
+  }
+
+  // ✅ Admin/Superadmin uchun – barcha meetinglar
+  async findAllForAdmin() {
     const meetings = await this.prisma.meeting.findMany({
       include: {
         user: true,
         doctor: true,
         messages: {
-          include: {
-            sender: { select: { id: true, firstName: true, lastName: true } },
-          },
+          include: { sender: { select: { id: true, firstName: true, lastName: true } } },
         },
       },
     });
@@ -51,20 +66,24 @@ export class MeetingService {
     };
   }
 
-  async findOne(id: string) {
+  // ✅ Bitta meetingni olish
+  async findOne(id: string, currentUserId: string, isSuperAdmin = false) {
     const meeting = await this.prisma.meeting.findUnique({
       where: { id },
-      include: {
-        user: true,
-        doctor: true,
-        messages: { include: { sender: true } },
-      },
+      include: { user: true, doctor: true, messages: { include: { sender: true } } },
     });
 
     if (!meeting) {
       throw new NotFoundException({
         success: false,
         message: 'Uchrashuv topilmadi',
+      });
+    }
+
+    if (!isSuperAdmin && meeting.userId !== currentUserId) {
+      throw new ForbiddenException({
+        success: false,
+        message: 'Bu uchrashuvga ruxsatingiz yo‘q',
       });
     }
 
@@ -75,12 +94,20 @@ export class MeetingService {
     };
   }
 
-  async update(id: string, dto: UpdateMeetingDto) {
-    const exists = await this.prisma.meeting.findUnique({ where: { id } });
-    if (!exists) {
+  // ✅ Yangilash
+  async update(id: string, dto: UpdateMeetingDto, currentUserId: string, isSuperAdmin = false) {
+    const meeting = await this.prisma.meeting.findUnique({ where: { id } });
+    if (!meeting) {
       throw new NotFoundException({
         success: false,
-        message: 'Yangilanish uchun uchrashuv topilmadi',
+        message: 'Yangilash uchun uchrashuv topilmadi',
+      });
+    }
+
+    if (!isSuperAdmin && meeting.userId !== currentUserId) {
+      throw new ForbiddenException({
+        success: false,
+        message: 'Bu uchrashuvni yangilashga ruxsatingiz yo‘q',
       });
     }
 
@@ -97,12 +124,20 @@ export class MeetingService {
     };
   }
 
-  async remove(id: string) {
-    const exists = await this.prisma.meeting.findUnique({ where: { id } });
-    if (!exists) {
+  // ✅ O‘chirish – user faqat o‘zining uchrashuvini, superadmin esa hammani o‘chira oladi
+  async remove(id: string, currentUserId: string, isSuperAdmin = false) {
+    const meeting = await this.prisma.meeting.findUnique({ where: { id } });
+    if (!meeting) {
       throw new NotFoundException({
         success: false,
         message: 'O‘chirish uchun uchrashuv topilmadi',
+      });
+    }
+
+    if (!isSuperAdmin && meeting.userId !== currentUserId) {
+      throw new ForbiddenException({
+        success: false,
+        message: 'Bu uchrashuvni o‘chirishga ruxsatingiz yo‘q',
       });
     }
 
@@ -114,10 +149,9 @@ export class MeetingService {
     };
   }
 
-  async sendMessage(meetingId: string, senderId: string, content: string) {
-    const meeting = await this.prisma.meeting.findUnique({
-      where: { id: meetingId },
-    });
+  // ✅ Xabar yuborish
+  async sendMessage(dto: SendMessageDto, currentUserId: string) {
+    const meeting = await this.prisma.meeting.findUnique({ where: { id: dto.meetingId } });
     if (!meeting) {
       throw new NotFoundException({
         success: false,
@@ -126,7 +160,12 @@ export class MeetingService {
     }
 
     const message = await this.prisma.meetingMessage.create({
-      data: { meetingId, senderId, content },
+      data: {
+        meetingId: dto.meetingId,
+        senderId: currentUserId, // token orqali keladi
+        content: dto.content,
+        type: dto.type,
+      },
       include: { sender: true },
     });
 

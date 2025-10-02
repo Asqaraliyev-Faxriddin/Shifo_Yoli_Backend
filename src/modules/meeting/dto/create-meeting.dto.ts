@@ -1,23 +1,20 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { MeetingStatus, MessageType } from '@prisma/client';
 import {
-  IsUUID,
   IsDateString,
   IsOptional,
   IsInt,
   Min,
   IsEnum,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
-// Meeting yaratish DTO
+/**
+ * Meeting yaratish DTO
+ * ❌ userId yoki doctorId bo‘lmaydi, token orqali olinadi
+ */
 export class CreateMeetingDto {
-  @IsUUID()
-  userId: string;
-
-  @IsUUID()
-  doctorId: string;
-
   @IsOptional()
   @IsDateString()
   scheduledAt?: string;
@@ -26,22 +23,27 @@ export class CreateMeetingDto {
   @IsInt()
   @Min(1)
   duration?: number;
+
+  @IsUUID()
+  targetId: string; // kimga qo‘ng‘iroq qilinyapti (user yoki doctor id)
 }
 
-// Meeting yangilash DTO
+/**
+ * Meeting yangilash DTO
+ */
 export class UpdateMeetingDto extends PartialType(CreateMeetingDto) {
   @IsOptional()
   @IsEnum(MeetingStatus)
   status?: MeetingStatus;
 }
 
-// Meeting ichida xabar yuborish DTO
+/**
+ * Meeting ichida xabar yuborish DTO
+ * ❌ senderId bo‘lmaydi, token orqali olinadi
+ */
 export class SendMessageDto {
   @IsUUID()
   meetingId: string;
-
-  @IsUUID()
-  senderId: string;
 
   @IsString()
   content: string;
@@ -51,11 +53,11 @@ export class SendMessageDto {
   type?: MessageType;
 }
 
-// Meetingga qo‘shilish DTO
+/**
+ * Meetingga qo‘shilish DTO
+ * ❌ userId bo‘lmaydi, token orqali olinadi
+ */
 export class JoinMeetingDto {
   @IsUUID()
   meetingId: string;
-
-  @IsUUID()
-  userId: string;
 }

@@ -7,6 +7,7 @@ import {
   } from '@nestjs/websockets';
   import { Server, Socket } from 'socket.io';
   import { MeetingService } from './meeting.service';
+  import { SendMessageDto } from './dto/create-meeting.dto';
   
   @WebSocketGateway({ cors: true })
   export class MeetingGateway {
@@ -15,21 +16,38 @@ import {
   
     constructor(private meetingService: MeetingService) {}
   
+    // ✅ Meetingga qo‘shilish
     @SubscribeMessage('joinMeeting')
-    async handleJoin(@MessageBody() data: { meetingId: string; userId: string }, @ConnectedSocket() client: Socket) {
+    async handleJoin(
+      @MessageBody() data: { meetingId: string; userId: string },
+      @ConnectedSocket() client: Socket,
+    ) {
       client.join(data.meetingId);
-      this.server.to(data.meetingId).emit('userJoined', data.userId);
+      this.server.to(data.meetingId).emit('userJoined', {
+        userId: data.userId,
+        message: `Foydalanuvchi meetingga qo‘shildi`,
+      });
     }
   
+    // ✅ Xabar yuborish
     @SubscribeMessage('sendMessage')
-    async handleMessage(@MessageBody() data: { meetingId: string; senderId: string; content: string }) {
-      const message = await this.meetingService.sendMessage(data.meetingId, data.senderId, data.content);
+    async handleMessage(@MessageBody() data: SendMessageDto & { senderId: string }) {
+      const dto: SendMessageDto = {
+        meetingId: data.meetingId,
+        content: data.content,
+        type: 'TEXT', // default yoki kelgan qiymatdan olish mumkin
+      };
+  
+      const message = await this.meetingService.sendMessage(dto, data.senderId);
+  
       this.server.to(data.meetingId).emit('newMessage', message);
     }
   
-    // 🔊 Ovoz/video signaling (WebRTC uchun)
+    // ✅ WebRTC signaling
     @SubscribeMessage('signal')
-    async handleSignal(@MessageBody() data: { meetingId: string; signal: any; userId: string }) {
+    async handleSignal(
+      @MessageBody() data: { meetingId: string; signal: any; userId: string },
+    ) {
       this.server.to(data.meetingId).emit('signal', data);
     }
   }
