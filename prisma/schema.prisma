@@ -48,6 +48,10 @@ model User {
   lastName         String
   password String
   age              Int
+  year Int?
+  month Int?
+  day Int?
+  phoneNumber      String?             @unique()
   role             UserRole           @default(BEMOR)
   profileImg       String?
   isActive Boolean          @default(true)
