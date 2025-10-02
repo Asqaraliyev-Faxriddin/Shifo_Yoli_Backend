@@ -1,6 +1,6 @@
 // src/modules/doctor-profile/doctor-profile.service.ts
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import {
   CreateDoctorProfileDto,
@@ -57,7 +57,6 @@ export class DoctorProfileService {
     };
   }
 
-  // ✅ Profilni yangilash
   async update(
     id: string,
     dto: UpdateDoctorProfileDto,
@@ -66,33 +65,54 @@ export class DoctorProfileService {
   ) {
     const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
     if (!doctor) throw new NotFoundException('Doctor profile not found');
-
+  
+    // ✅ Faqat mavjud maydonlarni update qilish
+    const data: any = {};
+    if (dto.bio !== undefined) data.bio = dto.bio;
+    if (dto.dailySalary !== undefined) data.dailySalary = dto.dailySalary;
+    if (dto.free !== undefined) data.free = dto.free;
+    if (dto.categoryId !== undefined) data.categoryId = dto.categoryId;
+    if (images && images.length) data.images = images;
+    if (videos && videos.length) data.videos = videos;
+  
     await this.prisma.doctorProfile.update({
       where: { id },
-      data: {
-        ...dto,
-        ...(images ? { images } : {}),
-        ...(videos ? { videos } : {}),
-      },
+      data,
     });
-
-    // 🎯 Email yuborish
-    await this.mailerService.sendNotificationEmail(
-      'admin@example.com',
-      'Doctor Profile yangilandi',
-      `Doctor profili yangilandi: ${id}`,
+  
+    // ✅ SuperAdmin’larni olish
+    const superAdmins = await this.prisma.user.findMany({
+      where: { role: 'SUPERADMIN' },
+    });
+  
+    // 🎯 Har bir SuperAdmin’ga email yuborish
+    await Promise.all(
+      superAdmins.map((admin) =>
+        this.mailerService.sendNotificationEmail(
+            admin.email,
+          `Manashu doctor Profilini yangiladi email : ${data.email}  ` ,
+          `Doctor profili yangilandi: ${id}`,
+        ),
+      ),
     );
-
+  
     return {
       success: true,
-      message: 'Doctor profili muvaffaqiyatli yangilandi',
+      message: 'Doctor profili muvaffaqiyatli yangilandi va SuperAdmin’larga siz yangilaniz haqida xabar yuborildi',
+      data
     };
   }
+  
 
   // ✅ Profilni o‘chirish
   async remove(id: string) {
     const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
     if (!doctor) throw new NotFoundException('Doctor profile not found');
+
+
+
+
+    
 
     (Array.isArray(doctor.images) ? doctor.images : [])
       .filter((img): img is string => typeof img === 'string')
@@ -102,13 +122,38 @@ export class DoctorProfileService {
       .filter((vid): vid is string => typeof vid === 'string')
       .forEach((vid) => this.deleteFileFromUploads(vid));
 
+      let olddoctor = await this.prisma.user.findFirst({
+        where:{
+          role:"DOCTOR",
+          id:doctor.doctorId
+        }
+       })
+
+       if(!olddoctor){
+
+        throw new UnauthorizedException("Bunday doctor mavjud emas")
+       }
+
     await this.prisma.doctorProfile.delete({ where: { id } });
 
-    // 🎯 Email yuborish
-    await this.mailerService.sendNotificationEmail(
-      'admin@example.com',
-      'Doctor Profile o‘chirildi',
-      `Doctor profili o‘chirildi: ${id}`,
+    // ✅ SuperAdmin’larni olish
+    const superAdmins = await this.prisma.user.findMany({
+      where: { role: 'SUPERADMIN' },
+    });
+  
+
+
+   
+
+    // 🎯 Har bir SuperAdmin’ga email yuborish
+    await Promise.all(
+      superAdmins.map((admin) =>
+        this.mailerService.sendNotificationEmail(
+            admin.email,
+          `Manashu doctor  email : ${olddoctor.email}  ` ,
+          `Doctor profilini o'chirdi yangilandi: ${id}`,
+        ),
+      ),
     );
 
     return {
@@ -141,7 +186,7 @@ export class DoctorProfileService {
   // ✅ Rasm o‘chirish
   async removeImage(id: string, dto: RemoveImageDto) {
     const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
-    if (!doctor) throw new NotFoundException('Doctor profile not found');
+    if (!doctor) throw new NotFoundException('Doctor profile topilmadi');
 
     this.deleteFileFromUploads(dto.image);
 
@@ -163,7 +208,7 @@ export class DoctorProfileService {
   // ✅ Video qo‘shish
   async addVideo(id: string, dto: AddVideoDto) {
     const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
-    if (!doctor) throw new NotFoundException('Doctor profile not found');
+    if (!doctor) throw new NotFoundException('Doctor profile topilmadi');
 
     const updatedVideos = [
       ...(Array.isArray(doctor.videos) ? doctor.videos : []),
@@ -184,7 +229,7 @@ export class DoctorProfileService {
   // ✅ Video o‘chirish
   async removeVideo(id: string, dto: RemoveVideoDto) {
     const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
-    if (!doctor) throw new NotFoundException('Doctor profile not found');
+    if (!doctor) throw new NotFoundException('Doctor profile topilmadi');
 
     this.deleteFileFromUploads(dto.video);
 

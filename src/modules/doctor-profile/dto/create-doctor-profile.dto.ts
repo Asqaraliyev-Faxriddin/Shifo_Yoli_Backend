@@ -16,6 +16,8 @@ import {
   Min,
 } from 'class-validator';
 
+
+// ================= CREATE DOCTOR PROFILE =================
 export class CreateDoctorProfileDto {
   @ApiPropertyOptional({
     description: 'Doktorning bio (uz)',
@@ -23,13 +25,14 @@ export class CreateDoctorProfileDto {
   })
   @IsOptional()
   @IsNotEmpty()
+  @IsString()
   bio: string;
 
   @ApiPropertyOptional({
     description: 'Kunlik maosh (faqat bitta salary)',
     example: 150000,
   })
-  @ValidateIf((o) => o.free === false || o.free === undefined) // free false bo‘lsa salary majburiy
+  @ValidateIf((o) => o.free === false || o.free === undefined)
   @IsNumber()
   dailySalary?: number;
 
@@ -38,7 +41,7 @@ export class CreateDoctorProfileDto {
     example: false,
     default: false,
   })
-  @ValidateIf((o) => o.dailySalary === undefined) 
+  @ValidateIf((o) => o.dailySalary === undefined)
   @IsBoolean()
   free?: boolean;
 
@@ -50,27 +53,26 @@ export class CreateDoctorProfileDto {
   categoryId: string;
 
   @ApiPropertyOptional({
-    description: 'Rasmlar ro‘yxati (JSON array)',
-    example: ['image1.png', 'image2.png'],
+    description: 'Rasmlar ro‘yxati (URL array)',
+    example: ['https://example.com/image1.png', 'https://example.com/image2.png'],
   })
   @IsOptional()
   @IsArray()
-  images?: string[];
+  @IsString({ each: true })
+  images?: string[] | null;
 
   @ApiPropertyOptional({
-    description: 'Videolar ro‘yxati (JSON array)',
-    example: ['video1.mp4', 'video2.mp4'],
+    description: 'Videolar ro‘yxati (URL array)',
+    example: ['https://example.com/video1.mp4', 'https://example.com/video2.mp4'],
   })
   @IsOptional()
   @IsArray()
-  videos?: string[];
+  @IsString({ each: true })
+  videos?: string[] | null;
 }
 
-
-
-
+// ================= UPDATE DOCTOR PROFILE =================
 export class UpdateDoctorProfileDto {
-
   @ApiPropertyOptional({
     description: 'Doktorning bio (uz)',
     example: 'Men 10 yillik tajribaga ega shifokorman.',
@@ -83,7 +85,7 @@ export class UpdateDoctorProfileDto {
     description: 'Kunlik maosh (faqat bitta salary)',
     example: 150000,
   })
-  @ValidateIf((o) => o.free === false || o.free === undefined) // free false bo‘lsa salary majburiy
+  @ValidateIf((o) => o.free === false || o.free === undefined)
   @IsNumber()
   dailySalary?: number;
 
@@ -92,7 +94,7 @@ export class UpdateDoctorProfileDto {
     example: false,
     default: false,
   })
-  @ValidateIf((o) => o.dailySalary === undefined) 
+  @ValidateIf((o) => o.dailySalary === undefined)
   @IsBoolean()
   free?: boolean;
 
@@ -104,20 +106,22 @@ export class UpdateDoctorProfileDto {
   categoryId?: string;
 
   @ApiPropertyOptional({
-    description: 'Rasmlar ro‘yxati (JSON array)',
-    example: ['image1.png', 'image2.png'],
+    description: 'Rasmlar ro‘yxati (URL array)',
+    example: ['https://example.com/image1.png', 'https://example.com/image2.png'],
   })
   @IsOptional()
   @IsArray()
-  images?: string[];
+  @IsString({ each: true })
+  images?: string[] | null;
 
   @ApiPropertyOptional({
-    description: 'Videolar ro‘yxati (JSON array)',
-    example: ['video1.mp4', 'video2.mp4'],
+    description: 'Videolar ro‘yxati (URL array)',
+    example: ['https://example.com/video1.mp4', 'https://example.com/video2.mp4'],
   })
   @IsOptional()
   @IsArray()
-  videos?: string[];
+  @IsString({ each: true })
+  videos?: string[] | null;
 }
 
 export class AddVideoDto {
@@ -125,8 +129,7 @@ export class AddVideoDto {
       description: 'Yangi qo‘shiladigan video fayl nomi yoki URL',
       example: 'video3.mp4',
     })
-    @IsString()
-    video: string;
+    video?: any;
   }
 
   export class RemoveVideoDto {
@@ -143,8 +146,7 @@ export class AddImageDto {
       description: 'Yangi qo‘shiladigan rasm fayl nomi yoki URL',
       example: 'image3.png',
     })
-    @IsString()
-    image: string;
+    image?: any;
   }
 
     export class RemoveImageDto {
@@ -156,7 +158,7 @@ export class AddImageDto {
         image: string;
     }
 
-    
+
 
 
 
@@ -173,7 +175,7 @@ export class AddImageDto {
         @ApiPropertyOptional({ description: "Sahifa bo'yicha limit", example: 10 })
         @IsInt()
         @Min(1)
-        @Type(() => Number) // query params string bo'lsa number ga o'tkazadi
+        @Type(() => Number) 
         limit: number;
     
         @ApiPropertyOptional({ description: "Sahifa bo'yicha offset", example: 0 })

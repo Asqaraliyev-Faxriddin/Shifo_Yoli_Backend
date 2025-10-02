@@ -106,89 +106,52 @@
   profileImg?: Express.Multer.File;
   }
 
-  export class CreateDoctorDto  {
-    
-    
-    @ApiProperty({
-      example: "@example.com",
-  })
-  @IsString()
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
-  @ApiProperty({
-      example: "superPassword123",
-      minLength: 8,
-      maxLength: 16,
-      description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
-  })
-  @IsNotEmpty()
-  @IsString()
-  @Length(8, 16)
-  password: string;
-
-
-
-  @ApiProperty({
-      example: "Azamjon Faxriddinov",
-      minLength: 5,
-      maxLength: 50,
-      description: "Foydalanuvchining to'liq ismi",
-  })
-  @IsString()
-  @IsNotEmpty()
-  @Length(5, 50)
-  lastName: string;
-
-
-  @ApiProperty({
-      example: "Azamjon Faxriddinov",
-      minLength: 5,
-      maxLength: 50,
-      description: "Foydalanuvchining to'liq ismi",
-  })
-  @IsString()
-  @IsNotEmpty()
-  @Length(5, 50)
-  firstName: string;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  age:number
-
-    @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
-    @IsOptional()
-    profileImg?: Express.Multer.File;
-
-    
-    
+  export class CreateDoctorDto {
+    @ApiProperty({ example: "doctor@example.com" })
+    @IsEmail()
+    @IsNotEmpty()
+    email: string;
+  
+    @ApiProperty({ example: "superPassword123", minLength: 8, maxLength: 16 })
+    @IsString()
+    @Length(8, 16)
+    password: string;
+  
+    @ApiProperty({ example: "Azamjon", minLength: 2, maxLength: 50 })
+    @IsString()
+    @IsNotEmpty()
+    firstName: string;
+  
+    @ApiProperty({ example: "Faxriddinov", minLength: 2, maxLength: 50 })
+    @IsString()
+    @IsNotEmpty()
+    lastName: string;
+  
+    @ApiProperty()
+    @IsNumber()
+    age: number;
+  
+    @ApiPropertyOptional({ type: "string", format: "binary", description: "Profil rasmi" })
+    profileImg?: string;
+  
     @ApiProperty({ description: "Kategoriya ID", example: "uuid-category" })
     @IsUUID()
-    @Type(() => String)
     categoryId: string;
-
-    @ApiProperty({ description: "Doktor biografiyasi", example: "10 yillik tajribaga ega shifokor" })
-    @IsNotEmpty()
+  
+    @ApiProperty({ description: "Doktor biografiyasi" })
     @IsString()
-    @Type(() => String)
     bio: string;
-
+  
     @ApiProperty({ description: "Kunlik maosh", example: 100000 })
     @IsNumber()
-    @Type(() => Number) // string -> number
     dailySalary: number;
-
-    @ApiProperty({ type: "array", items: { type: "string", format: "binary" }, required: false, description: "Doktor rasmlari" })
-    @IsOptional()
-    images?: Express.Multer.File[];
-
-    @ApiProperty({ type: "array", items: { type: "string", format: "binary" }, required: false, description: "Doktor videolari" })
-    @IsOptional()
-    videos?: Express.Multer.File[];
+  
+    @ApiPropertyOptional({ type: [String], description: "Doktor rasmlari URL array" })
+    images?: string[] | null;
+  
+    @ApiPropertyOptional({ type: [String], description: "Doktor videolari URL array" })
+    videos?: string[] | null;
   }
-
   export class CreatePatientDto {
 
 

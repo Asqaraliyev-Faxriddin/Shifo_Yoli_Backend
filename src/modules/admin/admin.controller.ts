@@ -11,8 +11,9 @@ import {
     UseInterceptors,
     UseGuards,
     Req,
+    UploadedFiles,
   } from "@nestjs/common";
-  import { FileInterceptor } from "@nestjs/platform-express";
+  import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
   import axios from "axios";
   import * as FormData from "form-data"; // ✅ Node.js uchun
   import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiConsumes, ApiParam, ApiBearerAuth } from "@nestjs/swagger";
@@ -85,36 +86,60 @@ import { UserRole } from "@prisma/client";
       const profileImgUrl = file ? await this.uploadImage(file) : undefined;
       return this.adminService.createAdmin(dto, profileImgUrl);
     }
-  
+    
     @Post("create/doctor")
-@ApiOperation({ summary: "Create Doctor" })
-@ApiConsumes("multipart/form-data")
-@ApiBody({ type: CreateDoctorDto })
-@UseInterceptors(FileInterceptor("profileImg"))
-async createDoctor(
-  @UploadedFile() file: Express.Multer.File,
-  @Body() body: any, // DTO ga to‘g‘ridan-to‘g‘ri parse bo‘lmaydi
-) {
-  const dto: CreateDoctorDto = {
-    ...body,
-    dailySalary: Number(body.dailySalary),
-    email: body.email,
-    firstName: body.firstName,
-    lastName: body.lastName,
-    age: Number(body.age),
-    categoryId: body.categoryId,
-    bio: body.bio,
-    images: body.images,
-    videos: body.videos,
-    password: body.password,
-  };
-
-  const profileImgUrl = file ? await this.uploadImage(file) : undefined;
-
-  return this.adminService.createDoctor(dto, profileImgUrl);
-}
-
-  
+    @ApiOperation({ summary: "Create Doctor" })
+    @ApiConsumes("multipart/form-data")
+    @ApiBody({ type: CreateDoctorDto })
+    @UseInterceptors(
+      FileFieldsInterceptor([
+        { name: "profileImg", maxCount: 1 },
+        { name: "images", maxCount: 10 },
+        { name: "videos", maxCount: 10 },
+      ])
+    )
+    async createDoctor(
+      @UploadedFiles() files: {
+        profileImg?: Express.Multer.File[],
+        images?: Express.Multer.File[],
+        videos?: Express.Multer.File[]
+      },
+      @Body() body: any
+    ) {
+      // Profil rasmi
+      const profileImgUrl = files.profileImg?.[0] ? await this.uploadImage(files.profileImg[0]) : null;
+    
+      // Images
+      const imagesUrls: string[] = [];
+      if (files.images) {
+        for (const img of files.images) {
+          const url = await this.uploadImage(img);
+          if (url) imagesUrls.push(url);
+        }
+      }
+    
+      // Videos
+      const videosUrls: string[] = [];
+      if (files.videos) {
+        for (const vid of files.videos) {
+          const url = await this.uploadImage(vid);
+          if (url) videosUrls.push(url);
+        }
+      }
+    
+      const dto: CreateDoctorDto = {
+        ...body,
+        dailySalary: Number(body.dailySalary),
+        age: Number(body.age),
+        profileImg: profileImgUrl,
+        images: imagesUrls.length ? imagesUrls : null,
+        videos: videosUrls.length ? videosUrls : null,
+      };
+    
+      return this.adminService.createDoctor(dto, profileImgUrl || "");
+    }
+    
+      
     @Post("create/patient")
     @ApiOperation({ summary: "Create Patient" })
     @ApiConsumes("multipart/form-data")
