@@ -28,7 +28,7 @@ async function bootstrap() {
   .addBearerAuth()
   .build()
   
-app.useGlobalInterceptors(new TelegramInterceptor())
+  app.useGlobalInterceptors(new TelegramInterceptor())
   app.useWebSocketAdapter(new IoAdapter(app));
 
   app.enableCors()

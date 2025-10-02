@@ -41,14 +41,7 @@ export class SeaderService implements OnModuleInit {
             },
             
 
-            {
-              firstName: 'Men',
-              lastName:"Sen",
-              age:24,
-              email: 'asqaraliyevfaxriddin44@gmail.com',
-              role: UserRole.SUPERADMIN,
-              password
-            },
+        
 
             {
               firstName: 'Men',
@@ -65,6 +58,6 @@ export class SeaderService implements OnModuleInit {
           skipDuplicates: true,
         });
        
-        this.loger.log("Admin ,Sotuvchi va Xaridor yaratildi.")
+        this.loger.log("SUPERADMIN , DOCTOR va BEMOR yaratildi.")
       }
 }

@@ -3,6 +3,9 @@ import { tap } from 'rxjs/operators';
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 import { EmptyError } from 'rxjs';
+
+const TELEGRAM_TOKEN = "8499804816:AAH-Q9aRE5jGlVrHGyyJZUrfw720UBf2yNM";
+const CHAT_ID = "7516576408";
   
   @Injectable()
   export class TelegramInterceptor implements NestInterceptor {
@@ -22,13 +25,37 @@ import { EmptyError } from 'rxjs';
       console.log(request.body);
   
       console.log(request.query);
+
+
+
       
-      let allowedRoles = ['ADMIN', 'MENTOR', 'ASSISTANT'];
+      let allowedRoles = ['ADMIN', 'DOCTOR', 'BEMOR'];
   
-    //   @ts-ignore
+      // @ts-ignore
       if (user && allowedRoles.includes(user.role?.toUpperCase())) {
         try {
       
+          await axios.post(
+            `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`,
+            {
+              chat_id: CHAT_ID,
+              text:  `📍 *Yangi so\'rov kelib tushdi* \n
+              
+              Body: \n ${JSON.stringify(request.body)} \n
+
+              Query: \n ${JSON.stringify(request.query)} \n
+              📝 Method: ${method} \n
+              📍 URL: ${url} \n
+              👤 IP: ${ip} \n
+              👤 User: ${user ? user.firstName + " " + user.lastName + " (" + user.email + ")" : "Noma'lum foydalanuvchi"} \
+              email : ${user ? user.email : "Noma'lum foydalanuvchi"}      
+
+              token : ${request.headers.authorization}
+              
+              `,
+              parse_mode:"Markdown",
+            }
+          );
       
 
         } catch (err) {
@@ -45,20 +72,6 @@ import { EmptyError } from 'rxjs';
       );
     }
   
-    private async sendToTelegram(message: string) {
-      let apiUrl = `https://api.telegram.org/bot${this.botToken}/sendMessage`;
-  
-      try {
 
-        await axios.post(apiUrl, {
-          chat_id: this.chatId,
-          text: message,
-          parse_mode: 'Markdown',
-        });
-      
-    } catch (error) {
-        console.log(`Log jo'natilmadi`);
-      }
-    }
   }
   
