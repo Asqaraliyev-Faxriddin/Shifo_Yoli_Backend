@@ -42,7 +42,7 @@ export class AuthService {
     }
   }
 
-  async register(payload: Required<RegisterDto>, req: Request) {
+  async register(payload: RegisterDto, req: Request) {
     const { firstName, lastName, otp, email, password, age } = payload;
 
     await this.verificationService.checkConfirmOtp({
@@ -58,6 +58,12 @@ export class AuthService {
         firstName,
         lastName,
         age,
+        profileImg: "",
+        day:payload.day || 0,
+        month:payload.month || 0,
+        year:payload.year || 0,
+
+        phoneNumber:payload.phoneNumber || "",
         email,
         role: UserRole.BEMOR,
         password: hashPassword,

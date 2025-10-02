@@ -13,6 +13,7 @@ import {
 import * as fs from 'fs';
 import * as path from 'path';
 import { AppMailerService } from 'src/common/mailer/mailer.service';
+import { FindDoctorProfilesDto } from './dto/update-doctor-profile.dto';
 
 @Injectable()
 export class DoctorProfileService {
@@ -247,4 +248,92 @@ export class DoctorProfileService {
       message: 'Video muvaffaqiyatli o‘chirildi',
     };
   }
+
+
+
+  async doctorProfile(id:string){
+
+    let data  = await this.prisma.doctorProfile.findFirst({
+      where:{id},
+    })
+
+    if(!data) throw new NotFoundException("Doctor profile topilmadi")
+
+    return {
+      success:true,
+      message:"Doctor profile muvaffaqiyatli topildi",
+      data
+    }
+
+  }
+
+  async DoctorProfiles(payload: FindDoctorProfilesDto) {
+    const {
+      email,
+      firstName,
+      lastName,
+      minAge,
+      maxAge,
+      categoryName,
+      limit = 10,
+      offset = 1,
+    } = payload;
+  
+    // filter shartlari
+    const where: any = {
+      doctor: {
+        email: email ? { contains: email, mode: "insensitive" } : undefined,
+        firstName: firstName ? { contains: firstName, mode: "insensitive" } : undefined,
+        lastName: lastName ? { contains: lastName, mode: "insensitive" } : undefined,
+        age: {
+          gte: minAge ?? undefined,
+          lte: maxAge ?? undefined,
+        },
+      },
+      category: categoryName
+        ? { name: { contains: categoryName, mode: "insensitive" } }
+        : undefined,
+    };
+  
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.doctorProfile.findMany({
+        where,
+        skip: (offset - 1) * limit,
+        take: limit,
+        include: {
+          category: true,
+          doctor: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              age: true,
+              phoneNumber: true,
+              role: true,
+              profileImg: true,
+              isActive: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      this.prisma.doctorProfile.count({ where }),
+    ]);
+  
+    return {
+      success: true,
+      message: "Doctor profiles muvaffaqiyatli topildi",
+      total,
+      page: offset,
+      limit,
+      data,
+    };
+  }
+  
+
 }

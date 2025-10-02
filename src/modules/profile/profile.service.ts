@@ -111,9 +111,14 @@ export class ProfileService {
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        ...(dto.age && { age: dto.age }),
+        firstName: dto.firstName || user.firstName,
+        lastName: dto.lastName || user.lastName,
+        day: Number(dto.day) || user.day,
+        month:Number(dto.month) || user.month,
+        year:Number(dto.year) || user.year,
+        age:Number(dto.age) || Number(user.age),
+
+    
         ...(fileName && { profileImg: fileName }),
       },
     });

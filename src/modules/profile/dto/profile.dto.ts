@@ -1,5 +1,6 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString, Length, MinLength, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({
@@ -24,7 +25,45 @@ export class UpdateProfileDto {
     enum: ['BUY', 'SELL'],
   })
   @IsOptional()
-  age:number
+  @Length(1,330)
+  age?:number
+
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    year?:number
+
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    @Length(1,12)
+    month?:number
+
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    day?:number
+
+
+    @ApiPropertyOptional()
+    @ValidateIf(o => o.phoneNumber !== '' && o.phoneNumber !== null && o.phoneNumber !== undefined)
+@IsPhoneNumber("UZ")
+@IsOptional()
+phoneNumber?: string;
+
+    @ApiPropertyOptional({
+      type: 'string',
+      format: 'binary',
+      description: 'Profil rasmi (faqat Swagger uchun)',
+    })
+    @IsOptional()
+    profileImg?: any;
+
+
 }
 
 

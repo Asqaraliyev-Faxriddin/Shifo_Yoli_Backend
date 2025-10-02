@@ -36,11 +36,17 @@ import { UserRole } from '@prisma/client';
         properties: {
           firstName: { type: 'string', example: 'Ali' },
           lastName: { type: 'string', example: 'Valiyev' },
-          age: { type: 'number', },
-          profileImg: { type: 'string', format: 'binary' }, // faqat Swagger uchun
+          year: { type: 'number', example: 1990 },
+          month: { type: 'number', example: 5 },
+          day: { type: 'number', example: 15 },
+          phoneNumber: { type: 'string', example: '+998901234567' },
+          age: { type: 'number' },
+          profileImg: { type: 'string', format: 'binary' }, // optional
         },
+        required: [] // ❗ majburiy maydon yo‘q
       },
     })
+    
     async updateProfile(
       @Req() req,
       @Body() dto: UpdateProfileDto,
@@ -77,7 +83,7 @@ import { UserRole } from '@prisma/client';
       });
     }
   
-    @Post("phone/update")
+    @Post("email/update")
     @ApiOperation({ summary: "Telefon raqamni yangilash (OTP tekshiruv bilan)" })
     async updatePhone(@Req() req: Request,@Body() body: PhoneUpdateDto,) {
       let user = req["user"];
