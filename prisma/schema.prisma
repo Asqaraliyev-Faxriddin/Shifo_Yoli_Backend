@@ -72,6 +72,7 @@ model User {
   reviewsReceived  Review[]           @relation("ReviewsReceived")
 
   blockedUser      BlockedUsers?
+  meetingsMessages MeetingMessage[] 
 
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt()
@@ -130,22 +131,48 @@ model DoctorSalary {
 
 
 
-model Meeting {
-  id          String   @id @default(uuid())
+enum MeetingStatus {
+  PENDING
+  ONGOING
+  FINISHED
+  CANCELED
+}
 
-  user        User     @relation("MeetingsUser", fields: [userId], references: [id], onDelete: Cascade)
+model Meeting {
+  id          String         @id @default(uuid())
+
+  user        User           @relation("MeetingsUser", fields: [userId], references: [id], onDelete: Cascade)
   userId      String
 
-  doctor      User     @relation("MeetingsDoctor", fields: [doctorId], references: [id], onDelete: Cascade)
+  doctor      User           @relation("MeetingsDoctor", fields: [doctorId], references: [id], onDelete: Cascade)
   doctorId    String
 
   scheduledAt DateTime?
   duration    Int?
   meetingLink String?
 
+  status      MeetingStatus  @default(PENDING)
+
+  messages    MeetingMessage[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt()
 }
+
+model MeetingMessage {
+  id         String   @id @default(uuid())
+  meeting    Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId  String
+
+  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId   String
+
+  content    String?
+  type       MessageType @default(TEXT)
+
+  createdAt  DateTime @default(now())
+}
+
 
 model Review {
   id        String   @id @default(uuid())
