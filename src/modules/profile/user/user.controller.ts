@@ -1,34 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Controller, Get } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { PublicService } from './user.service';
 
-@Controller('user')
-export class UserController {
-  constructor(private readonly userService: UserService) {}
+@ApiTags('Public') 
+@Controller('User')
+export class PublicController {
+  constructor(private readonly publicService: PublicService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @Get('top-doctors')
+  @ApiOperation({ summary: 'Top 10 doctor rating bo‘yicha' })
+  async getTopDoctors() {
+    return this.publicService.getTopDoctors();
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Get('best-doctor-week')
+  @ApiOperation({ summary: 'Haftaning eng yaxshi doctori' })
+  async getBestDoctorOfWeek() {
+    return this.publicService.getBestDoctorOfWeek();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Get('most-reviewed-doctors')
+  @ApiOperation({ summary: 'Eng ko‘p review olgan 12 ta doctor' })
+  async getMostReviewedDoctors() {
+    return this.publicService.getMostReviewedDoctors();
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Get('categories')
+  @ApiOperation({ summary: 'Barcha category va doctorlari' })
+  async getCategories() {
+    return this.publicService.getCategories();
   }
 }

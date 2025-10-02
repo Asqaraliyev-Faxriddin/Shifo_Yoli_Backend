@@ -14,6 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AppMailerService } from 'src/common/mailer/mailer.service';
 import { FindDoctorProfilesDto } from './dto/update-doctor-profile.dto';
+import { publish } from 'rxjs';
 
 @Injectable()
 export class DoctorProfileService {
@@ -281,7 +282,9 @@ export class DoctorProfileService {
   
     // filter shartlari
     const where: any = {
+      published:true,
       doctor: {
+        
         email: email ? { contains: email, mode: "insensitive" } : undefined,
         firstName: firstName ? { contains: firstName, mode: "insensitive" } : undefined,
         lastName: lastName ? { contains: lastName, mode: "insensitive" } : undefined,

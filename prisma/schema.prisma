@@ -107,6 +107,8 @@ model DoctorProfile {
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt()
+
+
 }
 
 
@@ -149,7 +151,7 @@ model Review {
   id        String   @id @default(uuid())
 
   user      User     @relation("ReviewsGiven", fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  userId    String @unique
 
   doctor    User     @relation("ReviewsReceived", fields: [doctorId], references: [id], onDelete: Cascade)
   doctorId  String
