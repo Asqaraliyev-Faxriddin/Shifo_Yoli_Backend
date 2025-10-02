@@ -29,6 +29,9 @@ import {
     ) {}
   
     async createAdmin(dto: CreateAdminDto, profileImgUrl?: string) {
+      console.log(profileImgUrl,dto.profileImg);
+      
+      
       await this.ensureEmailUnique(dto.email);
       const hashed = await bcrypt.hash(dto.password, 10);
   
@@ -54,6 +57,7 @@ import {
           password: hashed,
           firstName: dto.firstName,
           lastName: dto.lastName,
+          profileImg: profileImgUrl ?? null,
           age: dto.age,
           role: UserRole.DOCTOR,
           doctorProfile: {

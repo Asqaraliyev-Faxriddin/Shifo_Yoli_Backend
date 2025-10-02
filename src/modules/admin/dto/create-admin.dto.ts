@@ -1,503 +1,502 @@
-import { 
-  ApiProperty, 
-  ApiPropertyOptional 
-} from "@nestjs/swagger";
-import { 
-  IsEmail, 
-  IsOptional, 
-  IsString, 
-  IsInt, 
-  Min, 
-  Max, 
-  IsUUID, 
-  IsNumber, 
-  IsNotEmpty,
-  Length
-} from "class-validator";
-import { Transform, Type } from "class-transformer";
-import { Express } from "express";
+  import { 
+    ApiProperty, 
+    ApiPropertyOptional 
+  } from "@nestjs/swagger";
+  import { 
+    IsEmail, 
+    IsOptional, 
+    IsString, 
+    IsInt, 
+    Min, 
+    Max, 
+    IsUUID, 
+    IsNumber, 
+    IsNotEmpty,
+    Length
+  } from "class-validator";
+  import { Transform, Type } from "class-transformer";
+  import { Express } from "express";
 
 
-// ==================== BASE DTO ====================
-export class BaseUserDto {
-  @ApiProperty({ description: "Foydalanuvchi email manzili", example: "user@example.com" })
+  // ==================== BASE DTO ====================
+  export class BaseUserDto {
+    @ApiProperty({ description: "Foydalanuvchi email manzili", example: "user@example.com" })
+    @IsEmail()
+    email: string;
+
+    @ApiProperty({ description: "Foydalanuvchi ismi", example: "Ali" })
+    @IsString()
+    @Type(() => String)
+    firstName: string;
+
+    @ApiProperty({ description: "Foydalanuvchi familiyasi", example: "Valiyev" })
+    @IsString()
+    lastName: string;
+
+    @ApiProperty({ description: "Parol", example: "StrongPass123" })
+    @IsString()
+    password: string;
+
+    @ApiProperty({ description: "Yoshi", example: 25, minimum: 1, maximum: 170 })
+    @IsNumber()
+    @Type(() => Number)
+    age: number;
+
+    @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
+    @IsOptional()
+    profileImg?: Express.Multer.File;
+  }
+
+
+  // ==================== CREATE DTO ====================
+  export class CreateAdminDto  { 
+
+    @ApiProperty({
+      example: "@example.com",
+      description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
+  })
+  @IsString()
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ description: "Foydalanuvchi ismi", example: "Ali" })
-  @IsString()
-  @Type(() => String)
-  firstName: string;
-
-  @ApiProperty({ description: "Foydalanuvchi familiyasi", example: "Valiyev" })
-  @IsString()
-  lastName: string;
-
-  @ApiProperty({ description: "Parol", example: "StrongPass123" })
-  @IsString()
-  password: string;
-
-  @ApiProperty({ description: "Yoshi", example: 25, minimum: 1, maximum: 170 })
-  @IsNumber()
-  @Type(() => Number)
-  age: number;
-
-  @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
-  @IsOptional()
-  profileImg?: Express.Multer.File;
-}
-
-
-// ==================== CREATE DTO ====================
-export class CreateAdminDto  { 
-
   @ApiProperty({
-    example: "@example.com",
-    description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
-})
-@IsString()
-@IsEmail()
-@IsNotEmpty()
-email: string;
-
-@ApiProperty({
-    example: "superPassword123",
-    minLength: 8,
-    maxLength: 16,
-    description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
-})
-@IsNotEmpty()
-@IsString()
-@Length(8, 16)
-password: string;
-
-
-
-@ApiProperty({
-    example: "Azamjon Faxriddinov",
-    minLength: 5,
-    maxLength: 50,
-    description: "Foydalanuvchining to'liq ismi",
-})
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
-lastName: string;
-
-
-@ApiProperty({
-    example: "Azamjon Faxriddinov",
-    minLength: 5,
-    maxLength: 50,
-    description: "Foydalanuvchining to'liq ismi",
-})
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
-firstName: string;
-
-@ApiProperty()
-@IsNumber()
-@IsNotEmpty()
-age:number
-
-@ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
-@IsOptional()
-profileImg?: Express.Multer.File;
-}
-
-export class CreateDoctorDto  {
-  
-  
-  @ApiProperty({
-    example: "@example.com",
-    description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
-})
-@IsString()
-@IsEmail()
-@IsNotEmpty()
-email: string;
-
-@ApiProperty({
-    example: "superPassword123",
-    minLength: 8,
-    maxLength: 16,
-    description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
-})
-@IsNotEmpty()
-@IsString()
-@Length(8, 16)
-password: string;
-
-
-
-@ApiProperty({
-    example: "Azamjon Faxriddinov",
-    minLength: 5,
-    maxLength: 50,
-    description: "Foydalanuvchining to'liq ismi",
-})
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
-lastName: string;
-
-
-@ApiProperty({
-    example: "Azamjon Faxriddinov",
-    minLength: 5,
-    maxLength: 50,
-    description: "Foydalanuvchining to'liq ismi",
-})
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
-firstName: string;
-
-@ApiProperty()
-@IsNumber()
-@IsNotEmpty()
-age:number
-
-  @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
-  @IsOptional()
-  profileImg?: Express.Multer.File;
-
-  
-  
-  @ApiProperty({ description: "Kategoriya ID", example: "uuid-category" })
-  @IsUUID()
-  @Type(() => String)
-  categoryId: string;
-
-  @ApiProperty({ description: "Doktor biografiyasi", example: "10 yillik tajribaga ega shifokor" })
+      example: "superPassword123",
+      minLength: 8,
+      maxLength: 16,
+      description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
+  })
   @IsNotEmpty()
   @IsString()
-  @Type(() => String)
-  bio: string;
-
-  @ApiProperty({ description: "Kunlik maosh", example: 100000 })
-  @IsNumber()
-  @Type(() => Number) // string -> number
-  dailySalary: number;
-
-  @ApiProperty({ type: "array", items: { type: "string", format: "binary" }, required: false, description: "Doktor rasmlari" })
-  @IsOptional()
-  images?: Express.Multer.File[];
-
-  @ApiProperty({ type: "array", items: { type: "string", format: "binary" }, required: false, description: "Doktor videolari" })
-  @IsOptional()
-  videos?: Express.Multer.File[];
-}
-
-export class CreatePatientDto {
+  @Length(8, 16)
+  password: string;
 
 
 
   @ApiProperty({
-    example: "@example.com",
-    description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
-})
-@IsString()
-@IsEmail()
-@IsNotEmpty()
-email: string;
-
-@ApiProperty({
-    example: "superPassword123",
-    minLength: 8,
-    maxLength: 16,
-    description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
-})
-@IsNotEmpty()
-@IsString()
-@Length(8, 16)
-password: string;
+      example: "Azamjon Faxriddinov",
+      minLength: 5,
+      maxLength: 50,
+      description: "Foydalanuvchining to'liq ismi",
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Length(5, 50)
+  lastName: string;
 
 
-
-@ApiProperty({
-    example: "Azamjon Faxriddinov",
-    minLength: 5,
-    maxLength: 50,
-    description: "Foydalanuvchining to'liq ismi",
-})
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
-lastName: string;
-
-
-@ApiProperty({
-    example: "Azamjon Faxriddinov",
-    minLength: 5,
-    maxLength: 50,
-    description: "Foydalanuvchining to'liq ismi",
-})
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
-firstName: string;
-
-@ApiProperty()
-@IsNumber()
-@IsNotEmpty()
-age:number
-
-  @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
-  @IsOptional()
-  profileImg?: Express.Multer.File;
-}
-
-
-// ==================== UPDATE DTO ====================
-export class UpdateUserDto {
- 
   @ApiProperty({
-    example: "@example.com",
-    description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
-})
-@IsString()
-@IsEmail()
-@IsNotEmpty()
-email: string;
+      example: "Azamjon Faxriddinov",
+      minLength: 5,
+      maxLength: 50,
+      description: "Foydalanuvchining to'liq ismi",
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Length(5, 50)
+  firstName: string;
 
-@ApiProperty({
-    example: "superPassword123",
-    minLength: 8,
-    maxLength: 16,
-    description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
-})
-@IsNotEmpty()
-@IsString()
-@Length(8, 16)
-password: string;
-
-
-
-@ApiProperty({
-    example: "Azamjon Faxriddinov",
-    minLength: 5,
-    maxLength: 50,
-    description: "Foydalanuvchining to'liq ismi",
-})
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
-lastName: string;
-
-
-@ApiProperty({
-    example: "Azamjon Faxriddinov",
-    minLength: 5,
-    maxLength: 50,
-    description: "Foydalanuvchining to'liq ismi",
-})
-@IsString()
-@IsNotEmpty()
-@Length(5, 50)
-firstName: string;
-
-@ApiProperty()
-@IsNumber()
-@IsNotEmpty()
-age:number
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  age:number
 
   @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
   @IsOptional()
   profileImg?: Express.Multer.File;
-}
+  }
 
-
-// ==================== DELETE DTO ====================
-export class DeleteUserDto {
-  @ApiProperty({ description: "O‘chiriladigan user ID" })
-  @IsUUID()
-  userId: string;
-}
-
-
-// ==================== BLOCK / UNBLOCK ====================
-export class BlockUserDto {
-  @ApiProperty({ description: "Block qilinadigan user ID" })
-  @IsUUID()
-  userId: string;
-
-  @ApiPropertyOptional({ description: "Block sababi", example: "Qoidabuzarlik" })
-  @IsOptional()
+  export class CreateDoctorDto  {
+    
+    
+    @ApiProperty({
+      example: "@example.com",
+  })
   @IsString()
-  reason?: string;
-}
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 
-export class UnblockUserDto {
-  @ApiProperty({ description: "Unblock qilinadigan user ID" })
-  @IsUUID()
-  userId: string;
-}
-
-
-export class SearchUserDto {
-  @ApiPropertyOptional({ description: "Ism bo‘yicha qidirish", example: "Ali" })
-  @IsOptional()
+  @ApiProperty({
+      example: "superPassword123",
+      minLength: 8,
+      maxLength: 16,
+      description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
+  })
+  @IsNotEmpty()
   @IsString()
-  firstName?: string;
+  @Length(8, 16)
+  password: string;
 
-  @ApiPropertyOptional({ description: "Familiya bo‘yicha qidirish", example: "Valiyev" })
-  @IsOptional()
+
+
+  @ApiProperty({
+      example: "Azamjon Faxriddinov",
+      minLength: 5,
+      maxLength: 50,
+      description: "Foydalanuvchining to'liq ismi",
+  })
   @IsString()
-  lastName?: string;
+  @IsNotEmpty()
+  @Length(5, 50)
+  lastName: string;
 
-  @ApiPropertyOptional({ description: "Email bo‘yicha qidirish", example: "user@example.com" })
-  @IsOptional()
+
+  @ApiProperty({
+      example: "Azamjon Faxriddinov",
+      minLength: 5,
+      maxLength: 50,
+      description: "Foydalanuvchining to'liq ismi",
+  })
   @IsString()
-  email?: string;
+  @IsNotEmpty()
+  @Length(5, 50)
+  firstName: string;
 
-  @ApiPropertyOptional({ description: "Minimal yosh filteri", example: 18 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  ageFrom?: number;
-
-  @ApiPropertyOptional({ description: "Maksimal yosh filteri", example: 65 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  ageTo?: number;
-
-  @ApiPropertyOptional({ description: "Kategoriya ID bo‘yicha qidirish (faqat doktorlar uchun)", example: "uuid-category" })
-  @IsOptional()
-  @IsUUID()
-  categoryId?: string;
-
-  @ApiPropertyOptional({ description: "Limit", example: 10, default: 10 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  limit: number = 10;
-
-  @ApiPropertyOptional({ description: "Sahifa raqami", example: 1, default: 1 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page: number = 1;
-}
-
-export class SendNotificationDto {
-  @ApiProperty({ example: "uuid-user" })
-  @IsUUID()
-  userId: string;
-
-  @ApiProperty({ example: "Xabar matni" })
-  @IsString()
-  message: string;
-
-  @ApiProperty({ example: "Xabar matni" })
-  @IsString()
-  title: string;
-}
-
-export class BroadcastNotificationDto {
-  @ApiProperty({ example: "Umumiy xabar matni" })
-  @IsString()
-  message: string;
-
-  @ApiProperty({ example: "Umumiy xabar sarlavhasi" })
-  @IsString()
-  title: string;
-}
-
-
-export class UserPaymentDto {
-  @ApiProperty({ description: "User ID", example: "uuid-user" })
-  @IsUUID()
-  userId: string;
-
-  @ApiProperty({ description: "Miqdor", example: 10000 })
+  @ApiProperty()
   @IsNumber()
-  amount: number;
-}
+  @IsNotEmpty()
+  age:number
 
-export class MassPaymentDto {
-  @ApiProperty({ enum: ["BEMOR", "DOCTOR", "ADMIN"], example: "DOCTOR" })
+    @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
+    @IsOptional()
+    profileImg?: Express.Multer.File;
+
+    
+    
+    @ApiProperty({ description: "Kategoriya ID", example: "uuid-category" })
+    @IsUUID()
+    @Type(() => String)
+    categoryId: string;
+
+    @ApiProperty({ description: "Doktor biografiyasi", example: "10 yillik tajribaga ega shifokor" })
+    @IsNotEmpty()
+    @IsString()
+    @Type(() => String)
+    bio: string;
+
+    @ApiProperty({ description: "Kunlik maosh", example: 100000 })
+    @IsNumber()
+    @Type(() => Number) // string -> number
+    dailySalary: number;
+
+    @ApiProperty({ type: "array", items: { type: "string", format: "binary" }, required: false, description: "Doktor rasmlari" })
+    @IsOptional()
+    images?: Express.Multer.File[];
+
+    @ApiProperty({ type: "array", items: { type: "string", format: "binary" }, required: false, description: "Doktor videolari" })
+    @IsOptional()
+    videos?: Express.Multer.File[];
+  }
+
+  export class CreatePatientDto {
+
+
+
+    @ApiProperty({
+      example: "@example.com",
+      description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
+  })
   @IsString()
-  role: string;
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 
-  @ApiProperty({ example: 50000 })
+  @ApiProperty({
+      example: "superPassword123",
+      minLength: 8,
+      maxLength: 16,
+      description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
+  })
+  @IsNotEmpty()
+  @IsString()
+  @Length(8, 16)
+  password: string;
+
+
+
+  @ApiProperty({
+      example: "Azamjon Faxriddinov",
+      minLength: 5,
+      maxLength: 50,
+      description: "Foydalanuvchining to'liq ismi",
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Length(5, 50)
+  lastName: string;
+
+
+  @ApiProperty({
+      example: "Azamjon Faxriddinov",
+      minLength: 5,
+      maxLength: 50,
+      description: "Foydalanuvchining to'liq ismi",
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Length(5, 50)
+  firstName: string;
+
+  @ApiProperty()
   @IsNumber()
-  amount: number;
+  @IsNotEmpty()
+  age:number
+
+    @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
+    @IsOptional()
+    profileImg?: Express.Multer.File;
+  }
 
 
-  @ApiProperty({ example: "Umumiy xabar matni" })
+  // ==================== UPDATE DTO ====================
+  export class UpdateUserDto {
+  
+    @ApiProperty({
+      example: "@example.com",
+      description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
+  })
   @IsString()
-  message: string;
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 
-  @ApiProperty({ example: "Umumiy xabar sarlavhasi" })
+  @ApiProperty({
+      example: "superPassword123",
+      minLength: 8,
+      maxLength: 16,
+      description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
+  })
+  @IsNotEmpty()
   @IsString()
-  title: string;
-}
+  @Length(8, 16)
+  password: string;
 
-export class MassPaymentDto2 {
-  @ApiProperty({ enum: ["BEMOR", "DOCTOR", "ADMIN"], example: "DOCTOR" })
+
+
+  @ApiProperty({
+      example: "Azamjon Faxriddinov",
+      minLength: 5,
+      maxLength: 50,
+      description: "Foydalanuvchining to'liq ismi",
+  })
   @IsString()
-  role: string;
-
-  @ApiProperty({ example: -50000, description: "Foydalanuvchi hisobidan ayriladigan pul (manfiy son)" })
-  @IsNumber({}, { message: "Amount faqat son bo'lishi kerak" })
-  @Min(-Infinity, { message: "Amount manfiy bo'lishi kerak" }) // faqat manfiy son
-  @Transform(({ value }) => Number(value))
-  amount: number;
+  @IsNotEmpty()
+  @Length(5, 50)
+  lastName: string;
 
 
-  @ApiProperty({ example: "Umumiy xabar matni" })
+  @ApiProperty({
+      example: "Azamjon Faxriddinov",
+      minLength: 5,
+      maxLength: 50,
+      description: "Foydalanuvchining to'liq ismi",
+  })
   @IsString()
-  message: string;
+  @IsNotEmpty()
+  @Length(5, 50)
+  firstName: string;
 
-  @ApiProperty({ example: "Umumiy xabar sarlavhasi" })
-  @IsString()
-  title: string;
-}
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  age:number
 
-
-
-export class BlockDeviceDto {
-  @ApiProperty({ description: "Device ID", example: "uuid-device" })
-  @IsUUID()
-  deviceId: string;
-
-  @ApiPropertyOptional({ description: "Block sababi", example: "Qoidabuzarlik" })
-  @IsOptional()
-  @IsString()
-  reason?: string;
-
-}
-
-export class BlokUnDevice {
-  @ApiProperty({ description: "Device ID", example: "uuid-device" })
-  @IsUUID()
-  deviceId: string;
-
-}
-
-export class UserBlok {
-
-  @ApiProperty({ description: "User ID", example: "uuid-user" })
-  @IsUUID()
-  userId: string;
-
-  @ApiPropertyOptional({ description: "Block sababi", example: "Qoidabuzarlik" })
-  @IsOptional()
-  @IsString()
-  reason?: string;
-}
+    @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
+    @IsOptional()
+    profileImg?: Express.Multer.File;
+  }
 
 
-export class UserUnBlokDto {
+  // ==================== DELETE DTO ====================
+  export class DeleteUserDto {
+    @ApiProperty({ description: "O‘chiriladigan user ID" })
+    @IsUUID()
+    userId: string;
+  }
 
 
-  @ApiProperty({ description: "User ID", example: "uuid-user" })
-  @IsUUID()
-  userId: string;
-}
+  // ==================== BLOCK / UNBLOCK ====================
+  export class BlockUserDto {
+    @ApiProperty({ description: "Block qilinadigan user ID" })
+    @IsUUID()
+    userId: string;
+
+    @ApiPropertyOptional({ description: "Block sababi", example: "Qoidabuzarlik" })
+    @IsOptional()
+    @IsString()
+    reason?: string;
+  }
+
+  export class UnblockUserDto {
+    @ApiProperty({ description: "Unblock qilinadigan user ID" })
+    @IsUUID()
+    userId: string;
+  }
+
+
+  export class SearchUserDto {
+    @ApiPropertyOptional({ description: "Ism bo‘yicha qidirish", example: "Ali" })
+    @IsOptional()
+    @IsString()
+    firstName?: string;
+
+    @ApiPropertyOptional({ description: "Familiya bo‘yicha qidirish", example: "Valiyev" })
+    @IsOptional()
+    @IsString()
+    lastName?: string;
+
+    @ApiPropertyOptional({ description: "Email bo‘yicha qidirish", example: "user@example.com" })
+    @IsOptional()
+    @IsString()
+    email?: string;
+
+    @ApiPropertyOptional({ description: "Minimal yosh filteri", example: 18 })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    ageFrom?: number;
+
+    @ApiPropertyOptional({ description: "Maksimal yosh filteri", example: 65 })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    ageTo?: number;
+
+    @ApiPropertyOptional({ description: "Kategoriya ID bo‘yicha qidirish (faqat doktorlar uchun)", example: "uuid-category" })
+    @IsOptional()
+    @IsUUID()
+    categoryId?: string;
+
+    @ApiPropertyOptional({ description: "Limit", example: 10, default: 10 })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    @Max(100)
+    limit: number = 10;
+
+    @ApiPropertyOptional({ description: "Sahifa raqami", example: 1, default: 1 })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    page: number = 1;
+  }
+
+  export class SendNotificationDto {
+    @ApiProperty({ example: "uuid-user" })
+    @IsUUID()
+    userId: string;
+
+    @ApiProperty({ example: "Xabar matni" })
+    @IsString()
+    message: string;
+
+    @ApiProperty({ example: "Xabar matni" })
+    @IsString()
+    title: string;
+  }
+
+  export class BroadcastNotificationDto {
+    @ApiProperty({ example: "Umumiy xabar matni" })
+    @IsString()
+    message: string;
+
+    @ApiProperty({ example: "Umumiy xabar sarlavhasi" })
+    @IsString()
+    title: string;
+  }
+
+
+  export class UserPaymentDto {
+    @ApiProperty({ description: "User ID", example: "uuid-user" })
+    @IsUUID()
+    userId: string;
+
+    @ApiProperty({ description: "Miqdor", example: 10000 })
+    @IsNumber()
+    amount: number;
+  }
+
+  export class MassPaymentDto {
+    @ApiProperty({ enum: ["BEMOR", "DOCTOR", "ADMIN"], example: "DOCTOR" })
+    @IsString()
+    role: string;
+
+    @ApiProperty({ example: 50000 })
+    @IsNumber()
+    amount: number;
+
+
+    @ApiProperty({ example: "Umumiy xabar matni" })
+    @IsString()
+    message: string;
+
+    @ApiProperty({ example: "Umumiy xabar sarlavhasi" })
+    @IsString()
+    title: string;
+  }
+
+  export class MassPaymentDto2 {
+    @ApiProperty({ enum: ["BEMOR", "DOCTOR", "ADMIN"], example: "DOCTOR" })
+    @IsString()
+    role: string;
+
+    @ApiProperty({ example: -50000, description: "Foydalanuvchi hisobidan ayriladigan pul (manfiy son)" })
+    @IsNumber({}, { message: "Amount faqat son bo'lishi kerak" })
+    @Min(-Infinity, { message: "Amount manfiy bo'lishi kerak" }) // faqat manfiy son
+    @Transform(({ value }) => Number(value))
+    amount: number;
+
+
+    @ApiProperty({ example: "Umumiy xabar matni" })
+    @IsString()
+    message: string;
+
+    @ApiProperty({ example: "Umumiy xabar sarlavhasi" })
+    @IsString()
+    title: string;
+  }
+
+
+
+  export class BlockDeviceDto {
+    @ApiProperty({ description: "Device ID", example: "uuid-device" })
+    @IsUUID()
+    deviceId: string;
+
+    @ApiPropertyOptional({ description: "Block sababi", example: "Qoidabuzarlik" })
+    @IsOptional()
+    @IsString()
+    reason?: string;
+
+  }
+
+  export class BlokUnDevice {
+    @ApiProperty({ description: "Device ID", example: "uuid-device" })
+    @IsUUID()
+    deviceId: string;
+
+  }
+
+  export class UserBlok {
+
+    @ApiProperty({ description: "User ID", example: "uuid-user" })
+    @IsUUID()
+    userId: string;
+
+    @ApiPropertyOptional({ description: "Block sababi", example: "Qoidabuzarlik" })
+    @IsOptional()
+    @IsString()
+    reason?: string;
+  }
+
+
+  export class UserUnBlokDto {
+
+
+    @ApiProperty({ description: "User ID", example: "uuid-user" })
+    @IsUUID()
+    userId: string;
+  }

@@ -78,21 +78,42 @@ import { UserRole } from "@prisma/client";
       @Body() dto: CreateAdminDto,
       @UploadedFile() file?: Express.Multer.File,
     ) {
+
+      console.log("fwwe",file);
+      
+
       const profileImgUrl = file ? await this.uploadImage(file) : undefined;
       return this.adminService.createAdmin(dto, profileImgUrl);
     }
   
     @Post("create/doctor")
-    @ApiOperation({ summary: "Create Doctor" })
-    @ApiConsumes("multipart/form-data")
-    @ApiBody({ type: CreateDoctorDto })
-    async createDoctor(
-      @Body() dto: CreateDoctorDto,
-      @UploadedFile() file?: Express.Multer.File,
-    ) {
-      const profileImgUrl = file ? await this.uploadImage(file) : undefined;
-      return this.adminService.createDoctor(dto, profileImgUrl);
-    }
+@ApiOperation({ summary: "Create Doctor" })
+@ApiConsumes("multipart/form-data")
+@ApiBody({ type: CreateDoctorDto })
+@UseInterceptors(FileInterceptor("profileImg"))
+async createDoctor(
+  @UploadedFile() file: Express.Multer.File,
+  @Body() body: any, // DTO ga to‘g‘ridan-to‘g‘ri parse bo‘lmaydi
+) {
+  const dto: CreateDoctorDto = {
+    ...body,
+    dailySalary: Number(body.dailySalary),
+    email: body.email,
+    firstName: body.firstName,
+    lastName: body.lastName,
+    age: Number(body.age),
+    categoryId: body.categoryId,
+    bio: body.bio,
+    images: body.images,
+    videos: body.videos,
+    password: body.password,
+  };
+
+  const profileImgUrl = file ? await this.uploadImage(file) : undefined;
+
+  return this.adminService.createDoctor(dto, profileImgUrl);
+}
+
   
     @Post("create/patient")
     @ApiOperation({ summary: "Create Patient" })
