@@ -18,12 +18,17 @@ export class MessageController {
     return this.svc.getChatsForUser(req.user.id);
   }
 
-  @Post('/chat')
+
+  @Get('/users')
+  async getusers(@Req() req) {
+    return this.svc.getAllUsers()
+  }
+  @Post('/create/chat')
   async createChat(@Body() dto: CreateChatDto) {
     return this.svc.createChat(dto.participantIds);
   }
 
-  @Get('/chat/:chatId/messages')
+  @Get('/chats/:chatId/messages')
   async getMessages(@Param('chatId') chatId: string) {
     return this.svc.getMessages(chatId);
   }

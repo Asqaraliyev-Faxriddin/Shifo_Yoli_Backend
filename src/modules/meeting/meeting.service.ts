@@ -15,7 +15,7 @@ export class MeetingService {
         doctorId: dto.targetId, // kimga qo‘ng‘iroq qilinmoqda
         scheduledAt: dto.scheduledAt,
         duration: dto.duration,
-        meetingLink: `https://google-github/meet/${crypto.randomUUID()}`, // avtomatik link
+        meetingLink: `http://localhost:3000/meet/${crypto.randomUUID()}`, // avtomatik link
       },
       include: { user: true, doctor: true },
     });

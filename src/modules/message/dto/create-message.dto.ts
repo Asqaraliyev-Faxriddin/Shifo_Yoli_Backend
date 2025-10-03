@@ -1,9 +1,10 @@
 // dto/create-message.dto.ts
-import { IsNotEmpty, IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsEnum, IsArray } from 'class-validator';
 
 export class CreateChatDto {
-  @IsNotEmpty()
-  participantIds: string[]; // userId lar
+  @IsArray()
+  @IsNotEmpty({ each: true })
+  participantIds: string[]; 
 }
 
 export enum MessageType {
@@ -13,11 +14,11 @@ export enum MessageType {
 }
 
 export class CreateMessageDto {
-  @IsNotEmpty()
-  chatId: string;
+  @IsOptional()
+  chatId?: string; 
 
   @IsOptional()
-  receiverId?: string; // agar chat yo‘q bo‘lsa
+  receiverId?: string; 
 
   @IsOptional()
   @IsString()
