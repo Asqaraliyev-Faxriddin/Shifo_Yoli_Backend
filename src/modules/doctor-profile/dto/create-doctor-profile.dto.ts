@@ -60,14 +60,14 @@ export class CreateDoctorProfileDto {
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })
-  images?: Express.Multer.File[];
+  images?: any;
   
   @ApiPropertyOptional({
     description: 'Videolar (multipart/form-data file array)',
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })
-  videos?: Express.Multer.File[];
+  videos?: any;
   
   // futures: string array
   @ApiPropertyOptional({
@@ -135,7 +135,7 @@ export class UpdateDoctorProfileDto {
   })
   @IsOptional()
   images?: any;
-  
+
   @ApiPropertyOptional({
     description: 'Videolar (multipart/form-data file array)',
     type: 'array',
