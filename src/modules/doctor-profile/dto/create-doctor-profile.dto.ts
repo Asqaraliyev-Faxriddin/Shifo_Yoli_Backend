@@ -128,19 +128,19 @@ export class UpdateDoctorProfileDto {
   @IsUUID()
   categoryId?: string;
 
-  @ApiPropertyOptional({
-    description: 'Rasmlar (multipart/form-data file array)',
-    type: 'array',
-    items: { type: 'string', format: 'binary' },
-  })
-  images?: Express.Multer.File[];
+  // @ApiPropertyOptional({
+  //   description: 'Rasmlar (multipart/form-data file array)',
+  //   type: 'array',
+  //   items: { type: 'string', format: 'binary' },
+  // })
+  // images?: Express.Multer.File[];
   
-  @ApiPropertyOptional({
-    description: 'Videolar (multipart/form-data file array)',
-    type: 'array',
-    items: { type: 'string', format: 'binary' },
-  })
-  videos?: Express.Multer.File[];
+  // @ApiPropertyOptional({
+  //   description: 'Videolar (multipart/form-data file array)',
+  //   type: 'array',
+  //   items: { type: 'string', format: 'binary' },
+  // })
+  // videos?: Express.Multer.File[];
   
   // futures: string array
   @ApiPropertyOptional({
