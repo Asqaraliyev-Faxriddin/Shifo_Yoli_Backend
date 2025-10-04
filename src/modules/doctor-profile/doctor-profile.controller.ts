@@ -12,6 +12,7 @@ import {
   BadRequestException,
   Query,
   Get,
+  Req,
 } from '@nestjs/common';
 import { DoctorProfileService } from './doctor-profile.service';
 import {
@@ -69,7 +70,7 @@ export class DoctorProfileController {
     }),
   )
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPERADMIN)
+  @Roles( UserRole.ADMIN, UserRole.SUPERADMIN)
   async createProfile(
     @Param('userId') userId: string,
     @Body() dto: CreateDoctorProfileDto,
@@ -81,7 +82,7 @@ export class DoctorProfileController {
 
   // ===================== UPDATE PROFILE =====================
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPERADMIN)
+  @Roles(UserRole.DOCTOR, UserRole.ADMIN,)
   @Patch('update/:id')
   @ApiOperation({ summary: 'Doctor profilini yangilash' })
   @ApiConsumes('multipart/form-data')
@@ -105,6 +106,62 @@ export class DoctorProfileController {
   ) {
     const images = (files ?? []).map((f) => f?.filename ? `images/${f.filename}` : "");
     return this.doctorProfileService.update(id, dto, images);
+  }
+
+
+  @Post('create-doctor-profile')
+  @ApiOperation({ summary: 'Doctor profili yaratish' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: diskStorage({
+        destination: './uploads/images',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: DoctorProfileController.imageFileFilter,
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    }),
+  )
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPERADMIN)
+  async createProfileDoctor(
+    @Req() req,
+    @Body() dto: CreateDoctorProfileDto,
+    @UploadedFiles() files?: Express.Multer.File[],
+  ) {
+    const images = (files ?? []).map((f) => f?.filename ? `images/${f.filename}` : "");
+    return this.doctorProfileService.create(req.user.id, dto, images);
+  }
+
+  // ===================== UPDATE PROFILE =====================
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPERADMIN)
+  @Patch('doctor/update')
+  @ApiOperation({ summary: 'Doctor profilini yangilash' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: diskStorage({
+        destination: './uploads/images',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: DoctorProfileController.imageFileFilter,
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    }),
+  )
+  async updateProfileDoctor(
+    @Req() req,
+    @Body() dto: UpdateDoctorProfileDto,
+    @UploadedFiles() files?: Express.Multer.File[],
+  ) {
+    const images = (files ?? []).map((f) => f?.filename ? `images/${f.filename}` : "");
+    return this.doctorProfileService.update(req.user.id, dto, images);
   }
 
   // ===================== ADD IMAGE =====================
