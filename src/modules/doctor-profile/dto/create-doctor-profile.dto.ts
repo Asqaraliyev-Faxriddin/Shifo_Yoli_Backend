@@ -60,6 +60,7 @@ export class CreateDoctorProfileDto {
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })
+  @IsOptional()
   images?: any;
   
   @ApiPropertyOptional({
@@ -67,6 +68,7 @@ export class CreateDoctorProfileDto {
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })
+  @IsOptional()
   videos?: any;
   
   // futures: string array
