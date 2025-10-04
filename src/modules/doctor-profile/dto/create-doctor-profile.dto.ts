@@ -61,14 +61,14 @@ export class CreateDoctorProfileDto {
     items: { type: 'string', format: 'binary' },
   })
   images?: Express.Multer.File[];
-
+  
   @ApiPropertyOptional({
     description: 'Videolar (multipart/form-data file array)',
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })
   videos?: Express.Multer.File[];
-
+  
   // futures: string array
   @ApiPropertyOptional({
     description: "Shifokorning kelajakdagi imkoniyatlari yoki qo‘shimcha malakalari",
@@ -76,10 +76,14 @@ export class CreateDoctorProfileDto {
     isArray: true,
     type: String,
   })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',').map(v => v.trim()) : value
+  )
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   futures?: string[];
+  
 }
 
 // ================= UPDATE DOCTOR PROFILE =================
@@ -129,30 +133,30 @@ export class UpdateDoctorProfileDto {
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })
-  @IsOptional()
   images?: Express.Multer.File[];
-
+  
   @ApiPropertyOptional({
     description: 'Videolar (multipart/form-data file array)',
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })
-  @IsOptional()
   videos?: Express.Multer.File[];
-
+  
+  // futures: string array
   @ApiPropertyOptional({
     description: "Shifokorning kelajakdagi imkoniyatlari yoki qo‘shimcha malakalari",
     example: ['Nevrologiya bo‘yicha kurs', 'Yuqori toifadagi sertifikat'],
     isArray: true,
     type: String,
   })
-  @Transform(({ value }) => 
+  @Transform(({ value }) =>
     typeof value === 'string' ? value.split(',').map(v => v.trim()) : value
   )
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   futures?: string[];
+  
   
 }
 
