@@ -1,327 +1,78 @@
-datasource db {
-  provider = "postgresql" 
-  url      = env("DATABASE_URL")
+// 🔟 Top 10 doctor rating bo‘yicha (faqat doctorProfile mavjud va published=true)
+async getTopDoctors() {
+  // 1. Baholangan doktorlarni olish
+  const ratedDoctors = await this.prisma.review.groupBy({
+    by: ['doctorId'],
+    _avg: { rating: true },
+    orderBy: { _avg: { rating: 'desc' } },
+    take: 10,
+  });
+
+  const ratedDoctorIds = ratedDoctors.map((d) => d.doctorId);
+
+  // 2. Baholangan doktorlarni olish (faqat doctorProfile bor va published=true)
+  const ratedDoctorUsers = await this.prisma.user.findMany({
+    where: {
+      id: { in: ratedDoctorIds },
+      role: 'DOCTOR',
+      doctorProfile: { isNot: null, published: true },
+    },
+    include: {
+      doctorProfile: {
+        include: {
+          category: true,
+          salary: {
+            select: { daily: true, weekly: true, monthly: true, yearly: true },
+          },
+        },
+      },
+      reviewsReceived: {
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          createdAt: true,
+          user: { select: { id: true, firstName: true, lastName: true } },
+        },
+      },
+    },
+  });
+
+  const remainingCount = 10 - ratedDoctorUsers.length;
+
+  // 3. Yetishmagan joyni baholanmagan DOCTOR lar bilan to‘ldirish
+  let unratedDoctors: any[] = [];
+  if (remainingCount > 0) {
+    unratedDoctors = await this.prisma.user.findMany({
+      where: {
+        role: 'DOCTOR',
+        doctorProfile: { isNot: null, published: true }, // 🔥 faqat doctorProfile bor va published
+        NOT: { id: { in: ratedDoctorIds } }, // baholanganlarni chiqarib tashlash
+      },
+      take: remainingCount,
+      orderBy: { createdAt: 'asc' }, // eski ro‘yxatdan olish (xohlasa o‘zgartirish mumkin)
+      include: {
+        doctorProfile: {
+          include: {
+            category: true,
+            salary: {
+              select: { daily: true, weekly: true, monthly: true, yearly: true },
+            },
+          },
+        },
+        reviewsReceived: {
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            createdAt: true,
+            user: { select: { id: true, firstName: true, lastName: true } },
+          },
+        },
+      },
+    });
+  }
+
+  // 4. Birlashtirib qaytarish
+  return [...ratedDoctorUsers, ...unratedDoctors].slice(0, 10);
 }
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-
-
-enum MessageType {
-  TEXT
-  FILE
-  VIDEO
-}
-
-enum DeviceType {
-  
-  register
-  login
-}
-
-
-enum TransactionType {
-  CREDIT  // Hisobga tushdi
-  DEBIT   // Hisobdan chiqdi
-}
-
-enum PaymentType {
-  COMPANY  
-  USER_PAYMENT   
-}
-
-
-enum UserRole {
-  BEMOR
-  DOCTOR
-  ADMIN
-  SUPERADMIN
-}
-
- 
-model User {
-  id               String             @id @default(uuid())
-  email            String             @unique()
-  firstName        String
-  lastName         String
-  password String
-  age              Int
-  year Int?
-  month Int?
-  day Int?
-  phoneNumber      String?             @unique()
-  role             UserRole           @default(BEMOR)
-  profileImg       String?
-  isActive Boolean          @default(true)
-
-    isOnline         Boolean            @default(false)
-  lastSeen         DateTime?
-
-  doctorProfile    DoctorProfile?     @relation("UserDoctorProfile")
-
-  devices          Device[]
-  wallet           Wallet?
-
-  ChatParticipant ChatParticipant[]
-  Message         Message[]
-  UserNotification UserNotification[]
-  
-  meetingsAsUser   Meeting[]          @relation("MeetingsUser")
-  meetingsAsDoctor Meeting[]          @relation("MeetingsDoctor")
-
-  reviewsGiven     Review[]           @relation("ReviewsGiven")
-  reviewsReceived  Review[]           @relation("ReviewsReceived")
-
-  blockedUser      BlockedUsers?
-  meetingsMessages MeetingMessage[] 
-
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt()
-}
-
-model DoctorCategory {
-  id        String          @id @default(uuid())
-  name    String @unique()
-  img String? 
-  doctors   DoctorProfile[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt() 
-} 
-
-model DoctorProfile {
-  id         String          @id @default(uuid())
-  doctor     User            @relation("UserDoctorProfile", fields: [doctorId], references: [id], onDelete: Cascade)
-  doctorId   String          @unique
-
-  category   DoctorCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId String
-
-  bio      String
-
-
-  published Boolean @default(false)
-
-  salary    DoctorSalary[]
-
-  images     Json? @default("[]")    
-  videos     Json?  @default("[]")
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt()
-
-
-}
-
-
-model DoctorSalary {
-  id          String        @id @default(uuid())
-  doctor      DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  doctorId    String        @unique
-
-  free        Boolean       @default(false) 
-  daily       Decimal?      // 1 kunga maosh
-  weekly      Decimal?      // 1 haftaga maosh
-  monthly     Decimal?      // 1 oyga maosh
-  yearly      Decimal?      // 1 yilga maosh
-
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt()
-}
-
-
-
-
-enum MeetingStatus {
-  PENDING
-  ONGOING
-  FINISHED
-  CANCELED
-}
-
-model Meeting {
-  id          String         @id @default(uuid())
-
-  user        User           @relation("MeetingsUser", fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-
-  doctor      User           @relation("MeetingsDoctor", fields: [doctorId], references: [id], onDelete: Cascade)
-  doctorId    String
-
-  scheduledAt DateTime?
-  duration    Int?
-  meetingLink String?
-
-  status      MeetingStatus  @default(PENDING)
-
-  messages    MeetingMessage[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt()
-}
-
-model MeetingMessage {
-  id         String   @id @default(uuid())
-  meeting    Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-  meetingId  String
-
-  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  senderId   String
-
-  content    String?
-  type       MessageType @default(TEXT)
-
-  createdAt  DateTime @default(now())
-}
-
-
-model Review {
-  id        String   @id @default(uuid())
-
-  user      User     @relation("ReviewsGiven", fields: [userId], references: [id], onDelete: Cascade)
-  userId    String @unique
-
-  doctor    User     @relation("ReviewsReceived", fields: [doctorId], references: [id], onDelete: Cascade)
-  doctorId  String
-
-  rating    Int    
-  comment   String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-}
-
-model Wallet {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @unique
-
-  balance   Decimal  @default(0) // hisobdagi mablag‘
-
-  transactions WalletTransaction[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-}
-
-model WalletTransaction {
-  id        String   @id @default(uuid())
-  wallet    Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  walletId  String
-
-  type      TransactionType
-  amount    Decimal
-  source    PaymentType? @default(COMPANY)
-  meta      Json?
-
-  createdAt DateTime @default(now())
-}
-
-
-model UserNotification {
-  id             String        @id @default(uuid())
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
-  message String?
-  isRead         Boolean       @default(false)
-  readAt         DateTime?
-
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt()
-}
-
-
-
-
-
-model BlockedUsers {
-  id        String   @id @default(uuid())      
-   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String?  @unique
-  reason    String?
-  deviceId  String?
-  device    Device?  @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-}
-
-model Device {
-  id         String   @id @default(uuid())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
-  deviceType DeviceType @default(register)
-  deviceId   String   @unique   
-  name       String?            
-  platform   String?          
-  address    String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt()
-
-  blockedUsers BlockedUsers[]   
-}
-
-
-
-
-
-model Chat {
-  id          String             @id @default(uuid())
-  participants ChatParticipant[]
-
-  messages    Message[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt()
-
-  @@unique([id]) 
-}
-model Message {
-  id        String   @id @default(uuid())
-
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  chatId    String
-
-  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  senderId  String
-
-  message   String?
-
-  type      MessageType @default(TEXT) 
-
-  isRead    Boolean  @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-}
-
-model ChatParticipant {
-  id      String @id @default(uuid())
-
-  chat    Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  chatId  String
-
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  String
-
-  @@unique([chatId, userId]) 
-
-
-}
-
-
-model Contact {
-
-  id       Int   @id @default(autoincrement())
-  message  String
-  email    String
-  phone    String?
-  unique String @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-
-
-}
-
-

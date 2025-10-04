@@ -6,9 +6,9 @@ export class PublicService {
   constructor(private readonly prisma: PrismaService) {}
 
   // 🔟 Top 10 doctor rating bo‘yicha
-// 🔟 Top 10 doctor rating bo‘yicha
+// 🔟 Top 10 doctor rating bo‘yicha (faqat doctorProfile mavjud va published=true)
 async getTopDoctors() {
-
+  // 1. Baholangan doktorlarni olish
   const ratedDoctors = await this.prisma.review.groupBy({
     by: ['doctorId'],
     _avg: { rating: true },
@@ -16,20 +16,59 @@ async getTopDoctors() {
     take: 10,
   });
 
-  const ratedDoctorIds = ratedDoctors.map(d => d.doctorId);
+  const ratedDoctorIds = ratedDoctors.map((d) => d.doctorId);
 
-  // 2. Agar baholanganlar soni < 10 bo‘lsa, qolganini baholanmagan DOCTOR lar bilan to‘ldirish
-  const remainingCount = 10 - ratedDoctorIds.length;
+  // 2. Baholangan doktorlarni olish (faqat doctorProfile bor va published=true)
+  const ratedDoctorUsers = await this.prisma.user.findMany({
+    where: {
+      id: { in: ratedDoctorIds },
+      role: 'DOCTOR',
+      doctorProfile: {
+        is: {
+          published: true, // faqat doctorProfile mavjud va published = true
+        },
+      },
+    },
+    
+    include: {
+      doctorProfile: {
+        include: {
+          category: true,
+          salary: {
+            select: { daily: true, weekly: true, monthly: true, yearly: true },
+          },
+        },
+      },
+      reviewsReceived: {
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          createdAt: true,
+          user: { select: { id: true, firstName: true, lastName: true } },
+        },
+      },
+    },
+  });
 
+  const remainingCount = 10 - ratedDoctorUsers.length;
+
+  // 3. Yetishmagan joyni baholanmagan DOCTOR lar bilan to‘ldirish
   let unratedDoctors: any[] = [];
   if (remainingCount > 0) {
     unratedDoctors = await this.prisma.user.findMany({
       where: {
         role: 'DOCTOR',
+        doctorProfile: {
+          is: {
+            published: true,   // faqat doctorProfile mavjud va published = true
+          },
+        },
+         // 🔥 faqat doctorProfile bor va published
         NOT: { id: { in: ratedDoctorIds } }, // baholanganlarni chiqarib tashlash
       },
       take: remainingCount,
-      orderBy: { createdAt: 'asc' }, // eng eski yaratilganlarni olish
+      orderBy: { createdAt: 'asc' }, // eski ro‘yxatdan olish (xohlasa o‘zgartirish mumkin)
       include: {
         doctorProfile: {
           include: {
@@ -52,33 +91,10 @@ async getTopDoctors() {
     });
   }
 
-  // 3. Baholangan DOCTOR larni user bilan olish
-  const ratedDoctorUsers = await this.prisma.user.findMany({
-    where: { id: { in: ratedDoctorIds } },
-    include: {
-      doctorProfile: {
-        include: {
-          category: true,
-          salary: {
-            select: { daily: true, weekly: true, monthly: true, yearly: true },
-          },
-        },
-      },
-      reviewsReceived: {
-        select: {
-          id: true,
-          rating: true,
-          comment: true,
-          createdAt: true,
-          user: { select: { id: true, firstName: true, lastName: true } },
-        },
-      },
-    },
-  });
-
   // 4. Birlashtirib qaytarish
   return [...ratedDoctorUsers, ...unratedDoctors].slice(0, 10);
 }
+
 
   // 🏆 Haftaning eng zo‘r doctori (oxirgi 7 kunda eng ko‘p review olgan)
   async getBestDoctorOfWeek() {
