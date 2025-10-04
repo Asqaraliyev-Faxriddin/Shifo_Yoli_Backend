@@ -23,7 +23,7 @@ export class ContactService {
       where: { unique },
     });
 
-    if (lastContact) {
+    if (lastContact) { 
       const now = new Date();
       const diffMs = now.getTime() - lastContact.createdAt.getTime();
       const diffMinutes = Math.floor(diffMs / 1000 / 60);
