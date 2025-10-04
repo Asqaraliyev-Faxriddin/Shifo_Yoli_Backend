@@ -231,7 +231,7 @@ export class DoctorProfileController {
         }),
         fileFilter: (req, file, cb) => {
           if (file.fieldname === 'images') {
-            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+            if (!file.mimetype.match(/image\/(jpg|jpeg|png|gif|webp)$/)) {
               return cb(
                 new UnsupportedMediaTypeException(
                   'Faqat rasm fayllar yuklash mumkin',
@@ -308,7 +308,7 @@ export class DoctorProfileController {
         }),
         fileFilter: (req, file, cb) => {
           if (file.fieldname === 'images') {
-            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+            if (!file.mimetype.match(/image\/(jpg|jpeg|png|gif|webp)$/)) {
               return cb(new UnsupportedMediaTypeException('Faqat rasm fayllar yuklash mumkin'), false);
             }
           }
