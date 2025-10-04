@@ -1,6 +1,6 @@
 // src/modules/doctor-profile/doctor-profile.service.ts
 
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import {
   CreateDoctorProfileDto,
@@ -23,6 +23,14 @@ export class DoctorProfileService {
     private readonly mailerService: AppMailerService,
   ) {}
 
+
+  private  parseBoolean = (val: any) => {
+    if (val === "true" || val === true) return true;
+    if (val === "false" || val === false) return false;
+    return undefined; // yoki null
+  };
+
+
   private deleteFileFromUploads(filePath: string) {
     try {
       const fullPath = path.join(process.cwd(), 'uploads', filePath);
@@ -36,15 +44,58 @@ export class DoctorProfileService {
 
 
   async create(userId: string,dto: CreateDoctorProfileDto,images?: string[], videos?: string[],) {
-    await this.prisma.doctorProfile.create({
+   
+    let oldtr = await this.prisma.doctorProfile.findFirst({
+      where:{
+        doctorId:userId
+      }
+     })
+
+     if(oldtr){
+
+      throw new UnauthorizedException("Sizda allaqachon doctor profile mavjud")
+     }
+
+     let user = await this.prisma.user.findFirst({
+      where:{
+        role:"DOCTOR",
+        id:userId
+      }
+     })
+
+     if(!user){
+
+      throw new UnauthorizedException("Bunday doctor mavjud emas")
+    }
+
+    
+    let olduser = await this.prisma.doctorProfile.create({
       data: {
         bio: dto.bio,
         categoryId: dto.categoryId,
         images: images ?? [],
         videos: videos ?? [],
         doctorId: userId,
+        futures:dto.futures,
+        
+
+    
       },
+
     });
+
+    if(dto.dailySalary){
+
+      await this.prisma.doctorSalary.create({
+        data:{
+          daily:dto.dailySalary,
+          weekly:dto.dailySalary * 7,
+          monthly:dto.dailySalary * 30,
+          yearly:dto.dailySalary * 365,
+          doctorId:olduser.id
+        }
+      })
+    }
 
     // 🎯 Email yuborish
     await this.mailerService.sendNotificationEmail(
@@ -68,31 +119,92 @@ export class DoctorProfileService {
     const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
     if (!doctor) throw new NotFoundException('Doctor profile not found');
   
-    // ✅ Faqat mavjud maydonlarni update qilish
     const data: any = {};
-    if (dto.bio !== undefined) data.bio = dto.bio;
-    if (dto.dailySalary !== undefined) data.dailySalary = dto.dailySalary;
-    if (dto.free !== undefined) data.free = dto.free;
-    if (dto.categoryId !== undefined) data.categoryId = dto.categoryId;
-    if (images && images.length) data.images = images;
-    if (videos && videos.length) data.videos = videos;
   
+    // ✅ Bio
+    if (dto.bio !== undefined) {
+      data.bio = dto.bio;
+    }
+  
+    // ✅ CategoryId bo‘lsa — tekshir
+    if (dto.categoryId !== undefined) {
+      if (dto.categoryId.trim()) {
+        const categoryExists = await this.prisma.doctorCategory.findUnique({
+          where: { id: dto.categoryId },
+        });
+        if (!categoryExists) {
+          throw new BadRequestException('Bunday kategoriya mavjud emas');
+        }
+        data.categoryId = dto.categoryId;
+      } else {
+        data.categoryId = doctor.categoryId;
+      }
+    }
+  
+    // ✅ Images
+    if (images && images.length) {
+      data.images = images;
+    }
+  
+    // ✅ Videos
+    if (videos && videos.length) {
+      data.videos = videos;
+    }
+  
+    // ✅ Futures
+    if (dto.futures !== undefined) {
+      data.futures = dto.futures;
+    }
+  
+    // ✅ DoctorProfile ni yangilash
     await this.prisma.doctorProfile.update({
       where: { id },
       data,
     });
   
-    // ✅ SuperAdmin’larni olish
+    // ✅ Maoshni tekshir va yangilash
+    if (dto.dailySalary !== undefined || dto.free !== undefined) {
+      const existingSalary = await this.prisma.doctorSalary.findFirst({
+        where: { doctorId: id },
+      });
+  
+      const salaryData: any = {};
+      if (dto.dailySalary !== undefined) {
+        salaryData.daily = dto.dailySalary;
+        salaryData.weekly = dto.dailySalary * 7;
+        salaryData.monthly = dto.dailySalary * 30;
+        salaryData.yearly = dto.dailySalary * 365;
+      }
+  
+      if (dto.free !== undefined) {
+        salaryData.free = this.parseBoolean(dto.free);
+      }
+  
+      if (existingSalary) {
+        await this.prisma.doctorSalary.update({
+          where: { id: existingSalary.id },
+          data: salaryData,
+        });
+      } else {
+        await this.prisma.doctorSalary.create({
+          data: {
+            ...salaryData,
+            doctorId: id,
+          },
+        });
+      }
+    }
+  
+    // ✅ SuperAdminlarga email yuborish
     const superAdmins = await this.prisma.user.findMany({
       where: { role: 'SUPERADMIN' },
     });
   
-    // 🎯 Har bir SuperAdmin’ga email yuborish
     await Promise.all(
       superAdmins.map((admin) =>
         this.mailerService.sendNotificationEmail(
-            admin.email,
-          `Manashu doctor Profilini yangiladi email : ${data.email}  ` ,
+          admin.email,
+          `Doktor profili yangilandi`,
           `Doctor profili yangilandi: ${id}`,
         ),
       ),
@@ -100,10 +212,13 @@ export class DoctorProfileService {
   
     return {
       success: true,
-      message: 'Doctor profili muvaffaqiyatli yangilandi va SuperAdmin’larga siz yangilaniz haqida xabar yuborildi',
-      data
+      message:
+        'Doctor profili muvaffaqiyatli yangilandi va SuperAdmin’larga xabar yuborildi',
+      data,
     };
   }
+  
+  
   
 
   // ✅ Profilni o‘chirish

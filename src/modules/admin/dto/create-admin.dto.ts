@@ -215,59 +215,76 @@
   // ==================== UPDATE DTO ====================
   export class UpdateUserDto {
   
-    @ApiProperty({
+    @ApiPropertyOptional({
       example: "@example.com",
       description: "Foydalanuvchining telefon raqami, +998 bilan boshlanishi kerak",
   })
   @IsString()
   @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  @IsOptional()
+  email?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
       example: "superPassword123",
       minLength: 8,
       maxLength: 16,
       description: "Foydalanuvchining paroli, 8-16 ta belgidan iborat bo'lishi kerak",
   })
-  @IsNotEmpty()
   @IsString()
+  @IsOptional()
   @Length(8, 16)
-  password: string;
+  password?: string;
 
 
 
-  @ApiProperty({
+  @ApiPropertyOptional({
+      example: "Azamjon Faxriddinov",
+      minLength: 5,
+      maxLength: 50,
+      description: "Foydalanuvchining to'liq ismi",
+  })
+  @IsOptional()
+  @IsString()
+  @Length(5, 50)
+  lastName?: string;
+
+
+  @ApiPropertyOptional({
       example: "Azamjon Faxriddinov",
       minLength: 5,
       maxLength: 50,
       description: "Foydalanuvchining to'liq ismi",
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @Length(5, 50)
-  lastName: string;
+  firstName?: string;
 
-
-  @ApiProperty({
-      example: "Azamjon Faxriddinov",
-      minLength: 5,
-      maxLength: 50,
-      description: "Foydalanuvchining to'liq ismi",
-  })
-  @IsString()
-  @IsNotEmpty()
-  @Length(5, 50)
-  firstName: string;
-
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNumber()
-  @IsNotEmpty()
-  age:number
+  @IsOptional()
+  age?:number
 
     @ApiProperty({ type: "string", format: "binary", required: false, description: "Profil rasmi" })
     @IsOptional()
     profileImg?: Express.Multer.File;
+
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    phoneNumber?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    day?: number;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    month?: number;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    year?: number;
   }
 
 

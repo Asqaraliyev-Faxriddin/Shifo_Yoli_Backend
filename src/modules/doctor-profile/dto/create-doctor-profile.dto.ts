@@ -1,7 +1,7 @@
 // src/modules/doctor-profile/dto/create-doctor-profile.dto.ts
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsOptional,
   IsString,
@@ -33,6 +33,7 @@ export class CreateDoctorProfileDto {
     example: 150000,
   })
   @ValidateIf((o) => o.free === false || o.free === undefined)
+  @Type(() => Number)
   @IsNumber()
   dailySalary?: number;
 
@@ -43,6 +44,7 @@ export class CreateDoctorProfileDto {
   })
   @ValidateIf((o) => o.dailySalary === undefined)
   @IsBoolean()
+  @IsOptional()
   free?: boolean;
 
   @ApiProperty({
@@ -50,25 +52,34 @@ export class CreateDoctorProfileDto {
     example: '7b6e3f0c-7c56-4e59-9c2c-123456789abc',
   })
   @IsUUID()
-  categoryId: string;
+  categoryId!: string;
+
+  // Fayllar (multipart/form-data) — Swagger uchun array of binary
+  @ApiPropertyOptional({
+    description: 'Rasmlar (multipart/form-data file array)',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+  })
+  images?: Express.Multer.File[];
 
   @ApiPropertyOptional({
-    description: 'Rasmlar ro‘yxati (URL array)',
-    example: ['https://example.com/image1.png', 'https://example.com/image2.png'],
+    description: 'Videolar (multipart/form-data file array)',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+  })
+  videos?: Express.Multer.File[];
+
+  // futures: string array
+  @ApiPropertyOptional({
+    description: "Shifokorning kelajakdagi imkoniyatlari yoki qo‘shimcha malakalari",
+    example: ['Nevrologiya bo‘yicha kurs', 'Yuqori toifadagi sertifikat'],
+    isArray: true,
+    type: String,
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  images?: string[] | null;
-
-  @ApiPropertyOptional({
-    description: 'Videolar ro‘yxati (URL array)',
-    example: ['https://example.com/video1.mp4', 'https://example.com/video2.mp4'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  videos?: string[] | null;
+  futures?: string[];
 }
 
 // ================= UPDATE DOCTOR PROFILE =================
@@ -78,6 +89,7 @@ export class UpdateDoctorProfileDto {
     example: 'Men 10 yillik tajribaga ega shifokorman.',
   })
   @IsOptional()
+  @IsNotEmpty()
   @IsString()
   bio?: string;
 
@@ -85,7 +97,9 @@ export class UpdateDoctorProfileDto {
     description: 'Kunlik maosh (faqat bitta salary)',
     example: 150000,
   })
+  @IsOptional()
   @ValidateIf((o) => o.free === false || o.free === undefined)
+  @Type(() => Number)
   @IsNumber()
   dailySalary?: number;
 
@@ -94,6 +108,7 @@ export class UpdateDoctorProfileDto {
     example: false,
     default: false,
   })
+  @IsOptional()
   @ValidateIf((o) => o.dailySalary === undefined)
   @IsBoolean()
   free?: boolean;
@@ -102,26 +117,43 @@ export class UpdateDoctorProfileDto {
     description: 'DoctorCategory ID (kategoriya)',
     example: '7b6e3f0c-7c56-4e59-9c2c-123456789abc',
   })
+  @IsOptional()
+  @ValidateIf((o) => o.categoryId !== '')
+  @IsString()
+  @Length(36, 36)
   @IsUUID()
   categoryId?: string;
 
   @ApiPropertyOptional({
-    description: 'Rasmlar ro‘yxati (URL array)',
-    example: ['https://example.com/image1.png', 'https://example.com/image2.png'],
+    description: 'Rasmlar (multipart/form-data file array)',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
   })
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  images?: string[] | null;
+  images?: Express.Multer.File[];
 
   @ApiPropertyOptional({
-    description: 'Videolar ro‘yxati (URL array)',
-    example: ['https://example.com/video1.mp4', 'https://example.com/video2.mp4'],
+    description: 'Videolar (multipart/form-data file array)',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
   })
+  @IsOptional()
+  videos?: Express.Multer.File[];
+
+  @ApiPropertyOptional({
+    description: "Shifokorning kelajakdagi imkoniyatlari yoki qo‘shimcha malakalari",
+    example: ['Nevrologiya bo‘yicha kurs', 'Yuqori toifadagi sertifikat'],
+    isArray: true,
+    type: String,
+  })
+  @Transform(({ value }) => 
+    typeof value === 'string' ? value.split(',').map(v => v.trim()) : value
+  )
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  videos?: string[] | null;
+  futures?: string[];
+  
 }
 
 export class AddVideoDto {

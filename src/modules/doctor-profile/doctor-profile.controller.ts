@@ -13,6 +13,7 @@ import {
   Query,
   Get,
   Req,
+  UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { DoctorProfileService } from './doctor-profile.service';
 import {
@@ -24,7 +25,7 @@ import {
   RemoveVideoDto,
 } from './dto/create-doctor-profile.dto';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -54,115 +55,298 @@ export class DoctorProfileController {
   };
 
   @Post('create/:userId')
-  @ApiOperation({ summary: 'Doctor profili yaratish' })
+  @ApiOperation({ summary: 'Doctor profili yaratish (Admin)' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    FilesInterceptor('images', 10, {
-      storage: diskStorage({
-        destination: './uploads/images',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+    FileFieldsInterceptor(
+      [
+        {
+          name: 'images',
+          maxCount: 10,
         },
-      }),
-      fileFilter: DoctorProfileController.imageFileFilter,
-      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-    }),
+        {
+          name: 'videos',
+          maxCount: 5,
+        },
+      ],
+      {
+        storage: diskStorage({
+          destination: (req, file, cb) => {
+            if (file.fieldname === 'images') cb(null, './uploads/images');
+            else if (file.fieldname === 'videos') cb(null, './uploads/videos');
+          },
+          filename: (req, file, cb) => {
+            const uniqueSuffix =
+              Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(
+              null,
+              `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`,
+            );
+          },
+        }),
+        fileFilter: (req, file, cb) => {
+          if (file.fieldname === 'images') {
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+              return cb(
+                new UnsupportedMediaTypeException(
+                  'Faqat rasm fayllar yuklash mumkin',
+                ),
+                false,
+              );
+            }
+          }
+          if (file.fieldname === 'videos') {
+            if (!file.mimetype.match(/\/(mp4|avi|mov|mkv)$/)) {
+              return cb(
+                new UnsupportedMediaTypeException(
+                  'Faqat video fayllar yuklash mumkin',
+                ),
+                false,
+              );
+            }
+          }
+          cb(null, true);
+        },
+        limits: { fileSize: 150 * 1024 * 1024 }, // 150MB
+      },
+    ),
   )
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles( UserRole.ADMIN, UserRole.SUPERADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
   async createProfile(
     @Param('userId') userId: string,
     @Body() dto: CreateDoctorProfileDto,
-    @UploadedFiles() files?: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      images?: Express.Multer.File[];
+      videos?: Express.Multer.File[];
+    },
   ) {
-    const images = (files ?? []).map((f) => f?.filename ? `images/${f.filename}` : "");
-    return this.doctorProfileService.create(userId, dto, images);
+    const images = (files?.images ?? []).map((f) =>
+      f?.filename ? `images/${f.filename}` : '',
+    );
+    const videos = (files?.videos ?? []).map((f) =>
+      f?.filename ? `videos/${f.filename}` : '',
+    );
+
+    return this.doctorProfileService.create(userId, dto, images, videos);
   }
 
   // ===================== UPDATE PROFILE =====================
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.DOCTOR, UserRole.ADMIN,)
+  @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
   @Patch('update/:id')
-  @ApiOperation({ summary: 'Doctor profilini yangilash' })
+  @ApiOperation({ summary: 'Doctor profilini yangilash (Admin)' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    FilesInterceptor('images', 10, {
-      storage: diskStorage({
-        destination: './uploads/images',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+    FileFieldsInterceptor(
+      [
+        {
+          name: 'images',
+          maxCount: 10,
         },
-      }),
-      fileFilter: DoctorProfileController.imageFileFilter,
-      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-    }),
+        {
+          name: 'videos',
+          maxCount: 5,
+        },
+      ],
+      {
+        storage: diskStorage({
+          destination: (req, file, cb) => {
+            if (file.fieldname === 'images') cb(null, './uploads/images');
+            else if (file.fieldname === 'videos') cb(null, './uploads/videos');
+          },
+          filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+          },
+        }),
+        fileFilter: (req, file, cb) => {
+          if (file.fieldname === 'images') {
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+              return cb(new UnsupportedMediaTypeException('Faqat rasm fayllar yuklash mumkin'), false);
+            }
+          }
+          if (file.fieldname === 'videos') {
+            if (!file.mimetype.match(/\/(mp4|avi|mov|mkv)$/)) {
+              return cb(new UnsupportedMediaTypeException('Faqat video fayllar yuklash mumkin'), false);
+            }
+          }
+          cb(null, true);
+        },
+        limits: { fileSize: 150 * 1024 * 1024 }, // 50MB videolar uchun
+      },
+    ),
   )
   async updateProfile(
     @Param('id') id: string,
     @Body() dto: UpdateDoctorProfileDto,
-    @UploadedFiles() files?: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      images?: Express.Multer.File[];
+      videos?: Express.Multer.File[];
+    },
   ) {
-    const images = (files ?? []).map((f) => f?.filename ? `images/${f.filename}` : "");
-    return this.doctorProfileService.update(id, dto, images);
+    const images = (files?.images ?? []).map((f) =>
+      f?.filename ? `images/${f.filename}` : '',
+    );
+    const videos = (files?.videos ?? []).map((f) =>
+      f?.filename ? `videos/${f.filename}` : '',
+    );
+  
+    return this.doctorProfileService.update(id, dto, images, videos);
   }
+  
 
 
-  @Post('create-doctor-profile')
-  @ApiOperation({ summary: 'Doctor profili yaratish' })
+  @Post('create/doctor')
+  @ApiOperation({ summary: 'Doctor profili yaratish (Admin)' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    FilesInterceptor('images', 10, {
-      storage: diskStorage({
-        destination: './uploads/images',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+    FileFieldsInterceptor(
+      [
+        {
+          name: 'images',
+          maxCount: 10,
         },
-      }),
-      fileFilter: DoctorProfileController.imageFileFilter,
-      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-    }),
+        {
+          name: 'videos',
+          maxCount: 5,
+        },
+      ],
+      {
+        storage: diskStorage({
+          destination: (req, file, cb) => {
+            if (file.fieldname === 'images') cb(null, './uploads/images');
+            else if (file.fieldname === 'videos') cb(null, './uploads/videos');
+          },
+          filename: (req, file, cb) => {
+            const uniqueSuffix =
+              Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(
+              null,
+              `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`,
+            );
+          },
+        }),
+        fileFilter: (req, file, cb) => {
+          if (file.fieldname === 'images') {
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+              return cb(
+                new UnsupportedMediaTypeException(
+                  'Faqat rasm fayllar yuklash mumkin',
+                ),
+                false,
+              );
+            }
+          }
+          if (file.fieldname === 'videos') {
+            if (!file.mimetype.match(/\/(mp4|avi|mov|mkv)$/)) {
+              return cb(
+                new UnsupportedMediaTypeException(
+                  'Faqat video fayllar yuklash mumkin',
+                ),
+                false,
+              );
+            }
+          }
+          cb(null, true);
+        },
+        limits: { fileSize: 150 * 1024 * 1024 }, // 150MB
+      },
+    ),
   )
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPERADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
   async createProfileDoctor(
     @Req() req,
     @Body() dto: CreateDoctorProfileDto,
-    @UploadedFiles() files?: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      images?: Express.Multer.File[];
+      videos?: Express.Multer.File[];
+    },
   ) {
-    const images = (files ?? []).map((f) => f?.filename ? `images/${f.filename}` : "");
-    return this.doctorProfileService.create(req.user.id, dto, images);
+    const images = (files?.images ?? []).map((f) =>
+      f?.filename ? `images/${f.filename}` : '',
+    );
+    const videos = (files?.videos ?? []).map((f) =>
+      f?.filename ? `videos/${f.filename}` : '',
+    );
+
+    return this.doctorProfileService.create(req.user.id, dto, images, videos);
   }
 
   // ===================== UPDATE PROFILE =====================
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPERADMIN)
-  @Patch('doctor/update')
-  @ApiOperation({ summary: 'Doctor profilini yangilash' })
+  @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
+  @Patch('update/doctor')
+  @ApiOperation({ summary: 'Doctor profilini yangilash (Admin)' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    FilesInterceptor('images', 10, {
-      storage: diskStorage({
-        destination: './uploads/images',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+    FileFieldsInterceptor(
+      [
+        {
+          name: 'images',
+          maxCount: 10,
         },
-      }),
-      fileFilter: DoctorProfileController.imageFileFilter,
-      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-    }),
+        {
+          name: 'videos',
+          maxCount: 5,
+        },
+      ],
+      {
+        storage: diskStorage({
+          destination: (req, file, cb) => {
+            if (file.fieldname === 'images') cb(null, './uploads/images');
+            else if (file.fieldname === 'videos') cb(null, './uploads/videos');
+          },
+          filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+          },
+        }),
+        fileFilter: (req, file, cb) => {
+          if (file.fieldname === 'images') {
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+              return cb(new UnsupportedMediaTypeException('Faqat rasm fayllar yuklash mumkin'), false);
+            }
+          }
+          if (file.fieldname === 'videos') {
+            if (!file.mimetype.match(/\/(mp4|avi|mov|mkv)$/)) {
+              return cb(new UnsupportedMediaTypeException('Faqat video fayllar yuklash mumkin'), false);
+            }
+          }
+          cb(null, true);
+        },
+        limits: { fileSize: 150 * 1024 * 1024 }, // 50MB videolar uchun
+      },
+    ),
   )
   async updateProfileDoctor(
     @Req() req,
     @Body() dto: UpdateDoctorProfileDto,
-    @UploadedFiles() files?: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      images?: Express.Multer.File[];
+      videos?: Express.Multer.File[];
+    },
   ) {
-    const images = (files ?? []).map((f) => f?.filename ? `images/${f.filename}` : "");
-    return this.doctorProfileService.update(req.user.id, dto, images);
+    const images = (files?.images ?? []).map((f) =>
+      f?.filename ? `images/${f.filename}` : '',
+    );
+    const videos = (files?.videos ?? []).map((f) =>
+      f?.filename ? `videos/${f.filename}` : '',
+    );
+  
+    return this.doctorProfileService.update(req.user.id, dto, images, videos);
   }
+  
+
+
+
+  // ===================== UPDATE PROFILE =====================
+
 
   // ===================== ADD IMAGE =====================
   @UseGuards(AuthGuard, RolesGuard)

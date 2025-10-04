@@ -152,7 +152,18 @@ import {
   
       return this.prisma.user.update({
         where: { id },
-        data: { ...dto, profileImg: profileImgUrl ?? user.profileImg },
+        data: { 
+          
+          firstName: dto.firstName ?? user.firstName,
+          lastName: dto.lastName ?? user.lastName,
+          age: dto.age ?? user.age,
+          
+          email: dto.email ?? user.email,
+          day: dto.day ?? user.day,
+          month: dto.month ?? user.month,
+          year: dto.year ?? user.year,
+          phoneNumber: dto.phoneNumber ?? user.phoneNumber,
+          profileImg: profileImgUrl ?? user.profileImg },
       });
     }
   
