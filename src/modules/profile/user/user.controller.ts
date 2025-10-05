@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PublicService } from './user.service';
+import { SearchUserDto } from 'src/modules/admin/dto/create-admin.dto';
 
 @ApiTags('Public') 
 @Controller('User')
@@ -29,5 +30,12 @@ export class PublicController {
   @ApiOperation({ summary: 'Barcha category va doctorlari' })
   async getCategories() {
     return this.publicService.getCategories();
+  }
+
+
+  @Get("doctors/All")
+  @ApiOperation({summary:"Barcha doktorlar publiished true bolganlar"})
+  async DoctorsAll(@Query() payload:SearchUserDto){
+    return this.publicService.doctorsAll(payload)
   }
 }

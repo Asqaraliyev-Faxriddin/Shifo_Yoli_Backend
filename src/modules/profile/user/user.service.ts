@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { SearchUserDto } from 'src/modules/admin/dto/create-admin.dto';
 
 @Injectable()
 export class PublicService {
@@ -217,4 +219,50 @@ async getTopDoctors() {
       },
     });
   }
+
+
+
+  private async searchUsers(dto: SearchUserDto, role: UserRole) {
+    const { firstName, lastName, email, ageFrom, ageTo, categoryId, page, limit } = dto;
+    const skip = (page - 1) * limit;
+    const where: any = { role };
+
+    if (email) where.email = { contains: email, mode: "insensitive" };
+    if (firstName) where.firstName = { contains: firstName, mode: "insensitive" };
+    if (lastName) where.lastName = { contains: lastName, mode: "insensitive" };
+    if (ageFrom || ageTo) {
+      where.age = {};
+      if (ageFrom) where.age.gte = ageFrom;
+      if (ageTo) where.age.lte = ageTo;
+    }
+
+    if(role == UserRole.DOCTOR){
+      where.doctorProfile = {published:true}
+    }
+
+    if (role === UserRole.DOCTOR && categoryId) {
+      where.doctorProfile = { categoryId, };
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+
+        orderBy: { createdAt: "desc" },
+        include: { blockedUser:true,devices:true,doctorProfile: { include: { category: true } }, wallet: true,  },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+  }
+
+
+  async doctorsAll(dto:SearchUserDto){
+    return this.searchUsers(dto,UserRole.DOCTOR)
+
+  }
+
 }
