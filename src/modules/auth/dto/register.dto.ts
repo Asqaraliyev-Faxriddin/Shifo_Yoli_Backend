@@ -53,10 +53,6 @@ export class RegisterDto {
     @IsNotEmpty()
     age:number
 
-    @ApiProperty()
-    @IsNumber()
-    @IsNotEmpty()
-    year?:number
 
     @ApiProperty()
     @IsNumber()
