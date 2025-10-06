@@ -115,7 +115,6 @@ export class ProfileService {
         lastName: dto.lastName || user.lastName,
         day: Number(dto.day) || user.day,
         month:Number(dto.month) || user.month,
-        year:Number(dto.year) || user.year,
         age:Number(dto.age) || Number(user.age),
 
     

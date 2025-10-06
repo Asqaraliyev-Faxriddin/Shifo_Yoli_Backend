@@ -282,9 +282,7 @@
     @IsOptional()
     month?: number;
 
-    @ApiPropertyOptional()
-    @IsOptional()
-    year?: number;
+  
   }
 
 

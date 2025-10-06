@@ -37,4 +37,21 @@ export class GooglePass {
     @IsNotEmpty()
     @IsNumber()
     age: number;
+
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsNumber()
+    day:number
+
+
+
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsNumber()
+    month:number
+
+
+
 }

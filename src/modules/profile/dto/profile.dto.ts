@@ -29,11 +29,6 @@ export class UpdateProfileDto {
   age?:number
 
 
-    @ApiPropertyOptional()
-    @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
-    year?:number
 
     @ApiPropertyOptional()
     @IsNumber()

@@ -61,7 +61,6 @@ export class AuthService {
         profileImg: "",
         day:payload.day || 0,
         month:payload.month || 0,
-        year:payload.year || 0,
 
         phoneNumber:payload.phoneNumber || "",
         email,
@@ -223,7 +222,12 @@ export class AuthService {
 
     data = await this.prisma.user.update({
       where: { id: userId },
-      data: { password: hashPassword,age:payload.age },
+      data: { 
+        password: hashPassword,
+        age:payload.age,
+        day:payload.day,
+        month:payload.month,
+       },
     });
 
     return {
