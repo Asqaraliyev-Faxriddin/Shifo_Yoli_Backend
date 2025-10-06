@@ -65,10 +65,6 @@ export class RegisterDto {
     day?:number
 
 
-    @ApiPropertyOptional()
-    @IsOptional()
-    @IsPhoneNumber("UZ")
-    phoneNumber?:string
 
     @ApiProperty({
         example: "123456",

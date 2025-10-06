@@ -62,7 +62,6 @@ export class AuthService {
         day:payload.day || 0,
         month:payload.month || 0,
 
-        phoneNumber:payload.phoneNumber || "",
         email,
         role: UserRole.BEMOR,
         password: hashPassword,
