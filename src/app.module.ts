@@ -32,7 +32,7 @@ import { ContactModule } from './modules/contact/contact.module';
 
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), "uploads", "images"),
-      serveRoot: "/images/file", 
+      serveRoot: "/images", 
     }),
 
     ServeStaticModule.forRoot({
