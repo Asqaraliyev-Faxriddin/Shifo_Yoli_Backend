@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PublicService } from './user.service';
 import { SearchUserDto } from 'src/modules/admin/dto/create-admin.dto';
@@ -38,4 +38,13 @@ export class PublicController {
   async DoctorsAll(@Query() payload:SearchUserDto){
     return this.publicService.doctorsAll(payload)
   }
+
+  
+  @Get("doctorOne/:id")
+  @ApiOperation({summary:"Barcha doktorlar publiished true bolganlar"})
+  async DoctorOne(@Param("id",ParseUUIDPipe) id:string ){
+    return this.publicService.doctorOne(id)
+  }
+
+
 }

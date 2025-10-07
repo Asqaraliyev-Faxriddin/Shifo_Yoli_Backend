@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { SearchUserDto } from 'src/modules/admin/dto/create-admin.dto';
@@ -251,7 +251,7 @@ async getTopDoctors() {
         take: limit,
 
         orderBy: { createdAt: "desc" },
-        include: { blockedUser:true,devices:true,doctorProfile: { include: { category: true } }, wallet: true,  },
+        include: { doctorProfile: { include: { category: true } }, wallet: true,  },
       }),
       this.prisma.user.count({ where }),
     ]);
@@ -264,5 +264,35 @@ async getTopDoctors() {
     return this.searchUsers(dto,UserRole.DOCTOR)
 
   }
+
+
+  async doctorOne(id:string){
+    let olddoctor = await this.prisma.user.findFirst({
+      where:{
+        role:"DOCTOR",
+        id
+      },
+      include:{
+        doctorProfile:{
+          include:{
+            category:true
+          }
+        },
+
+        wallet:true
+
+      }
+    })
+
+    if(!olddoctor) throw new NotFoundException("Doktor Topilmadi")
+      
+
+      return {
+        data:olddoctor
+      }
+
+  
+  
+    }
 
 }
