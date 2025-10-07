@@ -250,7 +250,7 @@ async getTopDoctors() {
         skip,
         take: limit,
 
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: "desc" },
         include: { blockedUser:true,devices:true,doctorProfile: { include: { category: true } }, wallet: true,  },
       }),
       this.prisma.user.count({ where }),
