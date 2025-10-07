@@ -17,7 +17,7 @@ export class SeaderService implements OnModuleInit {
     }
 
     async CreateSuperadmin() {
-      let password = await bcrypt.hash("11201111",10)
+      let password = await bcrypt.hash("11201123",10)
         await this.prisma.user.createMany({
           data: [
             {
