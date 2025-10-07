@@ -50,8 +50,8 @@ model User {
   age              Int
   month Int?
   day Int?
-  phoneNumber      String?             @unique()
-  role             UserRole           @default(BEMOR) 
+  phoneNumber      String?            
+  role             UserRole           @default(BEMOR)
   profileImg       String?
   isActive Boolean          @default(true)
 
