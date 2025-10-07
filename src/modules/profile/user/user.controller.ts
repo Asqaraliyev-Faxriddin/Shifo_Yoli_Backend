@@ -41,7 +41,7 @@ export class PublicController {
 
   
   @Get("doctorOne/:id")
-  @ApiOperation({summary:"Barcha doktorlar publiished true bolganlar"})
+  @ApiOperation({summary:"Bitta doktorni olish"})
   async DoctorOne(@Param("id",ParseUUIDPipe) id:string ){
     return this.publicService.doctorOne(id)
   }

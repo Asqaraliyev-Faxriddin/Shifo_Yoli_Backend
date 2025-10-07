@@ -20,6 +20,7 @@ import {
   import { Decimal } from "@prisma/client/runtime/library";
   import * as bcrypt from "bcrypt";
   import { AppMailerService } from "src/common/mailer/mailer.service";
+import { use } from "passport";
   
   @Injectable()
   export class AdminService {
@@ -217,6 +218,14 @@ import {
     }
   
     private async updateWallet(userId: string, amount: number, type: TransactionType) {
+      let olduser = await this.prisma.user.findFirst({
+        where:{
+          id:userId
+        }
+      })
+
+      if(!olduser) throw new NotFoundException()
+
       let wallet = await this.prisma.wallet.findUnique({ where: { userId } });
       if (!wallet) {
         wallet = await this.prisma.wallet.create({ data: { userId, balance: new Decimal(0) } });
@@ -279,10 +288,20 @@ import {
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
       if (!user) throw new NotFoundException("User topilmadi");
   
+      let oldblock = await this.prisma.blockedUsers.findFirst({
+        where:{
+          userId
+        }
+      })
+
+      if(!oldblock){
+        return {message:"Bu user bloklangan oldin."}
+      }
+
       await this.prisma.blockedUsers.create({
         data: { userId, reason },
       });
-  
+
       await this.prisma.user.update({ where: { id: userId }, data: { isActive: false } });
   
       await this.sendNotificationEmail(user.email, "Profilingiz bloklandi", reason ?? "Sizning profilingiz bloklandi.");
