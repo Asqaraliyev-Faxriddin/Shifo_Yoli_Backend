@@ -41,8 +41,8 @@ import { UserRole } from "@prisma/client";
   @ApiBearerAuth()
   @ApiTags("Admin") // ✅ Swagger gruppa nomi
   @Controller("admin")
-  // @UseGuards(AuthGuard,RolesGuard)
-  // @Roles(UserRole.SUPERADMIN)
+  @UseGuards(AuthGuard,RolesGuard)
+  @Roles(UserRole.SUPERADMIN)
   export class AdminController {
     constructor(private readonly adminService: AdminService) {}
   
