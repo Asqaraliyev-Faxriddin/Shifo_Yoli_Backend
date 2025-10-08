@@ -218,7 +218,7 @@ import { UserRole } from "@prisma/client";
     }
 
     @Post("notification/all")
-    @ApiOperation({ summary: "Mass deduct funds" })
+    @ApiOperation({ summary: "notification all" })
     async NotificationAll(@Body() dto: NotificationAll) {
       return this.adminService.notificationAll(dto);
     }
