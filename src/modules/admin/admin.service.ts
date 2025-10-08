@@ -250,9 +250,7 @@ import { use } from "passport";
       if(!olduser) throw new NotFoundException()
 
       let wallet = await this.prisma.wallet.findUnique({ where: { userId } });
-      if (!wallet) {
-        wallet = await this.prisma.wallet.create({ data: { userId, balance: new Decimal(0) } });
-      }
+  
   
   
 
@@ -261,7 +259,7 @@ import { use } from "passport";
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
       console.log("user",user);
       
-      if (user && user.email) {
+      if (user && user.email ) {
      
         await this.mailerService.sendNotificationEmail(user.email, title, message);
 

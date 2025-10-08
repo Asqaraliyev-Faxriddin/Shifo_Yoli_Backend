@@ -6,6 +6,11 @@ export class AppMailerService {
   constructor(private mailerService: MailerServices) {}
 
   async sendEmail(email: string, subject: string, code: number) {
+
+    if(!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))){
+      return 
+    }
+
     await this.mailerService.sendMail({
       to: email,
       subject,
@@ -24,11 +29,10 @@ export class AppMailerService {
     message: string,  
     date: Date = new Date(),
   ) {
-    if (!to || !to.includes("@")) {
-      console.warn('Email qabul qiluvchi aniqlanmadi, yuborilmadi.');
-      return;
+    if(!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to))){
+      return 
     }
-  
+
     console.log("emailer", to);
   
     await this.mailerService.sendMail({
@@ -56,6 +60,11 @@ export class AppMailerService {
 
   
   async adminsms(to: string , subject: string,  message: string, date: Date = new Date(),) {
+  
+    if(!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to))){
+      return 
+    }
+
     await this.mailerService.sendMail({
       to,
       subject,

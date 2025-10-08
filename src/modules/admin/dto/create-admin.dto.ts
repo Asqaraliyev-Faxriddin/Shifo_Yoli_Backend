@@ -12,10 +12,12 @@
     IsUUID, 
     IsNumber, 
     IsNotEmpty,
-    Length
+    Length,
+    IsEnum
   } from "class-validator";
   import { Transform, Type } from "class-transformer";
   import { Express } from "express";
+import { UserRole } from "@prisma/client";
 
 
   // ==================== BASE DTO ====================
@@ -400,6 +402,7 @@
   export class MassPaymentDto {
     @ApiProperty({ enum: ["BEMOR", "DOCTOR", "ADMIN"], example: "DOCTOR" })
     @IsString()
+    @IsEnum(UserRole)
     role: string;
 
     @ApiProperty({ example: 50000 })
@@ -421,6 +424,7 @@
   export class NotificationAll {
     @ApiProperty({ enum: ["BEMOR", "DOCTOR", "ADMIN"], example: "DOCTOR" })
     @IsString()
+    @IsEnum(UserRole)
     role: string;
 
 
@@ -439,6 +443,7 @@
   export class MassPaymentDto2 {
     @ApiProperty({ enum: ["BEMOR", "DOCTOR", "ADMIN"], example: "DOCTOR" })
     @IsString()
+    @IsEnum(UserRole)
     role: string;
 
     @ApiProperty({ example: -50000, description: "Foydalanuvchi hisobidan ayriladigan pul (manfiy son)" })
