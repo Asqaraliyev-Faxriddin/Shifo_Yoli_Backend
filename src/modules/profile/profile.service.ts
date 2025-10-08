@@ -13,50 +13,63 @@ export class ProfileService {
   constructor(private prisma: PrismaService,private verificationService:VerificationService) {}
 
 
-  async myProfile(id:string){
+  async myProfile(id: string) {
     console.log("salom");
-    
-    let data = await this.prisma.user.findFirst({
-      where:{id},
-      select:{
-        id:true,
-        firstName:true,
-        lastName:true,
-        email:true,
-        role:true,
-        profileImg:true,
-
-        wallet:true,
-        createdAt:true,
-        updatedAt:true,
-        age:true,
-        devices:{
-          select:{
-            id:true,
-            deviceId:true,
-            deviceType:true,
-            address:true,
-            name:true,
-            createdAt:true,
-            updatedAt:true,
-          }
+  
+    const data = await this.prisma.user.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        profileImg: true,
+        wallet: true,
+        createdAt: true,
+        updatedAt: true,
+        age: true,
+        devices: {
+          select: {
+            id: true,
+            deviceId: true,
+            deviceType: true,
+            address: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+          },
         },
-          meetingsAsDoctor:true,
-        _count:true,
-      }
-    })
-
-    if(!data) throw new NotFoundException("User not found")
-
-      
-      return {
-        succase:true,
-        message:"Succase my profile",
-        data
-      }
-
-    }
-
+        meetingsAsDoctor: true,
+        _count: true,
+      },
+    });
+  
+    if (!data) throw new NotFoundException("User not found");
+  
+    // 🔹 O‘qilmagan va o‘qilgan bildirishnomalar soni
+    const [isFalseRead, isTrueRead] = await Promise.all([
+      this.prisma.userNotification.count({
+        where: { userId: id, isRead: false },
+      }),
+      this.prisma.userNotification.count({
+        where: { userId: id, isRead: true },
+      }),
+    ]);
+  
+    return {
+      success: true,
+      message: "Success my profile",
+      data: {
+        ...data,
+        notifications: {
+          isFalseRead,
+          isTrueRead,
+        },
+      },
+    };
+  }
+  
 
 
     
