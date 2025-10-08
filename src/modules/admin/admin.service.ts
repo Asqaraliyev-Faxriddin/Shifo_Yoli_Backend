@@ -15,6 +15,7 @@ import {
     BroadcastNotificationDto,
     UserPaymentDto,
     MassPaymentDto,
+    NotificationAll,
   } from "./dto/create-admin.dto";
   import { UserRole, TransactionType, PaymentType } from "@prisma/client";
   import { Decimal } from "@prisma/client/runtime/library";
@@ -216,7 +217,60 @@ import { use } from "passport";
       
       return { success: true, count: users.length };
     }
+
+    async notificationAll(dto: NotificationAll) {
+      const users = await this.prisma.user.findMany({ where: { role: dto.role as UserRole } });
+      console.log(users);
+      
+
+      
+      await Promise.all(
+        users.map(u => {
+          if (u.email) {
+            return this.notificationOne(u.id, dto.message,dto.title );
+
+          } else {
+            console.warn(`User ${u.id} uchun email yo'q, pul hisoblandi, lekin email yuborilmadi.`);
+            return this.notificationOne(u.id,dto.message,dto.title || "F");
+          }
+        })
+      );
+      
+      return { success: true, count: users.length };
+    }
   
+  
+    private async notificationOne(userId: string,message:string,title:string) {
+      let olduser = await this.prisma.user.findFirst({
+        where:{
+          id:userId
+        }
+      })
+
+      if(!olduser) throw new NotFoundException()
+
+      let wallet = await this.prisma.wallet.findUnique({ where: { userId } });
+      if (!wallet) {
+        wallet = await this.prisma.wallet.create({ data: { userId, balance: new Decimal(0) } });
+      }
+  
+  
+
+
+  
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      console.log("user",user);
+      
+      if (user && user.email) {
+     
+        await this.mailerService.sendNotificationEmail(user.email, title, message);
+
+        return  {message:"succase"}
+      }
+  
+      return { userId, };
+    }
+
     private async updateWallet(userId: string, amount: number, type: TransactionType) {
       let olduser = await this.prisma.user.findFirst({
         where:{

@@ -416,6 +416,26 @@
     title: string;
   }
 
+
+  
+  export class NotificationAll {
+    @ApiProperty({ enum: ["BEMOR", "DOCTOR", "ADMIN"], example: "DOCTOR" })
+    @IsString()
+    role: string;
+
+
+
+
+    @ApiProperty({ example: "Umumiy xabar matni" })
+    @IsString()
+    message: string;
+
+    @ApiProperty({ example: "Umumiy xabar sarlavhasi" })
+    @IsString()
+    title: string;
+  }
+
+
   export class MassPaymentDto2 {
     @ApiProperty({ enum: ["BEMOR", "DOCTOR", "ADMIN"], example: "DOCTOR" })
     @IsString()

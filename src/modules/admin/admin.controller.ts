@@ -31,6 +31,7 @@ import {
     BroadcastNotificationDto,
     UserPaymentDto,
     MassPaymentDto,
+    NotificationAll,
   } from "./dto/create-admin.dto";
 import { AuthGuard } from "src/common/guards/jwt-auth.guard";
 import { RolesGuard } from "src/common/guards/roles.guard";
@@ -214,6 +215,12 @@ import { UserRole } from "@prisma/client";
     @ApiOperation({ summary: "Mass deduct funds" })
     async massDeduction(@Body() dto: MassPaymentDto) {
       return this.adminService.massDeduction(dto);
+    }
+
+    @Post("notification/all")
+    @ApiOperation({ summary: "Mass deduct funds" })
+    async NotificationAll(@Body() dto: NotificationAll) {
+      return this.adminService.notificationAll(dto);
     }
   
     // ===================== NOTIFICATIONS =====================
