@@ -26,26 +26,39 @@ export class DoctorCategoryService {
 
   async findAll(filter?: CategoryAllDto) {
     const where: any = {};
-
+  
     if (filter?.name) {
       where.name = { contains: filter.name, mode: 'insensitive' };
     }
-
+  
     if (filter?.doctorId) {
       where.doctors = {
         some: { doctorId: filter.doctorId },
       };
     }
-
-    return this.prisma.doctorCategory.findMany({
+  
+    const categories = await this.prisma.doctorCategory.findMany({
       where,
       skip: filter?.offset ?? 0,
       take: filter?.limit ?? 10,
       include: {
+        _count: {
+          select: { doctors: true },
+        },
         doctors: true,
+         
       },
       orderBy: { createdAt: 'desc' },
     });
+  
+
+    return categories;
+  }
+  
+
+
+  async transitionAll(){
+    return this.prisma.walletTransaction.findMany({include:{wallet:{include:{user:true}}}})
   }
 
   // FIND ONE
