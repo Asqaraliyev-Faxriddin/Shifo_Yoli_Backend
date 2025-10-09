@@ -186,7 +186,7 @@ export class AuthService {
     return {
       status: true,
       message: 'Google login successful',
-      data: existingUser,
+      data:{ ...existingUser,isValid:true},
       tokens,
     };
   }

@@ -10,7 +10,7 @@ export class NotificationService {
   private  parseBoolean = (val: any) => {
     if (val === "true" || val === true) return true;
     if (val === "false" || val === false) return false;
-    return undefined; // yoki null
+    return undefined; 
   };
 
   // 🔔 Foydalanuvchining barcha notifikatsiyalari (pagination + filter)
