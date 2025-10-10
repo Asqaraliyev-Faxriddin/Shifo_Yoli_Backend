@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
-import { SearchPaymentDto } from './dto/create-payment.dto';
+import { Search22PaymentDto, SearchPaymentDto } from './dto/create-payment.dto';
 
 @Injectable()
 export class PaymentService {
@@ -61,33 +61,34 @@ export class PaymentService {
   }
 
 
-  async oldPayment(id:string){
+  async oldPayment(dto: Search22PaymentDto, userId: string) {
+    // Foydalanuvchining hamyonini topish
+    const wallet = await this.prisma.wallet.findFirst({
+      where: { userId },
+    });
 
-    let olduser = await this.prisma.wallet.findFirst({
-      where:{
-        userId:id
-      }
-    })
-
-    if(!olduser) {
-      throw new BadRequestException("User topilmadi")
+    if (!wallet) {
+      throw new BadRequestException("User topilmadi");
     }
 
-    let data = await this.prisma.walletTransaction.findFirst({
-      where:{
-        walletId:olduser.id
-      }
-    })
+    // WalletTransaction ni topish (limit va offset bilan)
+    const transactions = await this.prisma.walletTransaction.findMany({
+      where: { walletId: wallet.id },
+      skip: dto.offset,
+      take: dto.limit,
+      orderBy: { createdAt: 'desc' },
+    });
 
-    if(!data){
-      throw new BadRequestException("Userda transaction topilmadi")
+    if (!transactions || transactions.length === 0) {
+      throw new BadRequestException("Userda transaction topilmadi");
     }
-
 
     return {
-      succase:true,
-      message:"Oldin to'lov qilgan",
-      data
-    }
+      success: true,
+      message: "Oldin to'lov qilgan",
+      total: transactions.length,
+      data: transactions,
+    };
   }
 }
+

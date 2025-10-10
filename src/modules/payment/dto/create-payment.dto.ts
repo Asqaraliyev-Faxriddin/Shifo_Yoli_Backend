@@ -22,3 +22,19 @@ export class SearchPaymentDto {
   @Min(1)
   limit?: number = 10;
 }
+
+
+export class Search22PaymentDto {
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  offset?: number = 0;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  limit?: number = 10;
+}
