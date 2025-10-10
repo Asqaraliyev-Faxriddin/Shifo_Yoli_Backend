@@ -37,11 +37,12 @@ import { Roles } from 'src/common/decorators/Roles.decorator';
   @ApiTags('Doctor Categories')
   @Controller('doctor-category')
   @UseGuards(AuthGuard,RolesGuard)
-  @Roles('ADMIN','SUPERADMIN')
+
   export class DoctorCategoryController {
     constructor(private readonly service: DoctorCategoryService) {}
   
-    // CREATE CATEGORY + IMG UPLOAD
+    
+    @Roles('ADMIN','SUPERADMIN')
     @Post("create")
     @UseInterceptors(FileInterceptor('img'))
     @ApiOperation({ summary: 'Yangi kategoriya yaratish (rasm bilan)' })
@@ -96,6 +97,7 @@ import { Roles } from 'src/common/decorators/Roles.decorator';
     }
   
     // UPDATE CATEGORY + IMG UPLOAD
+    @Roles('ADMIN','SUPERADMIN')
     @Patch(':id')
     @UseInterceptors(FileInterceptor('img'))
     @ApiOperation({ summary: 'Kategoriya yangilash (rasm bilan)' })
@@ -137,6 +139,7 @@ import { Roles } from 'src/common/decorators/Roles.decorator';
     }
   
     // DELETE
+    @Roles('ADMIN','SUPERADMIN')
     @Delete('delete/:id')
     @ApiOperation({ summary: 'Kategoriya o‘chirish' })
     @ApiResponse({ status: 200, description: 'Kategoriya o‘chirildi' })
