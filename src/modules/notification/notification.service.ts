@@ -13,7 +13,6 @@ export class NotificationService {
     return undefined; 
   };
 
-  // 🔔 Foydalanuvchining barcha notifikatsiyalari (pagination + filter)
   async findAll(userId: string, query: FindAllNotificationDto) {
     const { limit = 10, offset:page = 1, read:read1 } = query;
     const skip = (page - 1) * limit;

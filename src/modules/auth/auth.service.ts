@@ -16,9 +16,10 @@ import { EverificationTypes } from "src/common/types/verification";
 import * as bcrypt from "bcrypt";
 import { RefreshTokenDto } from "./dto/refresh.token.dto";
 import { Reset_Password } from "./dto/reset-password";
-import { UserRole, DeviceType } from "@prisma/client";
+import { UserRole, DeviceType, TransactionType } from "@prisma/client";
 import { randomBytes, randomUUID } from "crypto";
 import { Request } from "express";
+import { TracingChannel } from "diagnostics_channel";
 
 @Injectable()
 export class AuthService {
@@ -166,6 +167,27 @@ export class AuthService {
           password: randomPassword,
         },
       });
+
+      let d = await this.prisma.wallet.create({
+        data:{
+          userId:existingUser.id,
+          balance:5000
+        }
+      })
+
+      await this.prisma.walletTransaction.create({
+        data:{
+          walletId:d.id,
+          type:TransactionType.CREDIT,
+          source:"COMPANY",
+          amount:5000
+
+        }
+      })
+
+
+
+
     } else {
       existingUser = await this.prisma.user.update({
         where: { id: existingUser.id },
