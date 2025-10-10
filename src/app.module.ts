@@ -42,7 +42,7 @@ import { ContactModule } from './modules/contact/contact.module';
 
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), "uploads", "videos"),
-      serveRoot: "/videos/file", 
+      serveRoot: "/videos", 
     }),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({isGlobal:true})
