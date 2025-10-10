@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { SearchPaymentDto } from './dto/create-payment.dto';
 
@@ -58,5 +58,36 @@ export class PaymentService {
       count: data.length,
       data,
     };
+  }
+
+
+  async oldPayment(id:string){
+
+    let olduser = await this.prisma.wallet.findFirst({
+      where:{
+        userId:id
+      }
+    })
+
+    if(!olduser) {
+      throw new BadRequestException("User topilmadi")
+    }
+
+    let data = await this.prisma.walletTransaction.findFirst({
+      where:{
+        walletId:olduser.id
+      }
+    })
+
+    if(!data){
+      throw new BadRequestException("Userda transaction topilmadi")
+    }
+
+
+    return {
+      succase:true,
+      message:"Oldin to'lov qilgan",
+      data
+    }
   }
 }
