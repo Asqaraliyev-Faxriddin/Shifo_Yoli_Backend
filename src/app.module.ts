@@ -21,6 +21,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { MeetingModule } from './modules/meeting/meeting.module';
 import { ContactModule } from './modules/contact/contact.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [ 
@@ -54,7 +55,7 @@ import { ContactModule } from './modules/contact/contact.module';
     ProfileModule,AdminModule,RatingModule, 
     MessageModule, DeviceModule, DoctorCategoryModule,
      DoctorProfileModule,
-     NotificationModule, MeetingModule, ContactModule],
+     NotificationModule, MeetingModule, ContactModule, PaymentModule],
 
 
 })
