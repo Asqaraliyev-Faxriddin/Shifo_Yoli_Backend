@@ -77,6 +77,13 @@ export class PaymentService {
       skip: dto.offset,
       take: dto.limit,
       orderBy: { createdAt: 'desc' },
+      include:{
+        wallet:{
+          include:{
+            user:true
+          }
+        }
+      }
     });
 
     if (!transactions || transactions.length === 0) {
