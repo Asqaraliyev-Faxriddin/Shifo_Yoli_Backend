@@ -115,6 +115,7 @@ export class DoctorProfileService {
     dto: UpdateDoctorProfileDto,
     images?: string[],
     videos?: string[],
+    files?:string[]
   ) {
     const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
     if (!doctor) throw new NotFoundException('Doctor profile not found');
@@ -144,6 +145,10 @@ export class DoctorProfileService {
     // ✅ Images
     if (images && images.length) {
       data.images = images;
+    }
+
+    if (files && files.length) {
+      data.files = files;
     }
   
     // ✅ Videos

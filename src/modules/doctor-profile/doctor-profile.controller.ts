@@ -141,40 +141,52 @@ export class DoctorProfileController {
   @UseInterceptors(
     FileFieldsInterceptor(
       [
-        {
-          name: 'images',
-          maxCount: 10,
-        },
-        {
-          name: 'videos',
-          maxCount: 5,
-        },
+        { name: 'images', maxCount: 10 },
+        { name: 'videos', maxCount: 5 },
+        { name: 'files', maxCount: 3 },
       ],
       {
         storage: diskStorage({
           destination: (req, file, cb) => {
             if (file.fieldname === 'images') cb(null, './uploads/images');
             else if (file.fieldname === 'videos') cb(null, './uploads/videos');
+            else if (file.fieldname === 'files') cb(null, './uploads/files');
           },
           filename: (req, file, cb) => {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-            cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+            const uniqueSuffix =
+              Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(
+              null,
+              `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`,
+            );
           },
         }),
         fileFilter: (req, file, cb) => {
           if (file.fieldname === 'images') {
             if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-              return cb(new UnsupportedMediaTypeException('Faqat rasm fayllar yuklash mumkin'), false);
+              return cb(
+                new UnsupportedMediaTypeException('Faqat rasm fayllar yuklash mumkin'),
+                false,
+              );
             }
-          }
-          if (file.fieldname === 'videos') {
+          } else if (file.fieldname === 'videos') {
             if (!file.mimetype.match(/\/(mp4|avi|mov|mkv)$/)) {
-              return cb(new UnsupportedMediaTypeException('Faqat video fayllar yuklash mumkin'), false);
+              return cb(
+                new UnsupportedMediaTypeException('Faqat video fayllar yuklash mumkin'),
+                false,
+              );
+            }
+          } else if (file.fieldname === 'files') {
+            if (!file.mimetype.match(/\/(pdf|docx?|txt)$/)) {
+              return cb(
+                new UnsupportedMediaTypeException('Faqat hujjat fayllar yuklash mumkin (pdf, docx, txt)'),
+                false,
+              );
             }
           }
           cb(null, true);
         },
-        limits: { fileSize: 150 * 1024 * 1024 }, // 50MB videolar uchun
+        limits: { fileSize: 150 * 1024 * 1024 }, // 150MB
       },
     ),
   )
@@ -185,6 +197,7 @@ export class DoctorProfileController {
     files: {
       images?: Express.Multer.File[];
       videos?: Express.Multer.File[];
+      files?: Express.Multer.File[];
     },
   ) {
     const images = (files?.images ?? []).map((f) =>
@@ -193,9 +206,13 @@ export class DoctorProfileController {
     const videos = (files?.videos ?? []).map((f) =>
       f?.filename ? `videos/${f.filename}` : '',
     );
+    const docs = (files?.files ?? []).map((f) =>
+      f?.filename ? `files/${f.filename}` : '',
+    );
   
-    return this.doctorProfileService.update(id, dto, images, videos);
+    return this.doctorProfileService.update(id, dto, images, videos, docs);
   }
+  
   
 
 
@@ -279,47 +296,59 @@ export class DoctorProfileController {
 
   // ===================== UPDATE PROFILE =====================
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
-  @Patch('update/doctor')
+  @Roles(UserRole.SUPERADMIN, UserRole.DOCTOR, UserRole.ADMIN)
+  @Patch('update/doctor/profile')
   @ApiOperation({ summary: 'Doctor profilini yangilash (Admin)' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileFieldsInterceptor(
       [
-        {
-          name: 'images',
-          maxCount: 10,
-        },
-        {
-          name: 'videos',
-          maxCount: 5,
-        },
+        { name: 'images', maxCount: 10 },
+        { name: 'videos', maxCount: 5 },
+        { name: 'files', maxCount: 3 },
       ],
       {
         storage: diskStorage({
           destination: (req, file, cb) => {
             if (file.fieldname === 'images') cb(null, './uploads/images');
             else if (file.fieldname === 'videos') cb(null, './uploads/videos');
+            else if (file.fieldname === 'files') cb(null, './uploads/files');
           },
           filename: (req, file, cb) => {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-            cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+            const uniqueSuffix =
+              Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(
+              null,
+              `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`,
+            );
           },
         }),
         fileFilter: (req, file, cb) => {
           if (file.fieldname === 'images') {
-            if (!file.mimetype.match(/image\/(jpg|jpeg|png|gif|webp)$/)) {
-              return cb(new UnsupportedMediaTypeException('Faqat rasm fayllar yuklash mumkin'), false);
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+              return cb(
+                new UnsupportedMediaTypeException('Faqat rasm fayllar yuklash mumkin'),
+                false,
+              );
             }
-          }
-          if (file.fieldname === 'videos') {
+          } else if (file.fieldname === 'videos') {
             if (!file.mimetype.match(/\/(mp4|avi|mov|mkv)$/)) {
-              return cb(new UnsupportedMediaTypeException('Faqat video fayllar yuklash mumkin'), false);
+              return cb(
+                new UnsupportedMediaTypeException('Faqat video fayllar yuklash mumkin'),
+                false,
+              );
+            }
+          } else if (file.fieldname === 'files') {
+            if (!file.mimetype.match(/\/(pdf|docx?|txt)$/)) {
+              return cb(
+                new UnsupportedMediaTypeException('Faqat hujjat fayllar yuklash mumkin (pdf, docx, txt)'),
+                false,
+              );
             }
           }
           cb(null, true);
         },
-        limits: { fileSize: 150 * 1024 * 1024 }, // 50MB videolar uchun
+        limits: { fileSize: 150 * 1024 * 1024 }, // 150MB
       },
     ),
   )
@@ -330,6 +359,7 @@ export class DoctorProfileController {
     files: {
       images?: Express.Multer.File[];
       videos?: Express.Multer.File[];
+      files?: Express.Multer.File[];
     },
   ) {
     const images = (files?.images ?? []).map((f) =>
@@ -338,8 +368,11 @@ export class DoctorProfileController {
     const videos = (files?.videos ?? []).map((f) =>
       f?.filename ? `videos/${f.filename}` : '',
     );
+    const docs = (files?.files ?? []).map((f) =>
+      f?.filename ? `files/${f.filename}` : '',
+    );
   
-    return this.doctorProfileService.update(req.user.id, dto, images, videos);
+    return this.doctorProfileService.update(req.user.id, dto, images, videos, docs);
   }
   
 

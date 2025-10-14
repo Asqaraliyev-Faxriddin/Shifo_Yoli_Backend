@@ -147,6 +147,15 @@ export class UpdateDoctorProfileDto {
   videos?: any;
   
   @ApiPropertyOptional({
+    description: 'Filelar (multipart/form-data file array)',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+  })
+  @IsOptional()
+  files?: any;
+
+
+  @ApiPropertyOptional({
     description: "Shifokorning kelajakdagi imkoniyatlari yoki qo‘shimcha malakalari",
     example: ['Nevrologiya bo‘yicha kurs', 'Yuqori toifadagi sertifikat'],
     isArray: true,
