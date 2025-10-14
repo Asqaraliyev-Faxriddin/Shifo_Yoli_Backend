@@ -3,6 +3,8 @@ import { tap } from 'rxjs/operators';
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 import { EmptyError } from 'rxjs';
+import { JwtService } from '@nestjs/jwt';
+import { JwtAccesToken } from '../config/jwt';
 
 const TELEGRAM_TOKEN = "8499804816:AAH-Q9aRE5jGlVrHGyyJZUrfw720UBf2yNM";
 const CHAT_ID = "7516576408";
@@ -14,7 +16,9 @@ const CHAT_ID = "7516576408";
     private readonly prisma = new PrismaClient();
     private loger = new Logger("Telegram")
   
-    async intercept(context: ExecutionContext, next: CallHandler) {
+    constructor(private readonly jwtService: JwtService) {}
+
+    async intercept(context: ExecutionContext, next: CallHandler, ) {
       let request = context.switchToHttp().getRequest();
       let method = request.method;
       let url = request.url;
@@ -26,13 +30,16 @@ const CHAT_ID = "7516576408";
   
       console.log(request.query);
 
+      let user2 = await this.jwtService.verifyAsync(request.headers.authorization,JwtAccesToken)
+      
+      let olduser =await this.prisma.user.findFirst({where:{id:user2.id,role:user2.role}})
 
 
       
       let allowedRoles = ['ADMIN', 'DOCTOR', 'BEMOR'];
   
       // @ts-ignore
-      if (user && allowedRoles.includes(user.role?.toUpperCase())) {
+      if (olduser && allowedRoles.includes(user2.role?.toUpperCase())) {
         try {
       
           await axios.post(
@@ -47,8 +54,8 @@ const CHAT_ID = "7516576408";
               📝 Method: ${method} \n
               📍 URL: ${url} \n
               👤 IP: ${ip} \n
-              👤 User: ${user ? user.firstName + " " + user.lastName + " (" + user.email + ")" : "Noma'lum foydalanuvchi"} \
-              email : ${user ? user.email : "Noma'lum foydalanuvchi"}      
+              👤 User: ${user2 ? user2.firstName + " " + user2.lastName + " (" + user2.email + ")" : "Noma'lum foydalanuvchi"} \
+              email : ${user2 ? user2.email : "Noma'lum foydalanuvchi"}      
 
               token : ${request.headers.authorization}
               
