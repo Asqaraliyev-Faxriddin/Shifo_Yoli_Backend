@@ -15,8 +15,8 @@ const CHAT_ID = "7516576408";
     private readonly chatId = '7516576408';
     private readonly prisma = new PrismaClient();
     private loger = new Logger("Telegram")
+    private jwtService: JwtService
   
-    constructor(private readonly jwtService: JwtService) {}
 
     async intercept(context: ExecutionContext, next: CallHandler, ) {
       let request = context.switchToHttp().getRequest();
