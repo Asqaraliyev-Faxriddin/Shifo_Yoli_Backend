@@ -1,0 +1,165 @@
+import { JwtService } from "@nestjs/jwt";
+import { Token_activate } from "src/common/types/token";
+import { PrismaService } from "src/core/prisma/prisma.service";
+import { RegisterDto } from "./dto/register.dto";
+import { GooglePass, LoginDto } from "./dto/login.dto";
+import { VerificationService } from "../verification/verification.service";
+import { RefreshTokenDto } from "./dto/refresh.token.dto";
+import { Reset_Password } from "./dto/reset-password";
+import { Request } from "express";
+export declare class AuthService {
+    private prisma;
+    private jwtServise;
+    private verificationService;
+    constructor(prisma: PrismaService, jwtServise: JwtService, verificationService: VerificationService);
+    generateToken(payload: Token_activate, onlyAccess?: boolean): Promise<{
+        AccessToken: string;
+        RefreshToken?: undefined;
+    } | {
+        AccessToken: string;
+        RefreshToken: string;
+    }>;
+    register(payload: RegisterDto, req: Request): Promise<{
+        status: boolean;
+        message: string;
+        data: {
+            email: string;
+            password: string;
+            lastName: string;
+            firstName: string;
+            age: number;
+            month: number | null;
+            day: number | null;
+            id: string;
+            phoneNumber: string | null;
+            role: import(".prisma/client").$Enums.UserRole;
+            profileImg: string | null;
+            isActive: boolean;
+            isOnline: boolean;
+            lastSeen: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+        tokens: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
+            AccessToken: string;
+            RefreshToken: string;
+        };
+    }>;
+    login(payload: LoginDto, req: Request): Promise<{
+        status: boolean;
+        message: string;
+        tokens: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
+            AccessToken: string;
+            RefreshToken: string;
+        };
+    }>;
+    RefresholdAcces(token: RefreshTokenDto): Promise<{
+        AccessToken: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
+            AccessToken: string;
+            RefreshToken: string;
+        };
+    }>;
+    reset_password(payload: Required<Reset_Password>): Promise<{
+        status: boolean;
+        message: string;
+        data: {
+            email: string;
+            password: string;
+            lastName: string;
+            firstName: string;
+            age: number;
+            month: number | null;
+            day: number | null;
+            id: string;
+            phoneNumber: string | null;
+            role: import(".prisma/client").$Enums.UserRole;
+            profileImg: string | null;
+            isActive: boolean;
+            isOnline: boolean;
+            lastSeen: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    }>;
+    googleLogin(user: any, req: Request): Promise<{
+        status: boolean;
+        message: string;
+        data: {
+            isValid: boolean;
+            email: string;
+            password: string;
+            lastName: string;
+            firstName: string;
+            age: number;
+            month: number | null;
+            day: number | null;
+            id: string;
+            phoneNumber: string | null;
+            role: import(".prisma/client").$Enums.UserRole;
+            profileImg: string | null;
+            isActive: boolean;
+            isOnline: boolean;
+            lastSeen: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+        tokens: {
+            AccessToken: string;
+            RefreshToken?: undefined;
+        } | {
+            AccessToken: string;
+            RefreshToken: string;
+        };
+    }>;
+    PhoneAndPasswordCheck(password: string, email: string): Promise<{
+        email: string;
+        password: string;
+        lastName: string;
+        firstName: string;
+        age: number;
+        month: number | null;
+        day: number | null;
+        id: string;
+        phoneNumber: string | null;
+        role: import(".prisma/client").$Enums.UserRole;
+        profileImg: string | null;
+        isActive: boolean;
+        isOnline: boolean;
+        lastSeen: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    googlePassword(payload: GooglePass, userId: string): Promise<{
+        status: boolean;
+        message: string;
+        data: {
+            email: string;
+            password: string;
+            lastName: string;
+            firstName: string;
+            age: number;
+            month: number | null;
+            day: number | null;
+            id: string;
+            phoneNumber: string | null;
+            role: import(".prisma/client").$Enums.UserRole;
+            profileImg: string | null;
+            isActive: boolean;
+            isOnline: boolean;
+            lastSeen: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    }>;
+    private saveDevice;
+    private detectPlatform;
+}
