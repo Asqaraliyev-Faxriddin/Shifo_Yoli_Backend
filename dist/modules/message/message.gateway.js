@@ -18,208 +18,214 @@ const socket_io_1 = require("socket.io");
 const message_service_1 = require("./message.service");
 const jwt_1 = require("@nestjs/jwt");
 const create_message_dto_1 = require("./dto/create-message.dto");
+const fs = require("fs");
+const path = require("path");
+const uuid_1 = require("uuid");
+const prisma_service_1 = require("../../core/prisma/prisma.service");
 let MessageGateway = class MessageGateway {
     messageService;
     jwtService;
+    prisma;
     server;
-    activeSockets = new Map();
-    typingState = {};
-    constructor(messageService, jwtService) {
+    onlineUsers = new Map();
+    constructor(messageService, jwtService, prisma) {
         this.messageService = messageService;
         this.jwtService = jwtService;
+        this.prisma = prisma;
     }
-    afterInit() {
-        console.log('✅ [Gateway] Chat gateway initialized');
+    async saveBase64File(base64, originalName) {
+        const uploadDir = path.join(process.cwd(), 'uploads', 'chat');
+        if (!fs.existsSync(uploadDir))
+            fs.mkdirSync(uploadDir, { recursive: true });
+        const ext = originalName ? path.extname(originalName) : '';
+        const fileName = `${(0, uuid_1.v4)()}${ext || ''}`;
+        const filePath = path.join(uploadDir, fileName);
+        const buffer = Buffer.from(base64, 'base64');
+        fs.writeFileSync(filePath, buffer);
+        return `/uploads/chat/${fileName}`;
     }
     async handleConnection(client) {
         try {
-            console.log(`⚡ [Gateway] New client trying to connect: ${client.id}`);
-            const token = client.handshake.auth?.token ?? client.handshake.headers['authorization'];
+            const token = client.handshake.auth?.token ||
+                (client.handshake.headers['authorization'] || '').toString().split(' ')[1];
             if (!token) {
-                console.warn('❌ [Gateway] No token, disconnecting');
-                return client.disconnect();
+                client.emit('error', { message: 'Token topilmadi' });
+                client.disconnect();
+                return;
             }
-            const realToken = typeof token === 'string' && token.startsWith('Bearer ')
-                ? token.split(' ')[1]
-                : token;
-            const payload = this.jwtService.verify(realToken);
-            const userId = payload.sub || payload.id;
+            const payload = this.jwtService.verify(token);
+            const userId = payload?.sub ?? payload?.id;
             if (!userId) {
-                console.warn('❌ [Gateway] Invalid token payload, disconnecting');
-                return client.disconnect();
+                client.emit('error', { message: 'Token noto‘g‘ri' });
+                client.disconnect();
+                return;
             }
-            const sockets = this.activeSockets.get(userId) ?? new Set();
-            sockets.add(client.id);
-            this.activeSockets.set(userId, sockets);
-            client.join(`user_${userId}`);
-            client.userId = userId;
-            await this.messageService.setUserOnline(userId);
-            this.server.emit('user_status_changed', { userId, isOnline: true });
-            this.server.to(`user_${userId}`).emit('user_online', { userId });
-            console.log(`🔗 [Gateway] User connected: user=${userId}, socket=${client.id}`);
+            client.data.userId = userId;
+            const existing = this.onlineUsers.get(userId) ?? new Set();
+            existing.add(client.id);
+            this.onlineUsers.set(userId, existing);
+            await this.prisma.user.update({
+                where: { id: userId },
+                data: { isOnline: true },
+            });
+            this.server.emit('user_online', { userId, online: true });
+            this.server.to(client.id).emit('connected', { message: 'Ulandi', userId });
         }
         catch (err) {
-            console.error('❌ [Gateway] WS connection error:', err?.message ?? err);
+            client.emit('error', { message: 'Auth xatosi', detail: err?.message ?? err });
             client.disconnect();
         }
     }
     async handleDisconnect(client) {
-        const userId = client.userId;
-        console.log(`⚡ [Gateway] Client disconnected: ${client.id}, user=${userId}`);
-        if (!userId)
-            return;
-        const sockets = this.activeSockets.get(userId);
-        if (sockets) {
-            sockets.delete(client.id);
-            if (sockets.size === 0) {
-                this.activeSockets.delete(userId);
-                await this.messageService.setUserOffline(userId);
-                const lastSeen = new Date().toISOString();
-                this.server.emit('user_status_changed', {
-                    userId,
-                    isOnline: false,
-                    lastSeen,
-                });
-                this.server.to(`user_${userId}`).emit('user_offline', {
-                    userId,
-                    lastSeen,
-                });
-                console.log(`❌ [Gateway] User went offline: ${userId}`);
-            }
-            else {
-                this.activeSockets.set(userId, sockets);
-                console.log(`⚡ [Gateway] User ${userId} still has ${sockets.size} active sockets`);
-            }
-        }
-        for (const chatId of Object.keys(this.typingState)) {
-            const set = this.typingState[chatId];
-            if (set?.has(userId)) {
-                set.delete(userId);
-                if (set.size === 0)
-                    delete this.typingState[chatId];
-                this.server
-                    .to(`chat_${chatId}`)
-                    .emit('user_stop_typing', { chatId, userId });
-                console.log(`⌨️ [Gateway] Typing cleared for user=${userId} in chat=${chatId}`);
-            }
-        }
-    }
-    async handleJoinChat(payload, client) {
-        if (!payload?.chatId)
-            return;
-        client.join(`chat_${payload.chatId}`);
-        client.emit('joined_chat', { chatId: payload.chatId });
-        console.log(`👤 [Gateway] User ${client.userId} joined chat_${payload.chatId}`);
-    }
-    async handleSendMessage(payload, client) {
-        const senderId = client.userId;
-        if (!senderId) {
-            console.warn('❌ [Gateway] Unauthenticated send_message attempt');
-            return client.emit('error', { message: 'Unauthenticated' });
-        }
-        console.log(`📩 [Gateway] send_message from user=${senderId} chatId=${payload.chatId} receiverId=${payload.receiverId}`);
-        let chatId = payload.chatId;
         try {
-            if (!chatId && payload.receiverId) {
-                const existingChat = await this.messageService.findChatBetweenUsers(senderId, payload.receiverId);
-                if (existingChat) {
-                    chatId = existingChat.id;
-                    console.log(`[Gateway] Existing chat found: ${chatId}`);
+            const userId = client.data.userId;
+            if (!userId)
+                return;
+            const set = this.onlineUsers.get(userId);
+            if (set) {
+                set.delete(client.id);
+                if (set.size === 0) {
+                    this.onlineUsers.delete(userId);
+                    await this.prisma.user.update({
+                        where: { id: userId },
+                        data: { isOnline: false, lastSeen: new Date() },
+                    });
+                    this.server.emit('user_online', { userId, online: false, lastSeen: new Date() });
                 }
                 else {
-                    const newChat = await this.messageService.createChat([
-                        senderId,
-                        payload.receiverId,
-                    ]);
-                    chatId = newChat.id;
-                    console.log(`[Gateway] New chat created: ${chatId}`);
-                }
-            }
-            if (!chatId) {
-                console.error('❌ [Gateway] Chat not found for send_message');
-                return client.emit('error', { message: 'Chat not found' });
-            }
-            const result = await this.messageService.createMessage(senderId, {
-                chatId,
-                receiverId: payload.receiverId,
-                message: payload.message,
-                type: payload.type ?? create_message_dto_1.MessageType.TEXT,
-            });
-            const out = {
-                id: result.message.id,
-                chatId: result.chatId,
-                message: result.message.message,
-                sender: {
-                    id: senderId,
-                    firstName: result.message.sender.firstName,
-                    lastName: result.message.sender.lastName,
-                    profileImg: result.message.sender.profileImg,
-                },
-                createdAt: result.message.createdAt,
-                type: result.message.type,
-                isRead: result.message.isRead ?? false,
-            };
-            this.server.to(`chat_${chatId}`).emit('message', out);
-            console.log(`✅ [Gateway] Message emitted to chat_${chatId}:`, out.id);
-            if (payload.receiverId) {
-                const receiverSockets = this.activeSockets.get(payload.receiverId);
-                if (receiverSockets && receiverSockets.size > 0) {
-                    await this.messageService.markMessagesRead(chatId, payload.receiverId);
-                    out.isRead = true;
-                    this.server
-                        .to(`chat_${chatId}`)
-                        .emit('message_read', { chatId, messageId: out.id, userId: payload.receiverId });
-                    console.log(`👀 [Gateway] Receiver online, message marked as read: ${out.id}`);
+                    this.onlineUsers.set(userId, set);
                 }
             }
         }
         catch (err) {
-            console.error('❌ [Gateway] send_message error:', err?.message ?? err);
-            client.emit('error', { message: err?.message ?? 'Unknown error' });
         }
     }
-    handleTyping(payload, client) {
-        const userId = client.userId;
-        if (!userId || !payload?.chatId)
-            return;
-        const chatId = payload.chatId;
-        const set = this.typingState[chatId] ?? new Set();
-        if (set.has(userId))
-            return;
-        set.add(userId);
-        this.typingState[chatId] = set;
-        client.to(`chat_${chatId}`).emit('user_typing', { chatId, userId });
-        console.log(`⌨️ [Gateway] User ${userId} typing in chat=${chatId}`);
+    async handleGetOnlineUsers(client) {
+        const online = Array.from(this.onlineUsers.keys());
+        this.server.to(client.id).emit('online_users', online);
     }
-    handleStopTyping(payload, client) {
-        const userId = client.userId;
-        if (!userId || !payload?.chatId)
-            return;
-        const chatId = payload.chatId;
-        const set = this.typingState[chatId];
-        if (!set || !set.has(userId))
-            return;
-        set.delete(userId);
-        if (set.size === 0)
-            delete this.typingState[chatId];
-        client.to(`chat_${chatId}`).emit('user_stop_typing', { chatId, userId });
-        console.log(`✋ [Gateway] User ${userId} stopped typing in chat=${chatId}`);
-    }
-    async handleGetUserStatus(payload, client) {
+    async handleCreateChat(dto, client) {
+        const senderId = client.data.userId;
         try {
-            if (!payload?.userId)
-                return;
-            const status = await this.messageService.getUserStatus(payload.userId);
-            client.emit('user_status', {
-                userId: payload.userId,
-                isOnline: status.isOnline,
-                lastSeen: status.lastSeen,
-            });
-            console.log(`📡 [Gateway] Sent user status for ${payload.userId}`);
+            const res = await this.messageService.createChat(senderId, dto);
+            this.server.to(client.id).emit('chat_created', res);
+            const receiverSocketSet = this.onlineUsers.get(dto.receiverId);
+            if (receiverSocketSet) {
+                for (const sid of receiverSocketSet) {
+                    this.server.to(sid).emit('chat_created_for_you', { chatId: res.chatId, from: senderId });
+                }
+            }
         }
         catch (err) {
-            console.error('❌ [Gateway] get_user_status error:', err?.message ?? err);
-            client.emit('error', { message: err?.message ?? 'Failed to get status' });
+            this.server.to(client.id).emit('error', { action: 'create_chat', message: err?.message ?? err });
+        }
+    }
+    async handleSendMessage(payload, client) {
+        const senderId = client.data.userId;
+        try {
+            let fileUrl;
+            if (payload.fileBase64 && (payload.type === create_message_dto_1.MessageType.FILE || payload.type === create_message_dto_1.MessageType.VIDEO)) {
+                fileUrl = await this.saveBase64File(payload.fileBase64, payload.fileName);
+            }
+            const dto = {
+                chatId: payload.chatId,
+                receiverId: payload.receiverId,
+                message: fileUrl ? fileUrl : (payload.message ?? ''),
+                type: payload.type ?? create_message_dto_1.MessageType.TEXT,
+            };
+            const res = await this.messageService.sendMessage(senderId, dto, undefined);
+            const toId = payload.receiverId ?? (() => {
+                const participants = res?.data?.chatId ? null : null;
+                return payload.receiverId;
+            })();
+            let receiverId = payload.receiverId;
+            if (!receiverId && res?.data?.chatId) {
+                const chat = await this.prisma.chat.findUnique({
+                    where: { id: res.data.chatId },
+                    include: { participants: true },
+                });
+                receiverId = chat?.participants?.find((p) => p.userId !== senderId)?.userId;
+            }
+            if (receiverId) {
+                const receiverSockets = this.onlineUsers.get(receiverId);
+                if (receiverSockets) {
+                    for (const sid of receiverSockets) {
+                        this.server.to(sid).emit('new_message', res.data);
+                    }
+                }
+            }
+            this.server.to(client.id).emit('message_sent', res.data);
+        }
+        catch (err) {
+            this.server.to(client.id).emit('error', { action: 'send_message', message: err?.message ?? err });
+        }
+    }
+    async handleUpdateMessage(dto, client) {
+        const userId = client.data.userId;
+        try {
+            const res = await this.messageService.updateMessage(userId, dto);
+            this.server.emit('message_updated', res.data);
+            this.server.to(client.id).emit('message_update_ok', res);
+        }
+        catch (err) {
+            this.server.to(client.id).emit('error', { action: 'update_message', message: err?.message ?? err });
+        }
+    }
+    async handleDeleteMessage(dto, client) {
+        const userId = client.data.userId;
+        try {
+            const res = await this.messageService.deleteMessage(userId, dto);
+            this.server.emit('message_deleted', { id: dto.messageId });
+            this.server.to(client.id).emit('message_delete_ok', res);
+        }
+        catch (err) {
+            this.server.to(client.id).emit('error', { action: 'delete_message', message: err?.message ?? err });
+        }
+    }
+    async handleReadMessages(dto, client) {
+        const userId = client.data.userId;
+        try {
+            const res = await this.messageService.readMessages(userId, dto);
+            this.server.to(client.id).emit('messages_read', res);
+            const chat = await this.prisma.chat.findUnique({
+                where: { id: dto.chatId },
+                include: { participants: true },
+            });
+            if (chat) {
+                for (const p of chat.participants) {
+                    if (p.userId === userId)
+                        continue;
+                    const sockets = this.onlineUsers.get(p.userId);
+                    if (sockets) {
+                        for (const sid of sockets) {
+                            this.server.to(sid).emit('messages_marked_read', { chatId: dto.chatId, by: userId });
+                        }
+                    }
+                }
+            }
+        }
+        catch (err) {
+            this.server.to(client.id).emit('error', { action: 'read_messages', message: err?.message ?? err });
+        }
+    }
+    async handleGetMessages(dto, client) {
+        const userId = client.data.userId;
+        try {
+            const res = await this.messageService.getMessages(userId, dto);
+            this.server.to(client.id).emit('messages_list', res);
+        }
+        catch (err) {
+            this.server.to(client.id).emit('error', { action: 'get_messages', message: err?.message ?? err });
+        }
+    }
+    async handleGetChats(dto, client) {
+        const userId = client.data.userId;
+        try {
+            const res = await this.messageService.getChats(userId, dto);
+            this.server.to(client.id).emit('chats_list', res);
+        }
+        catch (err) {
+            this.server.to(client.id).emit('error', { action: 'get_chats', message: err?.message ?? err });
         }
     }
 };
@@ -229,13 +235,21 @@ __decorate([
     __metadata("design:type", socket_io_1.Server)
 ], MessageGateway.prototype, "server", void 0);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('join_chat'),
+    (0, websockets_1.SubscribeMessage)('get_online_users'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], MessageGateway.prototype, "handleGetOnlineUsers", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('create_chat'),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
+    __metadata("design:paramtypes", [create_message_dto_1.CreateChatDto,
+        socket_io_1.Socket]),
     __metadata("design:returntype", Promise)
-], MessageGateway.prototype, "handleJoinChat", null);
+], MessageGateway.prototype, "handleCreateChat", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('send_message'),
     __param(0, (0, websockets_1.MessageBody)()),
@@ -245,34 +259,57 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], MessageGateway.prototype, "handleSendMessage", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('typing'),
+    (0, websockets_1.SubscribeMessage)('update_message'),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
-    __metadata("design:returntype", void 0)
-], MessageGateway.prototype, "handleTyping", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('stop_typing'),
-    __param(0, (0, websockets_1.MessageBody)()),
-    __param(1, (0, websockets_1.ConnectedSocket)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
-    __metadata("design:returntype", void 0)
-], MessageGateway.prototype, "handleStopTyping", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('get_user_status'),
-    __param(0, (0, websockets_1.MessageBody)()),
-    __param(1, (0, websockets_1.ConnectedSocket)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
+    __metadata("design:paramtypes", [create_message_dto_1.UpdateMessageDto,
+        socket_io_1.Socket]),
     __metadata("design:returntype", Promise)
-], MessageGateway.prototype, "handleGetUserStatus", null);
+], MessageGateway.prototype, "handleUpdateMessage", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('delete_message'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_message_dto_1.DeleteMessageDto,
+        socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], MessageGateway.prototype, "handleDeleteMessage", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('read_messages'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_message_dto_1.ReadMessageDto,
+        socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], MessageGateway.prototype, "handleReadMessages", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('get_messages'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_message_dto_1.GetMessagesDto,
+        socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], MessageGateway.prototype, "handleGetMessages", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('get_chats'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_message_dto_1.GetChatsDto,
+        socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], MessageGateway.prototype, "handleGetChats", null);
 exports.MessageGateway = MessageGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
+        namespace: '/chat',
         cors: { origin: '*' },
     }),
     __metadata("design:paramtypes", [message_service_1.MessageService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        prisma_service_1.PrismaService])
 ], MessageGateway);
 //# sourceMappingURL=message.gateway.js.map

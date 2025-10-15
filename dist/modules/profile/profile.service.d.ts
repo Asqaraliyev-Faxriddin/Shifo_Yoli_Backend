@@ -62,6 +62,8 @@ export declare class ProfileService {
                 reviewsReceived: number;
                 blockedUser: number;
                 meetingsMessages: number;
+                dailyAccess: number;
+                doctorAccess: number;
             };
         };
     }>;

@@ -13,165 +13,229 @@ exports.MessageService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/prisma/prisma.service");
 const create_message_dto_1 = require("./dto/create-message.dto");
+const fs = require("fs");
+const path = require("path");
+const uuid_1 = require("uuid");
 let MessageService = class MessageService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async createChat(participantIds) {
-        const uniqueIds = Array.from(new Set(participantIds));
-        console.log('[createChat] Participants:', uniqueIds);
-        const chat = await this.prisma.chat.create({
-            data: {
+    async createChat(senderId, dto) {
+        const { receiverId } = dto;
+        if (senderId === receiverId)
+            throw new common_1.BadRequestException('Siz o‘zingiz bilan chat ocholmaysiz.');
+        const [sender, receiver] = await Promise.all([
+            this.prisma.user.findUnique({ where: { id: senderId } }),
+            this.prisma.user.findUnique({ where: { id: receiverId } }),
+        ]);
+        if (!sender)
+            throw new common_1.NotFoundException('Foydalanuvchi topilmadi.');
+        if (!receiver)
+            throw new common_1.NotFoundException('Qabul qiluvchi topilmadi.');
+        if (sender.role === 'BEMOR' && receiver.role === 'DOCTOR') {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const access = await this.prisma.dailyDoctorAccess.findUnique({
+                where: {
+                    patientId_doctorId_date: {
+                        patientId: senderId,
+                        doctorId: receiverId,
+                        date: today,
+                    },
+                },
+            });
+            if (!access)
+                throw new common_1.ForbiddenException('Bugun ushbu doktorga to‘lov qilmagansiz. Suhbatni boshlashdan oldin to‘lovni amalga oshiring.');
+        }
+        const existing = await this.prisma.chat.findFirst({
+            where: {
                 participants: {
-                    create: uniqueIds.map((id) => ({ userId: id })),
+                    some: { userId: senderId },
+                },
+                AND: {
+                    participants: {
+                        some: { userId: receiverId },
+                    },
                 },
             },
-            include: { participants: { include: { user: true } } },
         });
-        console.log('[createChat] New chat created:', chat.id);
-        return chat;
+        if (existing)
+            return { message: 'Chat allaqachon mavjud.', chatId: existing.id };
+        const newChat = await this.prisma.chat.create({
+            data: {
+                participants: {
+                    createMany: {
+                        data: [
+                            { userId: senderId },
+                            { userId: receiverId },
+                        ],
+                    },
+                },
+            },
+        });
+        return { message: 'Chat yaratildi.', chatId: newChat.id };
     }
-    async getChatsForUser(userId) {
-        console.log('[getChatsForUser] Fetching chats for user:', userId);
+    async saveFile(file) {
+        const uploadDir = path.join(process.cwd(), 'uploads', 'chat');
+        if (!fs.existsSync(uploadDir))
+            fs.mkdirSync(uploadDir, { recursive: true });
+        const ext = path.extname(file.originalname);
+        const fileName = `${(0, uuid_1.v4)()}${ext}`;
+        const filePath = path.join(uploadDir, fileName);
+        fs.writeFileSync(filePath, file.buffer);
+        return `/uploads/chat/${fileName}`;
+    }
+    async sendMessage(senderId, dto, file) {
+        const { chatId, receiverId, message, type } = dto;
+        let chat;
+        if (chatId) {
+            chat = await this.prisma.chat.findUnique({
+                where: { id: chatId },
+                include: { participants: true },
+            });
+            if (!chat)
+                throw new common_1.NotFoundException('Chat topilmadi.');
+            if (!chat.participants.some((p) => p.userId === senderId))
+                throw new common_1.ForbiddenException('Bu chatda yozish huquqiga ega emassiz.');
+        }
+        if (!chat && receiverId) {
+            const res = await this.createChat(senderId, { receiverId });
+            chat = await this.prisma.chat.findUnique({
+                where: { id: res.chatId },
+                include: { participants: true },
+            });
+        }
+        if (!chat)
+            throw new common_1.BadRequestException('Chat aniqlanmadi. chatId yoki receiverId yuboring.');
+        const receiverUserId = chat.participants.find((p) => p.userId !== senderId)?.userId;
+        const [sender, receiver] = await Promise.all([
+            this.prisma.user.findUnique({ where: { id: senderId } }),
+            this.prisma.user.findUnique({ where: { id: receiverUserId } }),
+        ]);
+        if (!sender || !receiver)
+            throw new common_1.NotFoundException('Foydalanuvchi topilmadi.');
+        if (sender.role === 'BEMOR' && receiver.role === 'DOCTOR') {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const access = await this.prisma.dailyDoctorAccess.findUnique({
+                where: {
+                    patientId_doctorId_date: {
+                        patientId: senderId,
+                        doctorId: receiverUserId,
+                        date: today,
+                    },
+                },
+            });
+            if (!access)
+                throw new common_1.ForbiddenException('Bugungi kun uchun ushbu doktorga to‘lov qilmagansiz.');
+        }
+        let finalMessage = message;
+        let fileUrl = null;
+        if (file && (type === create_message_dto_1.MessageType.FILE || type === create_message_dto_1.MessageType.VIDEO)) {
+            fileUrl = await this.saveFile(file);
+            finalMessage = fileUrl;
+        }
+        const newMsg = await this.prisma.message.create({
+            data: {
+                chatId: chat.id,
+                senderId,
+                message: finalMessage,
+                type: type ?? create_message_dto_1.MessageType.TEXT,
+                ...(fileUrl && { fileUrl }),
+            },
+        });
+        return { message: 'Xabar yuborildi.', data: newMsg };
+    }
+    async updateMessage(userId, dto) {
+        const msg = await this.prisma.message.findUnique({
+            where: { id: dto.messageId },
+        });
+        if (!msg)
+            throw new common_1.NotFoundException('Xabar topilmadi.');
+        if (msg.senderId !== userId)
+            throw new common_1.ForbiddenException('Bu xabarni tahrirlash huquqiga ega emassiz.');
+        const updated = await this.prisma.message.update({
+            where: { id: dto.messageId },
+            data: { message: dto.newText },
+        });
+        return { message: 'Xabar yangilandi.', data: updated };
+    }
+    async deleteMessage(userId, dto) {
+        const msg = await this.prisma.message.findUnique({
+            where: { id: dto.messageId },
+        });
+        if (!msg)
+            throw new common_1.NotFoundException('Xabar topilmadi.');
+        if (msg.senderId !== userId)
+            throw new common_1.ForbiddenException('Bu xabarni o‘chirish huquqiga ega emassiz.');
+        await this.prisma.message.delete({ where: { id: dto.messageId } });
+        return { message: 'Xabar o‘chirildi.' };
+    }
+    async readMessages(userId, dto) {
+        const chat = await this.prisma.chat.findUnique({
+            where: { id: dto.chatId },
+            include: { participants: true },
+        });
+        if (!chat)
+            throw new common_1.NotFoundException('Chat topilmadi.');
+        if (!chat.participants.some((p) => p.userId === userId))
+            throw new common_1.ForbiddenException('Siz bu chatda ishtirok etmagansiz.');
+        await this.prisma.message.updateMany({
+            where: { chatId: dto.chatId, senderId: { not: userId } },
+            data: { isRead: true },
+        });
+        return { message: 'Xabarlar o‘qilgan deb belgilandi.' };
+    }
+    async getMessages(userId, dto) {
+        const { chatId, page = 1, limit = 30 } = dto;
+        const chat = await this.prisma.chat.findUnique({
+            where: { id: chatId },
+            include: { participants: true },
+        });
+        if (!chat)
+            throw new common_1.NotFoundException('Chat topilmadi.');
+        if (!chat.participants.some((p) => p.userId === userId))
+            throw new common_1.ForbiddenException('Siz bu chatga kira olmaysiz.');
+        const messages = await this.prisma.message.findMany({
+            where: { chatId },
+            orderBy: { createdAt: 'desc' },
+            skip: (page - 1) * limit,
+            take: limit,
+        });
+        return {
+            message: 'Xabarlar olindi.',
+            total: messages.length,
+            data: messages.reverse(),
+        };
+    }
+    async getChats(userId, dto) {
+        const { participantId, page = 1, limit = 20 } = dto;
         const chats = await this.prisma.chat.findMany({
-            where: { participants: { some: { userId } } },
+            where: {
+                participants: {
+                    some: { userId },
+                },
+                ...(participantId && {
+                    participants: { some: { userId: participantId } },
+                }),
+            },
             include: {
                 participants: { include: { user: true } },
                 messages: {
                     orderBy: { createdAt: 'desc' },
                     take: 1,
-                    include: { sender: true },
                 },
             },
             orderBy: { updatedAt: 'desc' },
+            skip: (page - 1) * limit,
+            take: limit,
         });
-        console.log(`[getChatsForUser] Found ${chats.length} chats`);
-        return chats;
-    }
-    async createMessage(senderId, dto) {
-        console.log('[createMessage] Sender:', senderId, 'DTO:', dto);
-        let chatId = dto.chatId;
-        if (!chatId && dto.receiverId) {
-            console.log('[createMessage] Checking existing chat between:', senderId, dto.receiverId);
-            const existingChat = await this.findChatBetweenUsers(senderId, dto.receiverId);
-            if (existingChat) {
-                console.log('[createMessage] Existing chat found:', existingChat.id);
-                chatId = existingChat.id;
-            }
-            else {
-                console.log('[createMessage] No chat found. Creating new chat...');
-                const newChat = await this.createChat([senderId, dto.receiverId]);
-                chatId = newChat.id;
-            }
-        }
-        if (!chatId) {
-            console.error('[createMessage] Chat not found!');
-            throw new common_1.NotFoundException('Chat not found');
-        }
-        const message = await this.prisma.message.create({
-            data: {
-                chatId,
-                senderId,
-                message: dto.message,
-                type: dto.type ?? create_message_dto_1.MessageType.TEXT,
-            },
-            include: { sender: true, chat: true },
-        });
-        console.log('[createMessage] New message created:', message.id);
-        await this.prisma.chat.update({
-            where: { id: chatId },
-            data: { updatedAt: new Date() },
-        });
-        return { chatId, message };
-    }
-    async getMessages(chatId) {
-        console.log('[getMessages] Chat:', chatId);
-        const messages = await this.prisma.message.findMany({
-            where: { chatId },
-            include: { sender: true },
-            orderBy: { createdAt: 'asc' },
-        });
-        console.log(`[getMessages] Found ${messages.length} messages`);
-        return messages;
-    }
-    async findChatBetweenUsers(user1, user2) {
-        console.log('[findChatBetweenUsers] Checking chat between:', user1, 'and', user2);
-        const chat = await this.prisma.chat.findFirst({
-            where: {
-                AND: [
-                    { participants: { some: { userId: user1 } } },
-                    { participants: { some: { userId: user2 } } },
-                ],
-            },
-            include: { participants: true },
-        });
-        if (chat) {
-            console.log('[findChatBetweenUsers] Chat found:', chat.id);
-        }
-        else {
-            console.log('[findChatBetweenUsers] No chat found');
-        }
-        return chat;
-    }
-    async setUserOnline(userId) {
-        console.log('[setUserOnline] User online:', userId);
-        await this.prisma.user.update({
-            where: { id: userId },
-            data: { isOnline: true },
-        });
-    }
-    async setUserOffline(userId) {
-        console.log('[setUserOffline] User offline:', userId);
-        await this.prisma.user.update({
-            where: { id: userId },
-            data: { isOnline: false, lastSeen: new Date() },
-        });
-    }
-    async getUserStatus(userId) {
-        console.log('[getUserStatus] Fetching status for user:', userId);
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId },
-            select: { isOnline: true, lastSeen: true },
-        });
-        if (!user) {
-            console.error('[getUserStatus] User not found:', userId);
-            throw new common_1.NotFoundException('User not found');
-        }
-        return user;
-    }
-    async markMessagesRead(chatId, userId) {
-        console.log('[markMessagesRead] Marking messages as read in chat:', chatId, 'for user:', userId);
-        const result = await this.prisma.message.updateMany({
-            where: { chatId, senderId: { not: userId }, isRead: false },
-            data: { isRead: true },
-        });
-        console.log('[markMessagesRead] Updated messages:', result.count);
-    }
-    async getUnreadCount(chatId, userId) {
-        console.log('[getUnreadCount] Counting unread messages for user:', userId, 'in chat:', chatId);
-        const count = await this.prisma.message.count({
-            where: { chatId, senderId: { not: userId }, isRead: false },
-        });
-        console.log('[getUnreadCount] Unread messages:', count);
-        return count;
-    }
-    async getAllUsers() {
-        console.log('[getAllUsers] Fetching all users');
-        const users = await this.prisma.user.findMany({
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                profileImg: true,
-                isOnline: true,
-                lastSeen: true,
-            },
-            orderBy: { firstName: 'asc' },
-        });
-        console.log('[getAllUsers] Found users:', users.length);
-        return users;
+        return {
+            message: 'Chatlar olindi.',
+            total: chats.length,
+            data: chats,
+        };
     }
 };
 exports.MessageService = MessageService;

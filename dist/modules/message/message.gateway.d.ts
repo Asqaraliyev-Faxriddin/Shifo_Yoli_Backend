@@ -1,33 +1,28 @@
-import { OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MessageService } from './message.service';
 import { JwtService } from '@nestjs/jwt';
-export declare class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+import { SendMessageDto, CreateChatDto, UpdateMessageDto, DeleteMessageDto, ReadMessageDto, GetMessagesDto, GetChatsDto } from './dto/create-message.dto';
+import { PrismaService } from 'src/core/prisma/prisma.service';
+export declare class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly messageService;
     private readonly jwtService;
+    private readonly prisma;
     server: Server;
-    private activeSockets;
-    private typingState;
-    constructor(messageService: MessageService, jwtService: JwtService);
-    afterInit(): void;
-    handleConnection(client: Socket): Promise<Socket<import("socket.io").DefaultEventsMap, import("socket.io").DefaultEventsMap, import("socket.io").DefaultEventsMap, any> | undefined>;
+    private onlineUsers;
+    constructor(messageService: MessageService, jwtService: JwtService, prisma: PrismaService);
+    private saveBase64File;
+    handleConnection(client: Socket): Promise<void>;
     handleDisconnect(client: Socket): Promise<void>;
-    handleJoinChat(payload: {
-        chatId: string;
+    handleGetOnlineUsers(client: Socket): Promise<void>;
+    handleCreateChat(dto: CreateChatDto, client: Socket): Promise<void>;
+    handleSendMessage(payload: Partial<SendMessageDto> & {
+        fileBase64?: string;
+        fileName?: string;
     }, client: Socket): Promise<void>;
-    handleSendMessage(payload: {
-        message: string;
-        chatId?: string;
-        receiverId?: string;
-        type?: string;
-    }, client: Socket): Promise<boolean | undefined>;
-    handleTyping(payload: {
-        chatId: string;
-    }, client: Socket): void;
-    handleStopTyping(payload: {
-        chatId: string;
-    }, client: Socket): void;
-    handleGetUserStatus(payload: {
-        userId: string;
-    }, client: Socket): Promise<void>;
+    handleUpdateMessage(dto: UpdateMessageDto, client: Socket): Promise<void>;
+    handleDeleteMessage(dto: DeleteMessageDto, client: Socket): Promise<void>;
+    handleReadMessages(dto: ReadMessageDto, client: Socket): Promise<void>;
+    handleGetMessages(dto: GetMessagesDto, client: Socket): Promise<void>;
+    handleGetChats(dto: GetChatsDto, client: Socket): Promise<void>;
 }

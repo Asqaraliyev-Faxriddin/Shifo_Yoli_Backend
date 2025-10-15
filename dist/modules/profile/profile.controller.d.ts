@@ -123,6 +123,8 @@ export declare class ProfileController {
                 reviewsReceived: number;
                 blockedUser: number;
                 meetingsMessages: number;
+                dailyAccess: number;
+                doctorAccess: number;
             };
         };
     }>;

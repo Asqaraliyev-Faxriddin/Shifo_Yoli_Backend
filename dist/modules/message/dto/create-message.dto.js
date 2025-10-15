@@ -36,11 +36,12 @@ class SendMessageDto {
     receiverId;
     message;
     type = MessageType.TEXT;
+    file;
 }
 exports.SendMessageDto = SendMessageDto;
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: 'Agar mavjud bo`lsa — chat id ga yozish uchun (ikkilamchi: chat mavjud bo`lishi kerak).',
+        description: 'Agar mavjud chatga yozilayotgan bo‘lsa — chatId yuboriladi. Aks holda receiverId orqali yangi chat yaratiladi.',
         example: 'd2f6a7e0-2b47-4b2b-8f8a-222222222222',
     }),
     (0, class_validator_1.IsOptional)(),
@@ -49,7 +50,7 @@ __decorate([
 ], SendMessageDto.prototype, "chatId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: "Agar chatId berilmagan bo'lsa — qaysi receiver(oluvchi)ga yozilayotganini ko'rsatadi. Sender token orqali olinadi.",
+        description: 'Yangi chat yaratish uchun receiver (qabul qiluvchi) foydalanuvchi ID si.',
         example: 'b6d9f3c2-1a2b-4f5d-8a71-333333333333',
     }),
     (0, class_validator_1.IsOptional)(),
@@ -58,8 +59,8 @@ __decorate([
 ], SendMessageDto.prototype, "receiverId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Xabar matni yoki fayl uchun meta (agar FILE/VIDEO bo`lsa server tomoni faylni alohida qabul qiladi).',
-        example: 'Salom doktor, menga maslahat bering.',
+        description: 'Xabar matni yoki fayl nomi.',
+        example: 'Salom doktor, qanday ahvol?',
     }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
@@ -75,6 +76,15 @@ __decorate([
     (0, class_validator_1.IsEnum)(MessageType),
     __metadata("design:type", String)
 ], SendMessageDto.prototype, "type", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Yuborilayotgan fayl (faqat FILE yoki VIDEO turlarida).',
+        type: 'string',
+        format: 'binary',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], SendMessageDto.prototype, "file", void 0);
 class UpdateMessageDto {
     messageId;
     newText;

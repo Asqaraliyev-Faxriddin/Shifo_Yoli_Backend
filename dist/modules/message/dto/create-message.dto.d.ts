@@ -11,6 +11,7 @@ export declare class SendMessageDto {
     receiverId?: string;
     message: string;
     type?: MessageType;
+    file?: Express.Multer.File;
 }
 export declare class UpdateMessageDto {
     messageId: string;
