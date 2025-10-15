@@ -46,6 +46,15 @@ export class SendMessageDto {
   @IsUUID()
   receiverId?: string;
 
+
+  @ApiPropertyOptional({
+    description: 'Yangi chat yaratish uchun receiver (qabul qiluvchi) foydalanuvchi ID si.',
+    example: 'b6d9f3c2-1a2b-4f5d-8a71-333333333333',
+  })
+  @IsOptional()
+  @IsUUID()
+  senderId?: string;
+
   @ApiProperty({
     description: 'Xabar matni yoki fayl nomi.',
     example: 'Salom doktor, qanday ahvol?',

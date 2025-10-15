@@ -112,11 +112,7 @@ export class MessageService {
   /**
    * 🔹 Xabar yuborish
    */
-  async sendMessage(
-    senderId: string,
-    dto: SendMessageDto,
-    file?: Express.Multer.File,
-  ) {
+  async sendMessage(senderId: string,dto: SendMessageDto,file?: Express.Multer.File,) {
     const { chatId, receiverId, message, type } = dto;
     let chat;
 
