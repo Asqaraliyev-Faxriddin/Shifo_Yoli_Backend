@@ -22,6 +22,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { MeetingModule } from './modules/meeting/meeting.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [ 
@@ -60,7 +61,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     ProfileModule,AdminModule,RatingModule, 
     MessageModule, DeviceModule, DoctorCategoryModule,
      DoctorProfileModule,
-     NotificationModule, MeetingModule, ContactModule, PaymentModule],
+     NotificationModule, MeetingModule, ContactModule, PaymentModule, UploadModule],
 
 
 })
