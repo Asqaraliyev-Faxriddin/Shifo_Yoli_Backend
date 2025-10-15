@@ -27,7 +27,7 @@ import { v4 as uuid } from 'uuid';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 
 @WebSocketGateway({
-  namespace: '/chat',
+  namespace: '/',
   cors: { origin: '*' },
 })
 export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect {
