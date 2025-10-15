@@ -133,6 +133,7 @@ let MessageGateway = class MessageGateway {
         }
     }
     async handleSendMessage(payload, client) {
+        console.log("wewewwe", payload);
         const senderId = client.data.userId;
         console.log('📨 Xabar kelmoqda:', payload, 'senderId:', senderId);
         try {

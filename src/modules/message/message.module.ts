@@ -4,6 +4,7 @@ import { MessageController } from './message.controller';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { MessageGateway } from './message.gateway';
 
 @Module({
   imports:[ JwtModule.registerAsync({
@@ -14,6 +15,6 @@ import { JwtModule } from '@nestjs/jwt';
         }),
       })],
   controllers: [MessageController],
-  providers: [MessageService,AuthGuard],
+  providers: [MessageService,AuthGuard,MessageGateway],
 })
 export class MessageModule {}

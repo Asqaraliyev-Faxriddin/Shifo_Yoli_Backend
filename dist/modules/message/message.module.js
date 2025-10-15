@@ -13,6 +13,7 @@ const message_controller_1 = require("./message.controller");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
+const message_gateway_1 = require("./message.gateway");
 let MessageModule = class MessageModule {
 };
 exports.MessageModule = MessageModule;
@@ -26,7 +27,7 @@ exports.MessageModule = MessageModule = __decorate([
                 }),
             })],
         controllers: [message_controller_1.MessageController],
-        providers: [message_service_1.MessageService, jwt_auth_guard_1.AuthGuard],
+        providers: [message_service_1.MessageService, jwt_auth_guard_1.AuthGuard, message_gateway_1.MessageGateway],
     })
 ], MessageModule);
 //# sourceMappingURL=message.module.js.map
