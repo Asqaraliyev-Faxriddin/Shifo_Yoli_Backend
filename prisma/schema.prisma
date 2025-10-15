@@ -75,6 +75,8 @@ model User {
 
   blockedUser      BlockedUsers?
   meetingsMessages MeetingMessage[] 
+  dailyAccess      DailyDoctorAccess[] @relation("PatientAccess")
+  doctorAccess     DailyDoctorAccess[] @relation("DoctorAccess")
 
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt()
@@ -290,8 +292,7 @@ model Message {
   sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
   senderId  String
 
-  message   String?
-
+  message   String? 
   type      MessageType @default(TEXT) 
 
   isRead    Boolean  @default(false)
@@ -327,5 +328,21 @@ model Contact {
 
 
 }
+
+model DailyDoctorAccess {
+  id            String   @id @default(uuid())
+  patientId     String   // foydalanuvchi
+  doctorId      String
+  date          DateTime // qaysi kun uchun to‘langan (faqat sana qismi muhim)
+  price         Decimal  // to‘langan summa
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient       User     @relation("PatientAccess", fields: [patientId], references: [id])
+  doctor        User     @relation("DoctorAccess", fields: [doctorId], references: [id])
+
+  @@unique([patientId, doctorId, date]) // 🔹 Bitta bemor bitta doktorga bir kunda faqat 1 marta to‘lay oladi
+}
+
 
 

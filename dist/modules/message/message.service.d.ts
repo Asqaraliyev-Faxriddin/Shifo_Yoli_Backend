@@ -6,22 +6,22 @@ export declare class MessageService {
     createChat(participantIds: string[]): Promise<{
         participants: ({
             user: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string;
-                password: string;
-                lastName: string;
                 firstName: string;
+                lastName: string;
+                password: string;
                 age: number;
                 month: number | null;
                 day: number | null;
-                id: string;
                 phoneNumber: string | null;
                 role: import(".prisma/client").$Enums.UserRole;
                 profileImg: string | null;
                 isActive: boolean;
                 isOnline: boolean;
                 lastSeen: Date | null;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
@@ -34,58 +34,58 @@ export declare class MessageService {
         updatedAt: Date;
     }>;
     getChatsForUser(userId: string): Promise<({
-        messages: ({
-            sender: {
-                email: string;
-                password: string;
-                lastName: string;
-                firstName: string;
-                age: number;
-                month: number | null;
-                day: number | null;
-                id: string;
-                phoneNumber: string | null;
-                role: import(".prisma/client").$Enums.UserRole;
-                profileImg: string | null;
-                isActive: boolean;
-                isOnline: boolean;
-                lastSeen: Date | null;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-        } & {
-            message: string | null;
-            type: import(".prisma/client").$Enums.MessageType;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isRead: boolean;
-            chatId: string;
-            senderId: string;
-        })[];
         participants: ({
             user: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string;
-                password: string;
-                lastName: string;
                 firstName: string;
+                lastName: string;
+                password: string;
                 age: number;
                 month: number | null;
                 day: number | null;
-                id: string;
                 phoneNumber: string | null;
                 role: import(".prisma/client").$Enums.UserRole;
                 profileImg: string | null;
                 isActive: boolean;
                 isOnline: boolean;
                 lastSeen: Date | null;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
             userId: string;
             chatId: string;
+        })[];
+        messages: ({
+            sender: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                email: string;
+                firstName: string;
+                lastName: string;
+                password: string;
+                age: number;
+                month: number | null;
+                day: number | null;
+                phoneNumber: string | null;
+                role: import(".prisma/client").$Enums.UserRole;
+                profileImg: string | null;
+                isActive: boolean;
+                isOnline: boolean;
+                lastSeen: Date | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            chatId: string;
+            message: string | null;
+            senderId: string;
+            type: import(".prisma/client").$Enums.MessageType;
+            isRead: boolean;
         })[];
     } & {
         id: string;
@@ -93,7 +93,7 @@ export declare class MessageService {
         updatedAt: Date;
     })[]>;
     createMessage(senderId: string, dto: CreateMessageDto): Promise<{
-        chatId: string;
+        chatId: any;
         message: {
             chat: {
                 id: string;
@@ -101,62 +101,62 @@ export declare class MessageService {
                 updatedAt: Date;
             };
             sender: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string;
-                password: string;
-                lastName: string;
                 firstName: string;
+                lastName: string;
+                password: string;
                 age: number;
                 month: number | null;
                 day: number | null;
-                id: string;
                 phoneNumber: string | null;
                 role: import(".prisma/client").$Enums.UserRole;
                 profileImg: string | null;
                 isActive: boolean;
                 isOnline: boolean;
                 lastSeen: Date | null;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
-            message: string | null;
-            type: import(".prisma/client").$Enums.MessageType;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isRead: boolean;
             chatId: string;
+            message: string | null;
             senderId: string;
+            type: import(".prisma/client").$Enums.MessageType;
+            isRead: boolean;
         };
     }>;
     getMessages(chatId: string): Promise<({
         sender: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string;
-            password: string;
-            lastName: string;
             firstName: string;
+            lastName: string;
+            password: string;
             age: number;
             month: number | null;
             day: number | null;
-            id: string;
             phoneNumber: string | null;
             role: import(".prisma/client").$Enums.UserRole;
             profileImg: string | null;
             isActive: boolean;
             isOnline: boolean;
             lastSeen: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
     } & {
-        message: string | null;
-        type: import(".prisma/client").$Enums.MessageType;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        isRead: boolean;
         chatId: string;
+        message: string | null;
         senderId: string;
+        type: import(".prisma/client").$Enums.MessageType;
+        isRead: boolean;
     })[]>;
     findChatBetweenUsers(user1: string, user2: string): Promise<({
         participants: {
@@ -178,10 +178,10 @@ export declare class MessageService {
     markMessagesRead(chatId: string, userId: string): Promise<void>;
     getUnreadCount(chatId: string, userId: string): Promise<number>;
     getAllUsers(): Promise<{
-        email: string;
-        lastName: string;
-        firstName: string;
         id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
         profileImg: string | null;
         isOnline: boolean;
         lastSeen: Date | null;

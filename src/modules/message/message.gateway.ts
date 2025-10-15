@@ -1,301 +1,287 @@
+// src/messages/message.gateway.ts
 import {
-    WebSocketGateway,
-    OnGatewayInit,
-    OnGatewayConnection,
-    OnGatewayDisconnect,
-    WebSocketServer,
-    SubscribeMessage,
-    MessageBody,
-    ConnectedSocket,
-  } from '@nestjs/websockets';
-  import { Server, Socket } from 'socket.io';
-  import { MessageService } from './message.service';
-  import { JwtService } from '@nestjs/jwt';
-  import { MessageType } from './dto/create-message.dto';
-  
-  interface TypingState {
-    [chatId: string]: Set<string>; // chatId -> set of userIds typing
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { MessageService } from './message.service';
+import { JwtService } from '@nestjs/jwt';
+import {
+  SendMessageDto,
+  CreateChatDto,
+  UpdateMessageDto,
+  DeleteMessageDto,
+  ReadMessageDto,
+  GetMessagesDto,
+  GetChatsDto,
+  MessageType,
+} from './dto/create-message.dto';
+import * as fs from 'fs';
+import * as path from 'path';
+import { v4 as uuid } from 'uuid';
+import { PrismaService } from 'src/core/prisma/prisma.service';
+
+@WebSocketGateway({
+  namespace: '/chat',
+  cors: { origin: '*' },
+})
+export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer() server: Server;
+
+  // userId -> Set of socketIds (supports multi-device)
+  private onlineUsers = new Map<string, Set<string>>();
+
+  constructor(
+    private readonly messageService: MessageService,
+    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  private async saveBase64File(base64: string, originalName?: string) {
+    const uploadDir = path.join(process.cwd(), 'uploads', 'chat');
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+    const ext = originalName ? path.extname(originalName) : '';
+    const fileName = `${uuid()}${ext || ''}`;
+    const filePath = path.join(uploadDir, fileName);
+
+    const buffer = Buffer.from(base64, 'base64');
+    fs.writeFileSync(filePath, buffer);
+    return `/uploads/chat/${fileName}`;
   }
-  
-  @WebSocketGateway({
-    cors: { origin: '*' },
-    // path: '/ws/chat',
-  })
-  export class MessageGateway
-    implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-  {
-    @WebSocketServer() server: Server;
-  
-    private activeSockets = new Map<string, Set<string>>();
-    private typingState: TypingState = {};
-  
-    constructor(
-      private readonly messageService: MessageService,
-      private readonly jwtService: JwtService,
-    ) {}
-  
-    /** Gateway initialized */
-    afterInit() {
-      console.log('✅ [Gateway] Chat gateway initialized');
-    }
-  
-    /** New client connected */
-    async handleConnection(client: Socket) {
-      try {
-        console.log(`⚡ [Gateway] New client trying to connect: ${client.id}`);
-  
-        const token =
-          client.handshake.auth?.token ?? client.handshake.headers['authorization'];
-        if (!token) {
-          console.warn('❌ [Gateway] No token, disconnecting');
-          return client.disconnect();
-        }
-  
-        const realToken =
-          typeof token === 'string' && token.startsWith('Bearer ')
-            ? token.split(' ')[1]
-            : token;
-  
-        const payload = this.jwtService.verify(realToken);
-        const userId = payload.sub || payload.id;
-        if (!userId) {
-          console.warn('❌ [Gateway] Invalid token payload, disconnecting');
-          return client.disconnect();
-        }
-  
-        const sockets = this.activeSockets.get(userId) ?? new Set<string>();
-        sockets.add(client.id);
-        this.activeSockets.set(userId, sockets);
-  
-        client.join(`user_${userId}`);
-        (client as any).userId = userId;
-  
-        await this.messageService.setUserOnline(userId);
-  
-        this.server.emit('user_status_changed', { userId, isOnline: true });
-        this.server.to(`user_${userId}`).emit('user_online', { userId });
-  
-        console.log(`🔗 [Gateway] User connected: user=${userId}, socket=${client.id}`);
-      } catch (err) {
-        console.error('❌ [Gateway] WS connection error:', err?.message ?? err);
+
+  async handleConnection(client: Socket) {
+    try {
+      const token =
+        client.handshake.auth?.token ||
+        (client.handshake.headers['authorization'] || '').toString().split(' ')[1];
+      if (!token) {
+        client.emit('error', { message: 'Token topilmadi' });
         client.disconnect();
+        return;
       }
-    }
-  
-    /** Client disconnected */
-    async handleDisconnect(client: Socket) {
-      const userId = (client as any).userId;
-      console.log(`⚡ [Gateway] Client disconnected: ${client.id}, user=${userId}`);
-  
-      if (!userId) return;
-  
-      const sockets = this.activeSockets.get(userId);
-      if (sockets) {
-        sockets.delete(client.id);
-  
-        if (sockets.size === 0) {
-          this.activeSockets.delete(userId);
-          await this.messageService.setUserOffline(userId);
-  
-          const lastSeen = new Date().toISOString();
-          this.server.emit('user_status_changed', {
-            userId,
-            isOnline: false,
-            lastSeen,
-          });
-          this.server.to(`user_${userId}`).emit('user_offline', {
-            userId,
-            lastSeen,
-          });
-  
-          console.log(`❌ [Gateway] User went offline: ${userId}`);
-        } else {
-          this.activeSockets.set(userId, sockets);
-          console.log(
-            `⚡ [Gateway] User ${userId} still has ${sockets.size} active sockets`,
-          );
-        }
+
+      const payload: any = this.jwtService.verify(token);
+      const userId = payload?.sub ?? payload?.id;
+      if (!userId) {
+        client.emit('error', { message: 'Token noto‘g‘ri' });
+        client.disconnect();
+        return;
       }
-  
-      // Typing holatini tozalash
-      for (const chatId of Object.keys(this.typingState)) {
-        const set = this.typingState[chatId];
-        if (set?.has(userId)) {
-          set.delete(userId);
-          if (set.size === 0) delete this.typingState[chatId];
-          this.server
-            .to(`chat_${chatId}`)
-            .emit('user_stop_typing', { chatId, userId });
-          console.log(
-            `⌨️ [Gateway] Typing cleared for user=${userId} in chat=${chatId}`,
-          );
-        }
-      }
-    }
-  
-    /** Join a chat room */
-    @SubscribeMessage('join_chat')
-    async handleJoinChat(
-      @MessageBody() payload: { chatId: string },
-      @ConnectedSocket() client: Socket,
-    ) {
-      if (!payload?.chatId) return;
-      client.join(`chat_${payload.chatId}`);
-      client.emit('joined_chat', { chatId: payload.chatId });
-      console.log(
-        `👤 [Gateway] User ${(client as any).userId} joined chat_${payload.chatId}`,
-      );
-    }
-  
-    /** Send a message */
-    @SubscribeMessage('send_message')
-    async handleSendMessage(
-      @MessageBody()
-      payload: { message: string; chatId?: string; receiverId?: string; type?: string },
-      @ConnectedSocket() client: Socket,
-    ) {
-      const senderId = (client as any).userId;
-      if (!senderId) {
-        console.warn('❌ [Gateway] Unauthenticated send_message attempt');
-        return client.emit('error', { message: 'Unauthenticated' });
-      }
-  
-      console.log(
-        `📩 [Gateway] send_message from user=${senderId} chatId=${payload.chatId} receiverId=${payload.receiverId}`,
-      );
-  
-      let chatId = payload.chatId;
-  
-      try {
-        if (!chatId && payload.receiverId) {
-          const existingChat = await this.messageService.findChatBetweenUsers(
-            senderId,
-            payload.receiverId,
-          );
-          if (existingChat) {
-            chatId = existingChat.id;
-            console.log(`[Gateway] Existing chat found: ${chatId}`);
-          } else {
-            const newChat = await this.messageService.createChat([
-              senderId,
-              payload.receiverId,
-            ]);
-            chatId = newChat.id;
-            console.log(`[Gateway] New chat created: ${chatId}`);
-          }
-        }
-  
-        if (!chatId) {
-          console.error('❌ [Gateway] Chat not found for send_message');
-          return client.emit('error', { message: 'Chat not found' });
-        }
-  
-        const result = await this.messageService.createMessage(senderId, {
-          chatId,
-          receiverId: payload.receiverId,
-          message: payload.message,
-          type: (payload.type as MessageType) ?? MessageType.TEXT,
-        });
-  
-        const out = {
-          id: result.message.id,
-          chatId: result.chatId,
-          message: result.message.message,
-          sender: {
-            id: senderId,
-            firstName: result.message.sender.firstName,
-            lastName: result.message.sender.lastName,
-            profileImg: result.message.sender.profileImg,
-          },
-          createdAt: result.message.createdAt,
-          type: result.message.type,
-          isRead: result.message.isRead ?? false,
-        };
-  
-        this.server.to(`chat_${chatId}`).emit('message', out);
-        console.log(`✅ [Gateway] Message emitted to chat_${chatId}:`, out.id);
-  
-        if (payload.receiverId) {
-          const receiverSockets = this.activeSockets.get(payload.receiverId);
-          if (receiverSockets && receiverSockets.size > 0) {
-            await this.messageService.markMessagesRead(chatId, payload.receiverId);
-            out.isRead = true;
-            this.server
-              .to(`chat_${chatId}`)
-              .emit('message_read', { chatId, messageId: out.id, userId: payload.receiverId });
-  
-            console.log(
-              `👀 [Gateway] Receiver online, message marked as read: ${out.id}`,
-            );
-          }
-        }
-      } catch (err) {
-        console.error('❌ [Gateway] send_message error:', err?.message ?? err);
-        client.emit('error', { message: err?.message ?? 'Unknown error' });
-      }
-    }
-  
-    /** Typing indicator */
-    @SubscribeMessage('typing')
-    handleTyping(
-      @MessageBody() payload: { chatId: string },
-      @ConnectedSocket() client: Socket,
-    ) {
-      const userId = (client as any).userId;
-      if (!userId || !payload?.chatId) return;
-  
-      const chatId = payload.chatId;
-      const set = this.typingState[chatId] ?? new Set<string>();
-  
-      if (set.has(userId)) return;
-  
-      set.add(userId);
-      this.typingState[chatId] = set;
-  
-      client.to(`chat_${chatId}`).emit('user_typing', { chatId, userId });
-      console.log(`⌨️ [Gateway] User ${userId} typing in chat=${chatId}`);
-    }
-  
-    /** Stop typing */
-    @SubscribeMessage('stop_typing')
-    handleStopTyping(
-      @MessageBody() payload: { chatId: string },
-      @ConnectedSocket() client: Socket,
-    ) {
-      const userId = (client as any).userId;
-      if (!userId || !payload?.chatId) return;
-  
-      const chatId = payload.chatId;
-      const set = this.typingState[chatId];
-  
-      if (!set || !set.has(userId)) return;
-  
-      set.delete(userId);
-      if (set.size === 0) delete this.typingState[chatId];
-  
-      client.to(`chat_${chatId}`).emit('user_stop_typing', { chatId, userId });
-      console.log(`✋ [Gateway] User ${userId} stopped typing in chat=${chatId}`);
-    }
-  
-    /** Get user status */
-    @SubscribeMessage('get_user_status')
-    async handleGetUserStatus(
-      @MessageBody() payload: { userId: string },
-      @ConnectedSocket() client: Socket,
-    ) {
-      try {
-        if (!payload?.userId) return;
-        const status = await this.messageService.getUserStatus(payload.userId);
-        client.emit('user_status', {
-          userId: payload.userId,
-          isOnline: status.isOnline,
-          lastSeen: status.lastSeen,
-        });
-        console.log(`📡 [Gateway] Sent user status for ${payload.userId}`);
-      } catch (err) {
-        console.error('❌ [Gateway] get_user_status error:', err?.message ?? err);
-        client.emit('error', { message: err?.message ?? 'Failed to get status' });
-      }
+
+      client.data.userId = userId;
+
+      const existing = this.onlineUsers.get(userId) ?? new Set<string>();
+      existing.add(client.id);
+      this.onlineUsers.set(userId, existing);
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { isOnline: true },
+      });
+
+      this.server.emit('user_online', { userId, online: true });
+      this.server.to(client.id).emit('connected', { message: 'Ulandi', userId });
+    } catch (err: any) {
+      client.emit('error', { message: 'Auth xatosi', detail: err?.message ?? err });
+      client.disconnect();
     }
   }
-  
+
+  async handleDisconnect(client: Socket) {
+    try {
+      const userId: string = client.data.userId;
+      if (!userId) return;
+
+      const set = this.onlineUsers.get(userId);
+      if (set) {
+        set.delete(client.id);
+        if (set.size === 0) {
+          this.onlineUsers.delete(userId);
+          await this.prisma.user.update({
+            where: { id: userId },
+            data: { isOnline: false, lastSeen: new Date() },
+          });
+          this.server.emit('user_online', { userId, online: false, lastSeen: new Date() });
+        } else {
+          this.onlineUsers.set(userId, set);
+        }
+      }
+    } catch (err) {
+      // ignore
+    }
+  }
+
+  @SubscribeMessage('get_online_users')
+  async handleGetOnlineUsers(@ConnectedSocket() client: Socket) {
+    const online = Array.from(this.onlineUsers.keys());
+    this.server.to(client.id).emit('online_users', online);
+  }
+
+  @SubscribeMessage('create_chat')
+  async handleCreateChat(
+    @MessageBody() dto: CreateChatDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const senderId = client.data.userId;
+    try {
+      const res = await this.messageService.createChat(senderId, dto);
+      this.server.to(client.id).emit('chat_created', res);
+      // if other participant online, notify
+      const receiverSocketSet = this.onlineUsers.get(dto.receiverId);
+      if (receiverSocketSet) {
+        for (const sid of receiverSocketSet) {
+          this.server.to(sid).emit('chat_created_for_you', { chatId: res.chatId, from: senderId });
+        }
+      }
+    } catch (err: any) {
+      this.server.to(client.id).emit('error', { action: 'create_chat', message: err?.message ?? err });
+    }
+  }
+
+  @SubscribeMessage('send_message')
+  async handleSendMessage(
+    @MessageBody() payload: Partial<SendMessageDto> & { fileBase64?: string; fileName?: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const senderId = client.data.userId;
+    try {
+      let fileUrl: string | undefined;
+
+      if (payload.fileBase64 && (payload.type === MessageType.FILE || payload.type === MessageType.VIDEO)) {
+        fileUrl = await this.saveBase64File(payload.fileBase64, payload.fileName);
+      }
+
+      const dto: SendMessageDto = {
+        chatId: payload.chatId,
+        receiverId: payload.receiverId,
+        message: fileUrl ? fileUrl : (payload.message ?? ''),
+        type: payload.type ?? MessageType.TEXT,
+      };
+
+      const res = await this.messageService.sendMessage(senderId, dto, undefined);
+
+      const toId = payload.receiverId ?? (() => {
+        const participants = res?.data?.chatId ? null : null;
+        return payload.receiverId;
+      })();
+
+      // notify receiver if online: try to deduce receiver from chat participants if not provided
+      let receiverId = payload.receiverId;
+      if (!receiverId && res?.data?.chatId) {
+        // try to get chat participants
+        const chat = await this.prisma.chat.findUnique({
+          where: { id: res.data.chatId },
+          include: { participants: true },
+        });
+        receiverId = chat?.participants?.find((p) => p.userId !== senderId)?.userId;
+      }
+
+      if (receiverId) {
+        const receiverSockets = this.onlineUsers.get(receiverId);
+        if (receiverSockets) {
+          for (const sid of receiverSockets) {
+            this.server.to(sid).emit('new_message', res.data);
+          }
+        }
+      }
+
+      this.server.to(client.id).emit('message_sent', res.data);
+    } catch (err: any) {
+      this.server.to(client.id).emit('error', { action: 'send_message', message: err?.message ?? err });
+    }
+  }
+
+  @SubscribeMessage('update_message')
+  async handleUpdateMessage(
+    @MessageBody() dto: UpdateMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = client.data.userId;
+    try {
+      const res = await this.messageService.updateMessage(userId, dto);
+      this.server.emit('message_updated', res.data);
+      this.server.to(client.id).emit('message_update_ok', res);
+    } catch (err: any) {
+      this.server.to(client.id).emit('error', { action: 'update_message', message: err?.message ?? err });
+    }
+  }
+
+  @SubscribeMessage('delete_message')
+  async handleDeleteMessage(
+    @MessageBody() dto: DeleteMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = client.data.userId;
+    try {
+      const res = await this.messageService.deleteMessage(userId, dto);
+      this.server.emit('message_deleted', { id: dto.messageId });
+      this.server.to(client.id).emit('message_delete_ok', res);
+    } catch (err: any) {
+      this.server.to(client.id).emit('error', { action: 'delete_message', message: err?.message ?? err });
+    }
+  }
+
+  @SubscribeMessage('read_messages')
+  async handleReadMessages(
+    @MessageBody() dto: ReadMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = client.data.userId;
+    try {
+      const res = await this.messageService.readMessages(userId, dto);
+      this.server.to(client.id).emit('messages_read', res);
+      // notify other participant(s) that messages were read
+      const chat = await this.prisma.chat.findUnique({
+        where: { id: dto.chatId },
+        include: { participants: true },
+      });
+      if (chat) {
+        for (const p of chat.participants) {
+          if (p.userId === userId) continue;
+          const sockets = this.onlineUsers.get(p.userId);
+          if (sockets) {
+            for (const sid of sockets) {
+              this.server.to(sid).emit('messages_marked_read', { chatId: dto.chatId, by: userId });
+            }
+          }
+        }
+      }
+    } catch (err: any) {
+      this.server.to(client.id).emit('error', { action: 'read_messages', message: err?.message ?? err });
+    }
+  }
+
+  @SubscribeMessage('get_messages')
+  async handleGetMessages(
+    @MessageBody() dto: GetMessagesDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = client.data.userId;
+    try {
+      const res = await this.messageService.getMessages(userId, dto);
+      this.server.to(client.id).emit('messages_list', res);
+    } catch (err: any) {
+      this.server.to(client.id).emit('error', { action: 'get_messages', message: err?.message ?? err });
+    }
+  }
+
+  @SubscribeMessage('get_chats')
+  async handleGetChats(
+    @MessageBody() dto: GetChatsDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = client.data.userId;
+    try {
+      const res = await this.messageService.getChats(userId, dto);
+      this.server.to(client.id).emit('chats_list', res);
+    } catch (err: any) {
+      this.server.to(client.id).emit('error', { action: 'get_chats', message: err?.message ?? err });
+    }
+  }
+}

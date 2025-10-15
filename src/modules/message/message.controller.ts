@@ -1,41 +1,88 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+  Req,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { MessageService } from './message.service';
-import { CreateMessageDto,CreateChatDto } from './dto/create-message.dto';
-import { Request } from 'express';
-import { PrismaService } from 'src/core/prisma/prisma.service';
+import {
+  SendMessageDto,
+  CreateChatDto,
+  UpdateMessageDto,
+  DeleteMessageDto,
+  ReadMessageDto,
+  GetMessagesDto,
+  GetChatsDto,
+} from './dto/create-message.dto';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
 
+
+@ApiTags('Chat va Xabarlar')
 @ApiBearerAuth()
+@UseGuards(AuthGuard)
 @Controller('messages')
 export class MessageController {
-  constructor(private readonly svc: MessageService,private prisma:PrismaService) {}
+  constructor(private readonly messageService: MessageService) {}
 
-
-  @UseGuards(AuthGuard)
-  @Get('/chats')
-  async getChats(@Req() req) {
-    return this.svc.getChatsForUser(req.user.id);
+  @Post('create-chat')
+  @ApiOperation({ summary: 'Yangi chat yaratish yoki mavjudini olish' })
+  async createChat(@Req() req, @Body() dto: CreateChatDto) {
+    return this.messageService.createChat(req.user.id, dto);
   }
 
-
-  @Get('/users')
-  async getusers(@Req() req) {
-    return this.svc.getAllUsers()
-  }
-  @Post('/create/chat')
-  async createChat(@Body() dto: CreateChatDto) {
-    return this.svc.createChat(dto.participantIds);
-  }
-
-  @Get('/chats/:chatId/messages')
-  async getMessages(@Param('chatId') chatId: string) {
-    return this.svc.getMessages(chatId);
+  @Post('send')
+  @ApiOperation({ summary: 'Xabar yuborish (matn, fayl yoki video)' })
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  async sendMessage(
+    @Req() req,
+    @Body() dto: SendMessageDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.messageService.sendMessage(req.user.id, dto, file);
   }
 
-  @UseGuards(AuthGuard)
-  @Post('/send')
-  async sendMessage(@Req() req, @Body() dto: CreateMessageDto) {
-    return this.svc.createMessage(req.user.id, dto);
+  @Patch('update')
+  @ApiOperation({ summary: 'Xabar matnini yangilash (faqat o‘z xabari)' })
+  async updateMessage(@Req() req, @Body() dto: UpdateMessageDto) {
+    return this.messageService.updateMessage(req.user.id, dto);
+  }
+
+  // 🔹 Xabar o‘chirish
+  @Delete('delete')
+  @ApiOperation({ summary: 'Xabarni o‘chirish (faqat o‘z xabari)' })
+  async deleteMessage(@Req() req, @Body() dto: DeleteMessageDto) {
+    return this.messageService.deleteMessage(req.user.id, dto);
+  }
+
+  // 🔹 Xabarlarni o‘qilgan deb belgilash
+  @Patch('read')
+  @ApiOperation({ summary: 'Xabarlarni o‘qilgan deb belgilash' })
+  async readMessages(@Req() req, @Body() dto: ReadMessageDto) {
+    return this.messageService.readMessages(req.user.id, dto);
+  }
+
+  // 🔹 Chatdagi xabarlarni olish
+  @Get('list')
+  @ApiOperation({ summary: 'Chatdagi xabarlarni olish (pagination bilan)' })
+  async getMessages(@Req() req, @Query() dto: GetMessagesDto) {
+    return this.messageService.getMessages(req.user.id, dto);
+  }
+
+  // 🔹 Foydalanuvchining barcha chatlarini olish
+  @Get('chats')
+  @ApiOperation({ summary: 'Foydalanuvchining barcha chatlarini olish' })
+  async getChats(@Req() req, @Query() dto: GetChatsDto) {
+    return this.messageService.getChats(req.user.id, dto);
   }
 }
