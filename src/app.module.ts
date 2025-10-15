@@ -40,10 +40,10 @@ import { PaymentModule } from './modules/payment/payment.module';
       rootPath: join(process.cwd(), "uploads", "profiles"),
       serveRoot: "/profiles/file", 
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), "uploads", "chats"),
-      serveRoot: "/chats/file", 
-    }),
+          ServeStaticModule.forRoot({
+            rootPath: join(process.cwd(), "uploads", "chat"),
+            serveRoot: "/uploads/chat", 
+          }),
 
 
     ServeStaticModule.forRoot({
