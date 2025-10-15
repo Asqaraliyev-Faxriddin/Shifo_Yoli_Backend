@@ -162,6 +162,11 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect 
     @MessageBody() payload: Partial<SendMessageDto> & { fileBase64?: string; fileName?: string },
     @ConnectedSocket() client: Socket,
   ) {
+
+
+    console.log("wewewwe",payload);
+    
+
     const senderId = client.data.userId;
     console.log('📨 Xabar kelmoqda:', payload, 'senderId:', senderId);
 
