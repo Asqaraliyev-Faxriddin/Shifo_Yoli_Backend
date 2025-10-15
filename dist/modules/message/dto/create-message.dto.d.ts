@@ -9,6 +9,7 @@ export declare class CreateChatDto {
 export declare class SendMessageDto {
     chatId?: string;
     receiverId?: string;
+    senderId?: string;
     message: string;
     type?: MessageType;
     file?: Express.Multer.File;

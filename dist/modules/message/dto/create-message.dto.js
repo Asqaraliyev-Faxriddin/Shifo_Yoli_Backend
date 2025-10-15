@@ -34,6 +34,7 @@ __decorate([
 class SendMessageDto {
     chatId;
     receiverId;
+    senderId;
     message;
     type = MessageType.TEXT;
     file;
@@ -57,6 +58,15 @@ __decorate([
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], SendMessageDto.prototype, "receiverId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Yangi chat yaratish uchun receiver (qabul qiluvchi) foydalanuvchi ID si.',
+        example: 'b6d9f3c2-1a2b-4f5d-8a71-333333333333',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], SendMessageDto.prototype, "senderId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Xabar matni yoki fayl nomi.',

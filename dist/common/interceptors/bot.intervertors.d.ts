@@ -1,9 +1,8 @@
 import { NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 export declare class TelegramInterceptor implements NestInterceptor {
-    private readonly botToken;
-    private readonly chatId;
-    private readonly prisma;
-    private loger;
-    private jwtService;
+    private readonly jwtService;
+    private readonly logger;
+    constructor(jwtService: JwtService);
     intercept(context: ExecutionContext, next: CallHandler): Promise<import("rxjs").Observable<any>>;
 }

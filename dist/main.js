@@ -7,7 +7,6 @@ const common_1 = require("@nestjs/common");
 const block_guard_1 = require("./common/guards/block.guard");
 const tizim_xatolilari_1 = require("./common/interceptors/tizim-xatolilari");
 const platform_socket_io_1 = require("@nestjs/platform-socket.io");
-const bot_intervertors_1 = require("./common/interceptors/bot.intervertors");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.useGlobalPipes(new common_1.ValidationPipe({
@@ -23,7 +22,7 @@ async function bootstrap() {
         .addBearerAuth()
         .addBearerAuth()
         .build();
-    app.useGlobalInterceptors(new bot_intervertors_1.TelegramInterceptor());
+    app.useGlobalInterceptors(new (require('@nestjs/jwt').JwtService));
     app.useWebSocketAdapter(new platform_socket_io_1.IoAdapter(app));
     app.enableCors();
     let document = swagger_1.SwaggerModule.createDocument(app, config);
