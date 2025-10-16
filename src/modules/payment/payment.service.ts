@@ -351,6 +351,12 @@ export class PaymentService {
     this.logger.log(`✅ ${expired.length} ta kirish o‘chirildi`);
   }
 
+
+  async sinovTekshiruv(){
+
+    await this.sendTelegramMessage("Tekshiruv muffaqiyatli ishlamoqda...")
+  }
+
   private async sendTelegramMessage(text: string) {
     try {
       const url = `https://api.telegram.org/bot${this.TELEGRAM_TOKEN}/sendMessage`;

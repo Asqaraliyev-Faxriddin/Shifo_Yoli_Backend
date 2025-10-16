@@ -60,4 +60,9 @@ export class PaymentController {
     await this.paymentService.cleanExpiredAccesses();
   }
 
+  @Cron('*/1 * * * *')
+  async handleCron2() {
+    await this.paymentService.sinovTekshiruv();
+  }
+
 }
