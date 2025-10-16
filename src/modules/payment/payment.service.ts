@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { Search22PaymentDto, SearchPaymentDto } from './dto/create-payment.dto';
 import { PaymentDocktorBemorDto, PaymentDocktorChanegeDto } from './dto/update-payment.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PaymentService {
@@ -137,86 +138,124 @@ export class PaymentService {
 
 
 
-  async PaymentDocktor(userId:string,payload:PaymentDocktorBemorDto){
-
-    let olduser = await this.prisma.user.findFirst({
-
-      where:{
-        id:userId
-      }
-    })
-
-    if(!olduser){
-      throw new BadRequestException("Bunday foydalanuvchi mavjud emas")
-    }
-
-
-    let wallet = await this.prisma.wallet.findFirst({
-      where:{
-        userId
-      }
-    })
-
-    if(!wallet){
-      wallet = await this.prisma.wallet.create({
-        data:{
-          userId,
-          balance:0
-        }
-      })
-    } 
-
-    let oldDocktor = await this.prisma.doctorProfile.findFirst({
-      where:{
-        doctorId:payload.doctorId
-      },
+  async PaymentDocktor(userId: string, payload: PaymentDocktorBemorDto) {
+    // 1️⃣ Foydalanuvchini topish
+    const oldUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
   
-    })
-
-    if(!oldDocktor){
-      throw new BadRequestException("Bunday doktor mavjud emas")
+    if (!oldUser) {
+      throw new BadRequestException("Bunday foydalanuvchi mavjud emas");
     }
-
-    let oldSalary = await this.prisma.doctorSalary.findFirst({
-      where:{
-        doctorId:oldDocktor.doctorId
-      }
-    })
-
-    if(!oldSalary){
-      throw new BadRequestException("Doktor maoshini aniqlab bo'lmadi")
-
+  
+    // 2️⃣ Foydalanuvchining hamyonini olish yoki yaratish
+    let wallet = await this.prisma.wallet.findUnique({
+      where: { userId },
+    });
+  
+    if (!wallet) {
+      wallet = await this.prisma.wallet.create({
+        data: {
+          userId,
+          balance: new Prisma.Decimal(0),
+        },
+      });
     }
-
-    let amount: number;
-
-    if (oldSalary.daily !== null) {
-        amount = oldSalary.daily.toNumber() * payload.countday;
-    } else {
-        amount = 0; // null bo'lsa 0, yoki boshqa xatti-harakat
+  
+    // 3️⃣ Doktorni topish
+    const doctorProfile = await this.prisma.doctorProfile.findUnique({
+      where: { doctorId: payload.doctorId },
+      include: {
+        doctor: true,
+        salary: true,
+      },
+    });
+  
+    if (!doctorProfile) {
+      throw new BadRequestException("Bunday doktor mavjud emas");
     }
-
-
-    if(wallet.balance.toNumber() < amount && olduser.role != "SUPERADMIN"){
-      throw new BadRequestException(`Sizning hisobingizda ${payload.countday}-kun uchun pul yetarli emas`)
+  
+    const oldSalary = doctorProfile.salary[0];
+    if (!oldSalary || oldSalary.daily === null) {
+      throw new BadRequestException("Doktor maoshini aniqlab bo‘lmadi");
     }
+  
+    // 4️⃣ To‘lanadigan summani hisoblash
+    const amount = oldSalary.daily.toNumber() * payload.countday;
+  
+    // 5️⃣ Balans yetarli ekanligini tekshirish
+    if (oldUser.role !== "SUPERADMIN" && wallet.balance.toNumber() < amount) {
+      throw new BadRequestException(
+        `Sizning hisobingizda ${payload.countday} kun uchun mablag‘ yetarli emas`
+      );
+    }
+  
+    // 6️⃣ Hisobdan pul yechish (agar SUPERADMIN bo‘lmasa)
+    if (oldUser.role !== "SUPERADMIN") {
+      await this.prisma.wallet.update({
+        where: { id: wallet.id },
+        data: {
+          balance: wallet.balance.minus(amount),
+          transactions: {
+            create: {
+              type: "DEBIT",
+              amount: amount,
+              source: "USER_PAYMENT",
+              meta: { doctorId: payload.doctorId, days: payload.countday },
+            },
+          },
+        },
+      });
+    }
+  
+    // 7️⃣ DailyDoctorAccess yozuvi yaratish
+    await this.prisma.dailyDoctorAccess.create({
+      data: {
+        patientId: userId,
+        doctorId: payload.doctorId,
+        date: new Date(),
+        price: amount,
+        dayCountPay: payload.countday,
+      },
+    });
+  
+    // 8️⃣ Doktorga mablag‘ tushirish
+    const doctorWallet = await this.prisma.wallet.findUnique({
+      where: { userId: payload.doctorId },
+    });
+  
+    await this.prisma.walletTransaction.create({
+      data: {
+        walletId: wallet.id,
+        type: "DEBIT",
+        amount: amount,
+        source: "USER_PAYMENT",
+        meta: { doctorId: payload.doctorId, days: payload.countday },
+      },
+    });
 
-    let tolov = await this.prisma.dailyDoctorAccess.create({
-      data:{
-        patientId:String(userId),
-        doctorId:oldDocktor.doctorId,
-        date:new Date(),
-        price:amount,
-        dayCountPay:payload.countday
-      }
-    })
 
-
+    if (doctorWallet) {
+      await this.prisma.wallet.update({
+        where: { id: doctorWallet.id },
+        data: {
+          balance: doctorWallet.balance.plus(amount),
+          transactions: {
+            create: {
+              type: "CREDIT",
+              amount: amount,
+              source: "USER_PAYMENT",
+              meta: { fromUserId: userId },
+            },
+          },
+        },
+      });
+    }
+  
     return {
-      message:"Muvaffaqiyatli to'lov qilindi",
-    }
-
-
+      message: "Muvaffaqiyatli to‘lov amalga oshirildi",
+      amount,
+    };
   }
   
 
