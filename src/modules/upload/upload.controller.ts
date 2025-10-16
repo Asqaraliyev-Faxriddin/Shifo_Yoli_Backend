@@ -95,7 +95,7 @@ export class UploadController {
 
       try {
         await fs.writeFile(savePath, file.buffer);
-        const url = `https://your-domain.com/uploads/chat/${randomName}`; // o'zingiz domen bilan almashtiring
+        const url = `https://faxriddin.bobur-dev.uz/uploads/chat/${randomName}`; // o'zingiz domen bilan almashtiring
         return { filename: randomName, url };
       } catch (err) {
         console.error(err);
