@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { Search22PaymentDto, SearchPaymentDto } from './dto/create-payment.dto';
-import { PaymentDocktorBemorDto } from './dto/update-payment.dto';
+import { PaymentDocktorBemorDto, PaymentDocktorChanegeDto } from './dto/update-payment.dto';
 
 @Injectable()
 export class PaymentService {
@@ -207,5 +207,42 @@ export class PaymentService {
 
   }
   
+
+  async ChangeDocktorPay(userId:string,payload:PaymentDocktorChanegeDto){
+
+    let oldDocktor = await this.prisma.doctorProfile.findFirst({
+      where:{
+        doctorId:payload.doctorId
+      },
+  
+    })
+
+    if(!oldDocktor){
+      throw new BadRequestException("Bunday doktor mavjud emas")
+    }
+
+    let daily = await this.prisma.dailyDoctorAccess.findFirst({
+      where:{
+        patientId:userId,
+        doctorId:oldDocktor.doctorId
+      }
+    })
+
+
+    if(!daily){
+      throw new BadRequestException("Siz bu doktor bilan suhbatlashish uchun to'lov qiling")
+    }
+   
+
+    return {
+      message:"Siz to'lov qilgansiz",
+    }
+
+  }
+
+
+
+
+
 }
 

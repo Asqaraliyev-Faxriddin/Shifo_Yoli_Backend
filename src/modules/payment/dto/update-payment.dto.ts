@@ -13,3 +13,13 @@ export class PaymentDocktorBemorDto {
     @IsNotEmpty()
     doctorId: string;
 }
+
+
+export class PaymentDocktorChanegeDto {
+    
+
+    @ApiProperty({example:"usdt"})
+    @IsUUID()
+    @IsNotEmpty()
+    doctorId: string;
+}
