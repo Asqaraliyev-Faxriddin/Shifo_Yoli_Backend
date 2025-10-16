@@ -332,6 +332,7 @@ model Contact {
 model DailyDoctorAccess {
   id            String   @id @default(uuid())
   patientId     String   // foydalanuvchi
+  dayCountPay    Int      @default(1) 
   doctorId      String
   date          DateTime // qaysi kun uchun to‘langan (faqat sana qismi muhim)
   price         Decimal  // to‘langan summa

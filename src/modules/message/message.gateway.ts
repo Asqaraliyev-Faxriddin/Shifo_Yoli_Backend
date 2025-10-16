@@ -61,7 +61,7 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect 
       const token =
         client.handshake.auth?.token ||
         (client.handshake.headers['authorization'] || '').toString().split(' ')[1];
-      if (!token) {
+      if (!token) { 
         console.log('❌ Token topilmadi');
         client.emit('error', { message: 'Token topilmadi' });
         client.disconnect();

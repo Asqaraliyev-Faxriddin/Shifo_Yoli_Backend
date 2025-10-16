@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { Search22PaymentDto, SearchPaymentDto } from './dto/create-payment.dto';
+import { PaymentDocktorBemorDto } from './dto/update-payment.dto';
 
 @Injectable()
 export class PaymentService {
@@ -132,6 +133,78 @@ export class PaymentService {
       count: transactions.length,
       data: transactions,
     };
+  }
+
+
+
+  async PaymentDocktor(userId:string,payload:PaymentDocktorBemorDto){
+
+    let wallet = await this.prisma.wallet.findFirst({
+      where:{
+        userId
+      }
+    })
+
+    if(!wallet){
+      wallet = await this.prisma.wallet.create({
+        data:{
+          userId,
+          balance:0
+        }
+      })
+    } 
+
+    let oldDocktor = await this.prisma.doctorProfile.findFirst({
+      where:{
+        doctorId:payload.doctorId
+      },
+  
+    })
+
+    if(!oldDocktor){
+      throw new BadRequestException("Bunday doktor mavjud emas")
+    }
+
+    let oldSalary = await this.prisma.doctorSalary.findFirst({
+      where:{
+        doctorId:oldDocktor.doctorId
+      }
+    })
+
+    if(!oldSalary){
+      throw new BadRequestException("Doktor maoshini aniqlab bo'lmadi")
+
+    }
+
+    let amount: number;
+
+    if (oldSalary.daily !== null) {
+        amount = oldSalary.daily.toNumber() * payload.countday;
+    } else {
+        amount = 0; // null bo'lsa 0, yoki boshqa xatti-harakat
+    }
+
+
+    if(wallet.balance.toNumber() < amount){
+      throw new BadRequestException(`Sizning hisobingizda ${payload.countday}-kun uchun pul yetarli emas`)
+    }
+
+    let tolov = await this.prisma.dailyDoctorAccess.create({
+      data:{
+        patientId:String(userId),
+        doctorId:oldDocktor.doctorId,
+        date:new Date(),
+        price:amount,
+        dayCountPay:payload.countday
+      }
+    })
+
+
+    return {
+      message:"Muvaffaqiyatli to'lov qilindi",
+    }
+
+
   }
   
 }
