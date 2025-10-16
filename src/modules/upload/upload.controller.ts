@@ -10,8 +10,7 @@ import {
   HttpStatus 
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import * as multer from 'multer';
 import axios from 'axios';
 import * as FormData from 'form-data';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -44,17 +43,7 @@ export class UploadController {
   })
   @ApiResponse({ status: 201, description: 'Fayl muvaffaqiyatli yuklandi' })
   @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: (req, file, cb) => {
-        // Dastlab faylni vaqtinchalik serverga saqlaymiz
-        cb(null, './temp');
-      },
-      filename: (req, file, cb) => {
-        const randomName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const fileExt = extname(file.originalname);
-        cb(null, `${randomName}${fileExt}`);
-      },
-    }),
+    storage: multer.memoryStorage(), // <-- diskga saqlamaymiz
   }))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
@@ -64,19 +53,13 @@ export class UploadController {
     try {
       // FormData tayyorlash
       const form = new FormData();
-      form.append('image', Buffer.from(file.buffer), {
-        filename: file.originalname,
-        contentType: file.mimetype,
-      });
+      form.append('image', file.buffer.toString('base64')); // imgbb base64 formatni qabul qiladi
       form.append('key', IMGBB_API_KEY);
 
       // imgbb ga POST qilish
       const response = await axios.post(IMGBB_UPLOAD_URL, form, {
         headers: form.getHeaders(),
       });
-
-      // Faylni o'chirish (agar vaqtinchalik saqlangan bo'lsa)
-      // await fs.unlink(file.path);
 
       if (response.data && response.data.success) {
         return {
@@ -100,7 +83,6 @@ export class UploadController {
   @ApiResponse({ status: 404, description: 'Fayl topilmadi' })
   async removeFile(@Param('deleteUrl') deleteUrl: string) {
     try {
-      // imgbb delete URL-ga GET qilish orqali o'chirish
       const response = await axios.get(deleteUrl);
       if (response.status === 200) {
         return { message: 'Fayl muvaffaqiyatli o‘chirildi' };
