@@ -48,7 +48,7 @@ export class PaymentController {
 
 
   @UseGuards(AuthGuard)
-  @Get("chacke/user/payment")
+  @Post("chacke/user/payment")
   @ApiOperation({ summary: "Foydalanuvchi docktorga tolov qildimi shuni biladi" })
   async ChangePayment(@Req() req, @Body() query: PaymentDocktorChanegeDto) {
     return this.paymentService.ChangeDocktorPay( req.user.id, query);
