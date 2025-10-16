@@ -15,13 +15,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UploadController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
-const multer_1 = require("multer");
+const multer = require("multer");
 const path_1 = require("path");
+const axios_1 = require("axios");
+const FormData = require("form-data");
+const fs_1 = require("fs");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
-const Roles_decorator_1 = require("../../common/decorators/Roles.decorator");
 const swagger_1 = require("@nestjs/swagger");
-const fs_1 = require("fs");
+const IMGBB_API_KEY = '7b80af0a58ffc5ed794b3d3955d402c0';
+const IMGBB_UPLOAD_URL = 'https://api.imgbb.com/1/upload';
 let UploadController = class UploadController {
     uploadDir = (0, path_1.join)(process.cwd(), 'uploads', 'chat');
     constructor() {
@@ -33,8 +36,46 @@ let UploadController = class UploadController {
         if (!file) {
             throw new common_1.HttpException('Fayl yuklanmadi', common_1.HttpStatus.BAD_REQUEST);
         }
-        const url = `https://faxriddin.bobur-dev.uz/uploads/chat/${file.filename}`;
-        return { filename: file.filename, url };
+        const isImage = file.mimetype.startsWith('image/');
+        if (isImage) {
+            try {
+                const form = new FormData();
+                form.append('image', file.buffer.toString('base64'));
+                form.append('key', IMGBB_API_KEY);
+                const response = await axios_1.default.post(IMGBB_UPLOAD_URL, form, {
+                    headers: form.getHeaders(),
+                });
+                if (response.data && response.data.success) {
+                    return {
+                        filename: response.data.data.image.filename,
+                        url: response.data.data.url,
+                        display_url: response.data.data.display_url,
+                        delete_url: response.data.data.delete_url,
+                    };
+                }
+                else {
+                    throw new common_1.HttpException('Fayl imgbb ga yuklanmadi', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+            catch (err) {
+                console.error(err);
+                throw new common_1.HttpException('Fayl imgbb ga yuklanmadi', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        else {
+            const fileExt = (0, path_1.extname)(file.originalname);
+            const randomName = Date.now() + '-' + Math.round(Math.random() * 1e9) + fileExt;
+            const savePath = (0, path_1.join)(this.uploadDir, randomName);
+            try {
+                await fs_1.promises.writeFile(savePath, file.buffer);
+                const url = `https://faxriddin.bobur-dev.uz/uploads/chat/${randomName}`;
+                return { filename: randomName, url };
+            }
+            catch (err) {
+                console.error(err);
+                throw new common_1.HttpException('Fayl serverga saqlanmadi', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
     }
     async removeFile(filename) {
         const filePath = (0, path_1.join)(this.uploadDir, filename);
@@ -66,16 +107,7 @@ __decorate([
     }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'Fayl muvaffaqiyatli yuklandi' }),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
-        storage: (0, multer_1.diskStorage)({
-            destination: (req, file, cb) => {
-                cb(null, (0, path_1.join)(process.cwd(), 'uploads', 'chat'));
-            },
-            filename: (req, file, cb) => {
-                const randomName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                const fileExt = (0, path_1.extname)(file.originalname);
-                cb(null, `${randomName}${fileExt}`);
-            },
-        }),
+        storage: multer.memoryStorage(),
     })),
     __param(0, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),
@@ -84,7 +116,7 @@ __decorate([
 ], UploadController.prototype, "uploadFile", null);
 __decorate([
     (0, common_1.Delete)(':filename'),
-    (0, swagger_1.ApiOperation)({ summary: 'Faylni o‘chirish' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Faylni o‘chirish (server)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Fayl muvaffaqiyatli o‘chirildi' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Fayl topilmadi' }),
     __param(0, (0, common_1.Param)('filename')),
@@ -95,7 +127,6 @@ __decorate([
 exports.UploadController = UploadController = __decorate([
     (0, swagger_1.ApiTags)('Upload'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard, roles_guard_1.RolesGuard),
-    (0, Roles_decorator_1.Roles)('ADMIN', 'SUPERADMIN'),
     (0, common_1.Controller)('upload'),
     __metadata("design:paramtypes", [])
 ], UploadController);

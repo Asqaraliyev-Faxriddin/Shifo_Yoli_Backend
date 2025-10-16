@@ -40,7 +40,7 @@ export class PaymentController {
  
 
   @UseGuards(AuthGuard)
-  @Get("Payment/user")
+  @Get("Payment/create/user")
   @ApiOperation({ summary: "Foydalanuvchi to'lov qiladi" })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })
@@ -52,7 +52,7 @@ export class PaymentController {
 
 
   @UseGuards(AuthGuard)
-  @Get("Payment/user")
+  @Get("chacke/user/payment")
   @ApiOperation({ summary: "Foydalanuvchi docktorga tolov qildimi shuni biladi" })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })

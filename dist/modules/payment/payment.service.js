@@ -126,6 +126,81 @@ let PaymentService = class PaymentService {
             data: transactions,
         };
     }
+    async PaymentDocktor(userId, payload) {
+        let wallet = await this.prisma.wallet.findFirst({
+            where: {
+                userId
+            }
+        });
+        if (!wallet) {
+            wallet = await this.prisma.wallet.create({
+                data: {
+                    userId,
+                    balance: 0
+                }
+            });
+        }
+        let oldDocktor = await this.prisma.doctorProfile.findFirst({
+            where: {
+                doctorId: payload.doctorId
+            },
+        });
+        if (!oldDocktor) {
+            throw new common_1.BadRequestException("Bunday doktor mavjud emas");
+        }
+        let oldSalary = await this.prisma.doctorSalary.findFirst({
+            where: {
+                doctorId: oldDocktor.doctorId
+            }
+        });
+        if (!oldSalary) {
+            throw new common_1.BadRequestException("Doktor maoshini aniqlab bo'lmadi");
+        }
+        let amount;
+        if (oldSalary.daily !== null) {
+            amount = oldSalary.daily.toNumber() * payload.countday;
+        }
+        else {
+            amount = 0;
+        }
+        if (wallet.balance.toNumber() < amount) {
+            throw new common_1.BadRequestException(`Sizning hisobingizda ${payload.countday}-kun uchun pul yetarli emas`);
+        }
+        let tolov = await this.prisma.dailyDoctorAccess.create({
+            data: {
+                patientId: String(userId),
+                doctorId: oldDocktor.doctorId,
+                date: new Date(),
+                price: amount,
+                dayCountPay: payload.countday
+            }
+        });
+        return {
+            message: "Muvaffaqiyatli to'lov qilindi",
+        };
+    }
+    async ChangeDocktorPay(userId, payload) {
+        let oldDocktor = await this.prisma.doctorProfile.findFirst({
+            where: {
+                doctorId: payload.doctorId
+            },
+        });
+        if (!oldDocktor) {
+            throw new common_1.BadRequestException("Bunday doktor mavjud emas");
+        }
+        let daily = await this.prisma.dailyDoctorAccess.findFirst({
+            where: {
+                patientId: userId,
+                doctorId: oldDocktor.doctorId
+            }
+        });
+        if (!daily) {
+            throw new common_1.BadRequestException("Siz bu doktor bilan suhbatlashish uchun to'lov qiling");
+        }
+        return {
+            message: "Siz to'lov qilgansiz",
+        };
+    }
 };
 exports.PaymentService = PaymentService;
 exports.PaymentService = PaymentService = __decorate([

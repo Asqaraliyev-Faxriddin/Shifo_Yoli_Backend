@@ -19,6 +19,7 @@ const create_payment_dto_1 = require("./dto/create-payment.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const Roles_decorator_1 = require("../../common/decorators/Roles.decorator");
 const swagger_1 = require("@nestjs/swagger");
+const update_payment_dto_1 = require("./dto/update-payment.dto");
 let PaymentController = class PaymentController {
     paymentService;
     constructor(paymentService) {
@@ -29,6 +30,12 @@ let PaymentController = class PaymentController {
     }
     async userPayment(req, query) {
         return this.paymentService.oldPayment(query, req.user.id);
+    }
+    async TolovPayment(req, query) {
+        return this.paymentService.PaymentDocktor(req.user.id, query);
+    }
+    async ChangePayment(req, query) {
+        return this.paymentService.ChangeDocktorPay(req.user.id, query);
     }
 };
 exports.PaymentController = PaymentController;
@@ -62,6 +69,34 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_payment_dto_1.Search22PaymentDto]),
     __metadata("design:returntype", Promise)
 ], PaymentController.prototype, "userPayment", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard),
+    (0, common_1.Get)("Payment/create/user"),
+    (0, swagger_1.ApiOperation)({ summary: "Foydalanuvchi to'lov qiladi" }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number, example: 10 }),
+    (0, swagger_1.ApiQuery)({ name: 'offset', required: false, type: Number, example: 0 }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Foydalanuvchi to‘lovlari', type: [Object] }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_payment_dto_1.PaymentDocktorBemorDto]),
+    __metadata("design:returntype", Promise)
+], PaymentController.prototype, "TolovPayment", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard),
+    (0, common_1.Get)("chacke/user/payment"),
+    (0, swagger_1.ApiOperation)({ summary: "Foydalanuvchi docktorga tolov qildimi shuni biladi" }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number, example: 10 }),
+    (0, swagger_1.ApiQuery)({ name: 'offset', required: false, type: Number, example: 0 }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Foydalanuvchi to‘lovlari', type: [Object] }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_payment_dto_1.PaymentDocktorChanegeDto]),
+    __metadata("design:returntype", Promise)
+], PaymentController.prototype, "ChangePayment", null);
 exports.PaymentController = PaymentController = __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('payment'),

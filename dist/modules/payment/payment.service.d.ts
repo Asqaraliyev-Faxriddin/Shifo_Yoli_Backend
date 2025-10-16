@@ -1,5 +1,6 @@
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { Search22PaymentDto, SearchPaymentDto } from './dto/create-payment.dto';
+import { PaymentDocktorBemorDto, PaymentDocktorChanegeDto } from './dto/update-payment.dto';
 export declare class PaymentService {
     private prisma;
     constructor(prisma: PrismaService);
@@ -83,5 +84,11 @@ export declare class PaymentService {
             meta: import("@prisma/client/runtime/library").JsonValue | null;
             walletId: string;
         })[];
+    }>;
+    PaymentDocktor(userId: string, payload: PaymentDocktorBemorDto): Promise<{
+        message: string;
+    }>;
+    ChangeDocktorPay(userId: string, payload: PaymentDocktorChanegeDto): Promise<{
+        message: string;
     }>;
 }
