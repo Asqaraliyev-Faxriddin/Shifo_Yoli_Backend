@@ -41,7 +41,7 @@ export class PaymentController {
 
   @UseGuards(AuthGuard)
   @Get("Payment/user")
-  @ApiOperation({ summary: "Foydalanuvchi o'z to'lovlarini ko'radi" })
+  @ApiOperation({ summary: "Foydalanuvchi to'lov qiladi" })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })
   @ApiResponse({ status: 200, description: 'Foydalanuvchi to‘lovlari', type: [Object] })
@@ -53,7 +53,7 @@ export class PaymentController {
 
   @UseGuards(AuthGuard)
   @Get("Payment/user")
-  @ApiOperation({ summary: "Foydalanuvchi o'z to'lovlarini ko'radi" })
+  @ApiOperation({ summary: "Foydalanuvchi docktorga tolov qildimi shuni biladi" })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })
   @ApiResponse({ status: 200, description: 'Foydalanuvchi to‘lovlari', type: [Object] })
