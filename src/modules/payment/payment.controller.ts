@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { Search22PaymentDto, SearchPaymentDto } from './dto/create-payment.dto';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -40,12 +40,8 @@ export class PaymentController {
  
 
   @UseGuards(AuthGuard)
-  @Get("Payment/create/user")
+  @Post("Payment/create/user")
   @ApiOperation({ summary: "Foydalanuvchi to'lov qiladi" })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })
-  @ApiResponse({ status: 200, description: 'Foydalanuvchi to‘lovlari', type: [Object] })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async TolovPayment(@Req() req, @Body() query: PaymentDocktorBemorDto) {
     return this.paymentService.PaymentDocktor( req.user.id, query);
   }
@@ -54,10 +50,6 @@ export class PaymentController {
   @UseGuards(AuthGuard)
   @Get("chacke/user/payment")
   @ApiOperation({ summary: "Foydalanuvchi docktorga tolov qildimi shuni biladi" })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })
-  @ApiResponse({ status: 200, description: 'Foydalanuvchi to‘lovlari', type: [Object] })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async ChangePayment(@Req() req, @Body() query: PaymentDocktorChanegeDto) {
     return this.paymentService.ChangeDocktorPay( req.user.id, query);
   }
