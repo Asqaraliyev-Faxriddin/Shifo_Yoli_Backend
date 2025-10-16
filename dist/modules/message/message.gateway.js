@@ -334,7 +334,7 @@ __decorate([
 ], MessageGateway.prototype, "handleGetChats", null);
 exports.MessageGateway = MessageGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
-        namespace: '/chat',
+        namespace: '/',
         cors: { origin: '*' },
     }),
     __metadata("design:paramtypes", [message_service_1.MessageService,

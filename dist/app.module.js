@@ -30,6 +30,7 @@ const notification_module_1 = require("./modules/notification/notification.modul
 const meeting_module_1 = require("./modules/meeting/meeting.module");
 const contact_module_1 = require("./modules/contact/contact.module");
 const payment_module_1 = require("./modules/payment/payment.module");
+const upload_module_1 = require("./modules/upload/upload.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -49,6 +50,10 @@ exports.AppModule = AppModule = __decorate([
                 serveRoot: "/profiles/file",
             }),
             serve_static_1.ServeStaticModule.forRoot({
+                rootPath: (0, path_1.join)(process.cwd(), "uploads", "chat"),
+                serveRoot: "/uploads/chat",
+            }),
+            serve_static_1.ServeStaticModule.forRoot({
                 rootPath: (0, path_1.join)(process.cwd(), "uploads", "videos"),
                 serveRoot: "/videos",
             }),
@@ -59,7 +64,7 @@ exports.AppModule = AppModule = __decorate([
             profile_module_1.ProfileModule, admin_module_1.AdminModule, rating_module_1.RatingModule,
             message_module_1.MessageModule, device_module_1.DeviceModule, doctor_category_module_1.DoctorCategoryModule,
             doctor_profile_module_1.DoctorProfileModule,
-            notification_module_1.NotificationModule, meeting_module_1.MeetingModule, contact_module_1.ContactModule, payment_module_1.PaymentModule
+            notification_module_1.NotificationModule, meeting_module_1.MeetingModule, contact_module_1.ContactModule, payment_module_1.PaymentModule, upload_module_1.UploadModule
         ],
     })
 ], AppModule);
