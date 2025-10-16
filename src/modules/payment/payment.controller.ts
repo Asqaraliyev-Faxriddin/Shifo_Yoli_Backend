@@ -37,7 +37,7 @@ export class PaymentController {
     return this.paymentService.oldPayment(query, req.user.id);
   }
 
-
+ 
 
   @UseGuards(AuthGuard)
   @Get("Payment/user")
