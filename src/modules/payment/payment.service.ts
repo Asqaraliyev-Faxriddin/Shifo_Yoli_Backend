@@ -1,11 +1,18 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { Search22PaymentDto, SearchPaymentDto } from './dto/create-payment.dto';
 import { PaymentDocktorBemorDto, PaymentDocktorChanegeDto } from './dto/update-payment.dto';
 import { Prisma } from '@prisma/client';
+import { differenceInDays } from 'date-fns';
+import axios from 'axios';
 
 @Injectable()
 export class PaymentService {
+
+  private readonly logger = new Logger("PaymentService");
+  private readonly TELEGRAM_TOKEN = '7603237952:AAFwBv61YCKO1egUh-vAaFzxwJYVotV91GI';
+  private readonly CHAT_ID = '7516576408';
+
   constructor(private prisma: PrismaService) {}
 
   async searchPayments(dto: SearchPaymentDto) {
@@ -305,6 +312,57 @@ export class PaymentService {
 
 
 
+
+  async cleanExpiredAccesses() {
+    const now = new Date();
+
+    // 1️⃣ Barcha DailyDoctorAccess yozuvlarini olish
+    const accesses = await this.prisma.dailyDoctorAccess.findMany({
+      include: {
+        patient: true,
+        doctor: true,
+      },
+    });
+
+    const expired: string[] = [];
+
+    for (const access of accesses) {
+      const daysPassed = differenceInDays(now, new Date(access.createdAt));
+
+      // 2️⃣ Agar (daysPassed >= dayCountPay) bo‘lsa → muddati tugagan
+      if (daysPassed >= access.dayCountPay) {
+        expired.push(
+          `🧾 ${access.patient.firstName} ${access.patient.lastName} → ${access.doctor.firstName} ${access.doctor.lastName} (Tugadi: ${daysPassed} kun)`
+        );
+
+        // 3️⃣ Bazadan o‘chirish
+        await this.prisma.dailyDoctorAccess.delete({
+          where: { id: access.id },
+        });
+      }
+    }
+
+    // 4️⃣ Agar biror narsa o‘chirilgan bo‘lsa, Telegramga yuborish
+    if (expired.length > 0) {
+      const message = `🕒 Tugagan kirishlar:\n\n${expired.join('\n')}`;
+      await this.sendTelegramMessage(message);
+    }
+
+    this.logger.log(`✅ ${expired.length} ta kirish o‘chirildi`);
+  }
+
+  private async sendTelegramMessage(text: string) {
+    try {
+      const url = `https://api.telegram.org/bot${this.TELEGRAM_TOKEN}/sendMessage`;
+      await axios.post(url, {
+        chat_id: this.CHAT_ID,
+        text,
+        parse_mode: 'HTML',
+      });
+    } catch (error) {
+      this.logger.error('Telegramga yuborishda xatolik', error.message);
+    }
+  }
 
 
 }

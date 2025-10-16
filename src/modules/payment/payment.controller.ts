@@ -5,6 +5,7 @@ import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Roles } from 'src/common/decorators/Roles.decorator';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { PaymentDocktorBemorDto, PaymentDocktorChanegeDto } from './dto/update-payment.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @ApiBearerAuth()
 @Controller('payment')
@@ -52,6 +53,11 @@ export class PaymentController {
   @ApiOperation({ summary: "Foydalanuvchi docktorga tolov qildimi shuni biladi" })
   async ChangePayment(@Req() req, @Body() query: PaymentDocktorChanegeDto) {
     return this.paymentService.ChangeDocktorPay( req.user.id, query);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async handleCron() {
+    await this.paymentService.cleanExpiredAccesses();
   }
 
 }

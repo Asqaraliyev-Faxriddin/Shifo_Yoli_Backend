@@ -4,9 +4,13 @@ import { PaymentController } from './payment.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports:[ JwtModule.registerAsync({
+  imports:[
+    
+    ScheduleModule.forRoot(),
+    JwtModule.registerAsync({
     inject: [ConfigService],
     useFactory: async (config: ConfigService) => ({
       secret: config.get<string>('Jwt_Acc'),
