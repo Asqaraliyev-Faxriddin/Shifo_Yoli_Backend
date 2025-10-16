@@ -139,6 +139,18 @@ export class PaymentService {
 
   async PaymentDocktor(userId:string,payload:PaymentDocktorBemorDto){
 
+    let olduser = await this.prisma.user.findFirst({
+
+      where:{
+        id:userId
+      }
+    })
+
+    if(!olduser){
+      throw new BadRequestException("Bunday foydalanuvchi mavjud emas")
+    }
+
+
     let wallet = await this.prisma.wallet.findFirst({
       where:{
         userId
@@ -185,7 +197,7 @@ export class PaymentService {
     }
 
 
-    if(wallet.balance.toNumber() < amount){
+    if(wallet.balance.toNumber() < amount && olduser.role != "SUPERADMIN"){
       throw new BadRequestException(`Sizning hisobingizda ${payload.countday}-kun uchun pul yetarli emas`)
     }
 
@@ -210,6 +222,18 @@ export class PaymentService {
 
   async ChangeDocktorPay(userId:string,payload:PaymentDocktorChanegeDto){
 
+
+    let olduser = await this.prisma.user.findFirst({
+
+      where:{
+        id:userId
+      }
+    })
+
+    if(!olduser){
+      throw new BadRequestException("Bunday foydalanuvchi mavjud emas")
+    }
+
     let oldDocktor = await this.prisma.doctorProfile.findFirst({
       where:{
         doctorId:payload.doctorId
@@ -229,7 +253,7 @@ export class PaymentService {
     })
 
 
-    if(!daily){
+    if(!daily && olduser.role === "BEMOR"){
       throw new BadRequestException("Siz bu doktor bilan suhbatlashish uchun to'lov qiling")
     }
    
