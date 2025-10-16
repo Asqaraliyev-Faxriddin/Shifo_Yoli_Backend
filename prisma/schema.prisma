@@ -13,7 +13,6 @@ enum MessageType {
   TEXT
   FILE
   VIDEO
-  IMAGE
 }
 
 enum DeviceType {
