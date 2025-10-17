@@ -7,3 +7,14 @@ export declare class SearchUserDto {
     limit: number;
     page: number;
 }
+export declare class UpdateProfileUserAdminDto {
+    firstName?: string;
+    lastName?: string;
+    age?: number;
+    month?: number;
+    day?: number;
+    phoneNumber?: string;
+    profileImg?: any;
+    password?: string;
+    email?: string;
+}

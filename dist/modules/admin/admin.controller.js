@@ -24,10 +24,14 @@ const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const Roles_decorator_1 = require("../../common/decorators/Roles.decorator");
 const client_1 = require("@prisma/client");
+const update_admin_dto_1 = require("./dto/update-admin.dto");
+const prisma_service_1 = require("../../core/prisma/prisma.service");
 let AdminController = class AdminController {
     adminService;
-    constructor(adminService) {
+    prisma;
+    constructor(adminService, prisma) {
         this.adminService = adminService;
+        this.prisma = prisma;
     }
     imgbbApiKey = "a22840e1237262e2beec1cf469a82155";
     imgbbUploadUrl = "https://api.imgbb.com/1/upload";
@@ -132,6 +136,25 @@ let AdminController = class AdminController {
     }
     async toggleDoctorPublish(doctorId, status) {
         return this.adminService.toggleDoctorPublish(doctorId, status === "true");
+    }
+    async updateProfile(req, dto, file) {
+        let uploadedUrl;
+        if (file) {
+            const form = new FormData();
+            form.append('image', file.buffer.toString('base64'));
+            const response = await axios_1.default.post(`https://api.imgbb.com/1/upload?key=7b80af0a58ffc5ed794b3d3955d402c0`, form, { headers: form.getHeaders() });
+            uploadedUrl = response.data.data.url;
+        }
+        let data = await this.prisma.user.update({
+            where: { id: req.user.id },
+            data: {
+                ...(dto.firstName && { firstName: dto.firstName }),
+                ...(dto.lastName && { lastName: dto.lastName }),
+                ...(dto.age && { age: dto.age }),
+                ...(uploadedUrl && { profileImg: uploadedUrl }),
+            },
+        });
+        return data;
     }
     async allDevices() {
         return this.adminService.BlokuserAll();
@@ -326,6 +349,34 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "toggleDoctorPublish", null);
 __decorate([
+    (0, common_1.Patch)('update'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('profileImg')),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                firstName: { type: 'string', example: 'Ali' },
+                lastName: { type: 'string', example: 'Valiyev' },
+                month: { type: 'number', example: 5 },
+                day: { type: 'number', example: 15 },
+                phoneNumber: { type: 'string', example: '+998901234567' },
+                age: { type: 'number' },
+                email: { type: 'string' },
+                password: { type: 'string' },
+                profileImg: { type: 'string', format: 'binary' },
+            },
+            required: []
+        },
+    }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_admin_dto_1.UpdateProfileUserAdminDto, Object]),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "updateProfile", null);
+__decorate([
     (0, common_1.Get)("device/all"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -343,6 +394,6 @@ exports.AdminController = AdminController = __decorate([
     (0, common_1.Controller)("admin"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard, roles_guard_1.RolesGuard),
     (0, Roles_decorator_1.Roles)(client_1.UserRole.SUPERADMIN),
-    __metadata("design:paramtypes", [admin_service_1.AdminService])
+    __metadata("design:paramtypes", [admin_service_1.AdminService, prisma_service_1.PrismaService])
 ], AdminController);
 //# sourceMappingURL=admin.controller.js.map

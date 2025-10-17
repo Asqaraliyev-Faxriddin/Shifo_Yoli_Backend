@@ -1,8 +1,11 @@
 import { AdminService } from "./admin.service";
 import { CreateAdminDto, CreatePatientDto, UpdateUserDto, DeleteUserDto, BlockUserDto, UnblockUserDto, SearchUserDto, SendNotificationDto, BroadcastNotificationDto, UserPaymentDto, MassPaymentDto, NotificationAll } from "./dto/create-admin.dto";
+import { UpdateProfileUserAdminDto } from "./dto/update-admin.dto";
+import { PrismaService } from "src/core/prisma/prisma.service";
 export declare class AdminController {
     private readonly adminService;
-    constructor(adminService: AdminService);
+    private prisma;
+    constructor(adminService: AdminService, prisma: PrismaService);
     private readonly imgbbApiKey;
     private readonly imgbbUploadUrl;
     private uploadImage;
@@ -424,6 +427,24 @@ export declare class AdminController {
         published: boolean;
         files: import("@prisma/client/runtime/library").JsonValue | null;
         futures: import("@prisma/client/runtime/library").JsonValue | null;
+    }>;
+    updateProfile(req: any, dto: UpdateProfileUserAdminDto, file?: Express.Multer.File): Promise<{
+        email: string;
+        password: string;
+        lastName: string;
+        firstName: string;
+        age: number;
+        month: number | null;
+        day: number | null;
+        id: string;
+        phoneNumber: string | null;
+        role: import(".prisma/client").$Enums.UserRole;
+        profileImg: string | null;
+        isActive: boolean;
+        isOnline: boolean;
+        lastSeen: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     allDevices(): Promise<{
         status: boolean;

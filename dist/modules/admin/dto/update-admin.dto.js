@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SearchUserDto = void 0;
+exports.UpdateProfileUserAdminDto = exports.SearchUserDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
@@ -76,4 +76,86 @@ __decorate([
     (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)
 ], SearchUserDto.prototype, "page", void 0);
+class UpdateProfileUserAdminDto {
+    firstName;
+    lastName;
+    age;
+    month;
+    day;
+    phoneNumber;
+    profileImg;
+    password;
+    email;
+}
+exports.UpdateProfileUserAdminDto = UpdateProfileUserAdminDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Foydalanuvchining ismi',
+        example: 'Ali',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateProfileUserAdminDto.prototype, "firstName", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Foydalanuvchining familiyasi',
+        example: 'Valiyev',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateProfileUserAdminDto.prototype, "lastName", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Foydalanuvchining roli',
+        example: 'BUY',
+        enum: ['BUY', 'SELL'],
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.Length)(1, 330),
+    __metadata("design:type", Number)
+], UpdateProfileUserAdminDto.prototype, "age", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsNumberString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.Length)(1, 12),
+    __metadata("design:type", Number)
+], UpdateProfileUserAdminDto.prototype, "month", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    __metadata("design:type", Number)
+], UpdateProfileUserAdminDto.prototype, "day", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.ValidateIf)(o => o.phoneNumber !== '' && o.phoneNumber !== null && o.phoneNumber !== undefined),
+    (0, class_validator_1.IsPhoneNumber)("UZ"),
+    __metadata("design:type", String)
+], UpdateProfileUserAdminDto.prototype, "phoneNumber", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, swagger_1.ApiPropertyOptional)({
+        type: 'string',
+        format: 'binary',
+        description: 'Profil rasmi (faqat Swagger uchun)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], UpdateProfileUserAdminDto.prototype, "profileImg", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateProfileUserAdminDto.prototype, "password", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEmail)(),
+    __metadata("design:type", String)
+], UpdateProfileUserAdminDto.prototype, "email", void 0);
 //# sourceMappingURL=update-admin.dto.js.map
