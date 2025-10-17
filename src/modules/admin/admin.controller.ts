@@ -334,12 +334,13 @@ import { PrismaService } from "src/core/prisma/prisma.service";
       }
 
 
+
         let data = await this.prisma.user.update({
         where: { id: dto.userId },
         data: {
           ...(dto.firstName && { firstName: dto.firstName }),
           ...(dto.lastName && { lastName: dto.lastName }),
-          ...(dto.age && { age: dto.age  }),
+          ...(dto.age && { age: Number(dto.age)  }),
           ...(uploadedUrl && { profileImg: uploadedUrl }), 
         },
       });
