@@ -1,10 +1,11 @@
 import { Controller, Get, Param, ParseUUIDPipe, Query, Req, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PublicService } from './user.service';
 import { SearchUserDto } from 'src/modules/admin/dto/create-admin.dto';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @ApiTags('Public') 
+@ApiBearerAuth()
 @Controller('User')
 export class PublicController {
   constructor(private readonly publicService: PublicService) {}
