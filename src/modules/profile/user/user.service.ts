@@ -266,30 +266,64 @@ async getTopDoctors() {
     const where: any = { role };
   
     if (role === UserRole.DOCTOR) {
+      // 1️⃣ To‘lov qilingan doktorlar
       const paidDoctorIds = await this.prisma.dailyDoctorAccess.findMany({
         where: { patientId: userId },
         select: { doctorId: true },
         distinct: ["doctorId"],
       });
+      const paidIds = paidDoctorIds.map((d) => d.doctorId);
   
-      const doctorIds = paidDoctorIds.map((d) => d.doctorId);
+      // 2️⃣ Chatda suhbatlashgan doktorlar (ChatParticipant orqali)
+      const chatDoctorIds = await this.prisma.chatParticipant.findMany({
+        where: {
+          userId: userId, // foydalanuvchi ishtirok etgan chatlar
+          chat: {
+            participants: {
+              some: {
+                user: {
+                  role: UserRole.DOCTOR, // chatdagi boshqa ishtirokchi doktor bo‘lishi kerak
+                },
+              },
+            },
+          },
+        },
+        select: {
+          chat: {
+            select: {
+              participants: {
+                where: { user: { role: UserRole.DOCTOR } },
+                select: { userId: true },
+              },
+            },
+          },
+        },
+      });
   
-      // Agar bemor hali hech qaysi doktorga to‘lov qilmagan bo‘lsa
-      if (doctorIds.length === 0) {
+      // chatDoctorIds dan barcha doctorId larni chiqaramiz
+      const chatIds = chatDoctorIds.flatMap((c) =>
+        c.chat.participants.map((p) => p.userId)
+      );
+  
+      // 3️⃣ To‘lov qilgan + chat qilgan doktorlar (takrorlarsiz)
+      const uniqueDoctorIds = [...new Set([...paidIds, ...chatIds])];
+  
+      // Agar umuman yo‘q bo‘lsa — bo‘sh natija
+      if (uniqueDoctorIds.length === 0) {
         return {
           data: [],
           meta: { total: 0, page, limit, totalPages: 0 },
         };
       }
   
-      // faqat shu doktorlar
-      where.id = { in: doctorIds };
+      // 4️⃣ Filter — faqat shu doktorlar
+      where.id = { in: uniqueDoctorIds };
   
-      // faqat active va publish bo‘lgan doktorlar
+      // faqat published bo‘lgan doktorlar
       where.doctorProfile = { published: true };
     }
   
-    // 🔹 Qolgan filterlar (hammasi oldingiday)
+    // 🔹 Qolgan filterlar
     if (email) where.email = { contains: email, mode: "insensitive" };
     if (firstName) where.firstName = { contains: firstName, mode: "insensitive" };
     if (lastName) where.lastName = { contains: lastName, mode: "insensitive" };
@@ -328,6 +362,7 @@ async getTopDoctors() {
       },
     };
   }
+  
   
 
 

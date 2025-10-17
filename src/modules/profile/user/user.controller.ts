@@ -4,8 +4,8 @@ import { PublicService } from './user.service';
 import { SearchUserDto } from 'src/modules/admin/dto/create-admin.dto';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
 
-@ApiTags('Public') 
 @ApiBearerAuth()
+@ApiTags('Public') 
 @Controller('User')
 export class PublicController {
   constructor(private readonly publicService: PublicService) {}

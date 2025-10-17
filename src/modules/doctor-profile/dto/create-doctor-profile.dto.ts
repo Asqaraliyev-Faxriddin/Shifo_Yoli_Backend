@@ -95,7 +95,6 @@ export class UpdateDoctorProfileDto {
     example: 'Men 10 yillik tajribaga ega shifokorman.',
   })
   @IsOptional()
-  @IsNotEmpty()
   @IsString()
   bio?: string;
 
