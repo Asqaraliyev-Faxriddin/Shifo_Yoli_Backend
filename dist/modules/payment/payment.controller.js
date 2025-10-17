@@ -20,6 +20,7 @@ const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const Roles_decorator_1 = require("../../common/decorators/Roles.decorator");
 const swagger_1 = require("@nestjs/swagger");
 const update_payment_dto_1 = require("./dto/update-payment.dto");
+const schedule_1 = require("@nestjs/schedule");
 let PaymentController = class PaymentController {
     paymentService;
     constructor(paymentService) {
@@ -36,6 +37,9 @@ let PaymentController = class PaymentController {
     }
     async ChangePayment(req, query) {
         return this.paymentService.ChangeDocktorPay(req.user.id, query);
+    }
+    async handleCron() {
+        await this.paymentService.cleanExpiredAccesses();
     }
 };
 exports.PaymentController = PaymentController;
@@ -71,12 +75,8 @@ __decorate([
 ], PaymentController.prototype, "userPayment", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard),
-    (0, common_1.Get)("Payment/create/user"),
+    (0, common_1.Post)("Payment/create/user"),
     (0, swagger_1.ApiOperation)({ summary: "Foydalanuvchi to'lov qiladi" }),
-    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number, example: 10 }),
-    (0, swagger_1.ApiQuery)({ name: 'offset', required: false, type: Number, example: 0 }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Foydalanuvchi to‘lovlari', type: [Object] }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -85,18 +85,20 @@ __decorate([
 ], PaymentController.prototype, "TolovPayment", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard),
-    (0, common_1.Get)("chacke/user/payment"),
+    (0, common_1.Post)("chacke/user/payment"),
     (0, swagger_1.ApiOperation)({ summary: "Foydalanuvchi docktorga tolov qildimi shuni biladi" }),
-    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number, example: 10 }),
-    (0, swagger_1.ApiQuery)({ name: 'offset', required: false, type: Number, example: 0 }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Foydalanuvchi to‘lovlari', type: [Object] }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, update_payment_dto_1.PaymentDocktorChanegeDto]),
     __metadata("design:returntype", Promise)
 ], PaymentController.prototype, "ChangePayment", null);
+__decorate([
+    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_DAY_AT_MIDNIGHT),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], PaymentController.prototype, "handleCron", null);
 exports.PaymentController = PaymentController = __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('payment'),

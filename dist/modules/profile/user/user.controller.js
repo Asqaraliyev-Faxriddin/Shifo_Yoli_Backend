@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const user_service_1 = require("./user.service");
 const create_admin_dto_1 = require("../../admin/dto/create-admin.dto");
+const jwt_auth_guard_1 = require("../../../common/guards/jwt-auth.guard");
 let PublicController = class PublicController {
     publicService;
     constructor(publicService) {
@@ -36,6 +37,9 @@ let PublicController = class PublicController {
     }
     async DoctorsAll(payload) {
         return this.publicService.doctorsAll(payload);
+    }
+    async DoctorsAllPrivate(req, payload) {
+        return this.publicService.doctorsAllPrivate(payload, req.user.id);
     }
     async DoctorOne(id) {
         return this.publicService.doctorOne(id);
@@ -79,6 +83,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PublicController.prototype, "DoctorsAll", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.AuthGuard),
+    (0, common_1.Get)("doctors/All/Private"),
+    (0, swagger_1.ApiOperation)({ summary: "Barcha doktorlar publiished true bolganlar" }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, create_admin_dto_1.SearchUserDto]),
+    __metadata("design:returntype", Promise)
+], PublicController.prototype, "DoctorsAllPrivate", null);
+__decorate([
     (0, common_1.Get)("doctorOne/:id"),
     (0, swagger_1.ApiOperation)({ summary: "Bitta doktorni olish" }),
     __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
@@ -87,6 +101,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PublicController.prototype, "DoctorOne", null);
 exports.PublicController = PublicController = __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiTags)('Public'),
     (0, common_1.Controller)('User'),
     __metadata("design:paramtypes", [user_service_1.PublicService])

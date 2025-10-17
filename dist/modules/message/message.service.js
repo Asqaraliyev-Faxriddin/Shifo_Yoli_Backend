@@ -36,13 +36,10 @@ let MessageService = class MessageService {
         if (sender.role === 'BEMOR' && receiver.role === 'DOCTOR') {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const access = await this.prisma.dailyDoctorAccess.findUnique({
+            const access = await this.prisma.dailyDoctorAccess.findFirst({
                 where: {
-                    patientId_doctorId_date: {
-                        patientId: senderId,
-                        doctorId: receiverId,
-                        date: today,
-                    },
+                    patientId: senderId,
+                    doctorId: receiverId,
                 },
             });
             if (!access)
@@ -118,13 +115,10 @@ let MessageService = class MessageService {
         if (sender.role === 'BEMOR' && receiver.role === 'DOCTOR') {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const access = await this.prisma.dailyDoctorAccess.findUnique({
+            const access = await this.prisma.dailyDoctorAccess.findFirst({
                 where: {
-                    patientId_doctorId_date: {
-                        patientId: senderId,
-                        doctorId: receiverUserId,
-                        date: today,
-                    },
+                    patientId: senderId,
+                    doctorId: receiverUserId,
                 },
             });
             if (!access)

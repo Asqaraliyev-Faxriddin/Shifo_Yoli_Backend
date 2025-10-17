@@ -12,8 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/prisma/prisma.service");
+const client_1 = require("@prisma/client");
+const date_fns_1 = require("date-fns");
+const axios_1 = require("axios");
 let PaymentService = class PaymentService {
     prisma;
+    logger = new common_1.Logger("PaymentService");
+    TELEGRAM_TOKEN = '7603237952:AAFwBv61YCKO1egUh-vAaFzxwJYVotV91GI';
+    CHAT_ID = '7516576408';
     constructor(prisma) {
         this.prisma = prisma;
     }
@@ -127,59 +133,108 @@ let PaymentService = class PaymentService {
         };
     }
     async PaymentDocktor(userId, payload) {
-        let wallet = await this.prisma.wallet.findFirst({
-            where: {
-                userId
-            }
+        const oldUser = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!oldUser) {
+            throw new common_1.BadRequestException("Bunday foydalanuvchi mavjud emas");
+        }
+        let wallet = await this.prisma.wallet.findUnique({
+            where: { userId },
         });
         if (!wallet) {
             wallet = await this.prisma.wallet.create({
                 data: {
                     userId,
-                    balance: 0
-                }
+                    balance: new client_1.Prisma.Decimal(0),
+                },
             });
         }
-        let oldDocktor = await this.prisma.doctorProfile.findFirst({
-            where: {
-                doctorId: payload.doctorId
+        const doctorProfile = await this.prisma.doctorProfile.findUnique({
+            where: { doctorId: payload.doctorId },
+            include: {
+                doctor: true,
+                salary: true,
             },
         });
-        if (!oldDocktor) {
+        if (!doctorProfile) {
             throw new common_1.BadRequestException("Bunday doktor mavjud emas");
         }
-        let oldSalary = await this.prisma.doctorSalary.findFirst({
-            where: {
-                doctorId: oldDocktor.doctorId
-            }
-        });
-        if (!oldSalary) {
-            throw new common_1.BadRequestException("Doktor maoshini aniqlab bo'lmadi");
+        const oldSalary = doctorProfile.salary[0];
+        if (!oldSalary || oldSalary.daily === null) {
+            throw new common_1.BadRequestException("Doktor maoshini aniqlab bo‘lmadi");
         }
-        let amount;
-        if (oldSalary.daily !== null) {
-            amount = oldSalary.daily.toNumber() * payload.countday;
+        const amount = oldSalary.daily.toNumber() * payload.countday;
+        if (oldUser.role !== "SUPERADMIN" && wallet.balance.toNumber() < amount) {
+            throw new common_1.BadRequestException(`Sizning hisobingizda ${payload.countday} kun uchun mablag‘ yetarli emas`);
         }
-        else {
-            amount = 0;
+        if (oldUser.role !== "SUPERADMIN") {
+            await this.prisma.wallet.update({
+                where: { id: wallet.id },
+                data: {
+                    balance: wallet.balance.minus(amount),
+                    transactions: {
+                        create: {
+                            type: "DEBIT",
+                            amount: amount,
+                            source: "USER_PAYMENT",
+                            meta: { doctorId: payload.doctorId, days: payload.countday },
+                        },
+                    },
+                },
+            });
         }
-        if (wallet.balance.toNumber() < amount) {
-            throw new common_1.BadRequestException(`Sizning hisobingizda ${payload.countday}-kun uchun pul yetarli emas`);
-        }
-        let tolov = await this.prisma.dailyDoctorAccess.create({
+        await this.prisma.dailyDoctorAccess.create({
             data: {
-                patientId: String(userId),
-                doctorId: oldDocktor.doctorId,
+                patientId: userId,
+                doctorId: payload.doctorId,
                 date: new Date(),
                 price: amount,
-                dayCountPay: payload.countday
-            }
+                dayCountPay: payload.countday,
+            },
         });
+        const doctorWallet = await this.prisma.wallet.findUnique({
+            where: { userId: payload.doctorId },
+        });
+        await this.prisma.walletTransaction.create({
+            data: {
+                walletId: wallet.id,
+                type: "DEBIT",
+                amount: amount,
+                source: "USER_PAYMENT",
+                meta: { doctorId: payload.doctorId, days: payload.countday },
+            },
+        });
+        if (doctorWallet) {
+            await this.prisma.wallet.update({
+                where: { id: doctorWallet.id },
+                data: {
+                    balance: doctorWallet.balance.plus(amount),
+                    transactions: {
+                        create: {
+                            type: "CREDIT",
+                            amount: amount,
+                            source: "USER_PAYMENT",
+                            meta: { fromUserId: userId },
+                        },
+                    },
+                },
+            });
+        }
         return {
-            message: "Muvaffaqiyatli to'lov qilindi",
+            message: "Muvaffaqiyatli to‘lov amalga oshirildi",
+            amount,
         };
     }
     async ChangeDocktorPay(userId, payload) {
+        let olduser = await this.prisma.user.findFirst({
+            where: {
+                id: userId
+            }
+        });
+        if (!olduser) {
+            throw new common_1.BadRequestException("Bunday foydalanuvchi mavjud emas");
+        }
         let oldDocktor = await this.prisma.doctorProfile.findFirst({
             where: {
                 doctorId: payload.doctorId
@@ -194,12 +249,52 @@ let PaymentService = class PaymentService {
                 doctorId: oldDocktor.doctorId
             }
         });
-        if (!daily) {
+        if (!daily && olduser.role === "BEMOR") {
             throw new common_1.BadRequestException("Siz bu doktor bilan suhbatlashish uchun to'lov qiling");
         }
         return {
             message: "Siz to'lov qilgansiz",
         };
+    }
+    async cleanExpiredAccesses() {
+        const now = new Date();
+        const accesses = await this.prisma.dailyDoctorAccess.findMany({
+            include: {
+                patient: true,
+                doctor: true,
+            },
+        });
+        const expired = [];
+        for (const access of accesses) {
+            const daysPassed = (0, date_fns_1.differenceInDays)(now, new Date(access.createdAt));
+            if (daysPassed >= access.dayCountPay) {
+                expired.push(`🧾 ${access.patient.firstName} ${access.patient.lastName} → ${access.doctor.firstName} ${access.doctor.lastName} (Tugadi: ${daysPassed} kun)`);
+                await this.prisma.dailyDoctorAccess.delete({
+                    where: { id: access.id },
+                });
+            }
+        }
+        if (expired.length > 0) {
+            const message = `🕒 Tugagan kirishlar:\n\n${expired.join('\n')}`;
+            await this.sendTelegramMessage(message);
+        }
+        this.logger.log(`✅ ${expired.length} ta kirish o‘chirildi`);
+    }
+    async sinovTekshiruv() {
+        await this.sendTelegramMessage("Tekshiruv muffaqiyatli ishlamoqda...");
+    }
+    async sendTelegramMessage(text) {
+        try {
+            const url = `https://api.telegram.org/bot${this.TELEGRAM_TOKEN}/sendMessage`;
+            await axios_1.default.post(url, {
+                chat_id: this.CHAT_ID,
+                text,
+                parse_mode: 'HTML',
+            });
+        }
+        catch (error) {
+            this.logger.error('Telegramga yuborishda xatolik', error.message);
+        }
     }
 };
 exports.PaymentService = PaymentService;

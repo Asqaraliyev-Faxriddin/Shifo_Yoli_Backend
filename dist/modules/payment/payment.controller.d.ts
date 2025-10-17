@@ -10,37 +10,37 @@ export declare class PaymentController {
         data: ({
             wallet: {
                 user: {
-                    id: string;
-                    createdAt: Date;
                     wallet: {
                         id: string;
                         createdAt: Date;
                         updatedAt: Date;
-                        userId: string;
                         balance: import("@prisma/client/runtime/library").Decimal;
+                        userId: string;
                     } | null;
                     email: string;
-                    firstName: string;
                     lastName: string;
+                    firstName: string;
+                    id: string;
                     phoneNumber: string | null;
                     role: import(".prisma/client").$Enums.UserRole;
+                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                userId: string;
                 balance: import("@prisma/client/runtime/library").Decimal;
+                userId: string;
             };
         } & {
-            id: string;
-            walletId: string;
             type: import(".prisma/client").$Enums.TransactionType;
+            id: string;
+            createdAt: Date;
             amount: import("@prisma/client/runtime/library").Decimal;
             source: import(".prisma/client").$Enums.PaymentType | null;
             meta: import("@prisma/client/runtime/library").JsonValue | null;
-            createdAt: Date;
+            walletId: string;
         })[];
     }>;
     userPayment(req: any, query: Search22PaymentDto): Promise<{
@@ -51,44 +51,46 @@ export declare class PaymentController {
         data: ({
             wallet: {
                 user: {
-                    id: string;
-                    createdAt: Date;
                     email: string;
-                    firstName: string;
-                    lastName: string;
                     password: string;
+                    lastName: string;
+                    firstName: string;
                     age: number;
                     month: number | null;
                     day: number | null;
+                    id: string;
                     phoneNumber: string | null;
                     role: import(".prisma/client").$Enums.UserRole;
                     profileImg: string | null;
                     isActive: boolean;
                     isOnline: boolean;
                     lastSeen: Date | null;
+                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                userId: string;
                 balance: import("@prisma/client/runtime/library").Decimal;
+                userId: string;
             };
         } & {
-            id: string;
-            walletId: string;
             type: import(".prisma/client").$Enums.TransactionType;
+            id: string;
+            createdAt: Date;
             amount: import("@prisma/client/runtime/library").Decimal;
             source: import(".prisma/client").$Enums.PaymentType | null;
             meta: import("@prisma/client/runtime/library").JsonValue | null;
-            createdAt: Date;
+            walletId: string;
         })[];
     }>;
     TolovPayment(req: any, query: PaymentDocktorBemorDto): Promise<{
         message: string;
+        amount: number;
     }>;
     ChangePayment(req: any, query: PaymentDocktorChanegeDto): Promise<{
         message: string;
     }>;
+    handleCron(): Promise<void>;
 }

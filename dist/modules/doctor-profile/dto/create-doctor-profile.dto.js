@@ -110,7 +110,6 @@ __decorate([
         example: 'Men 10 yillik tajribaga ega shifokorman.',
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateDoctorProfileDto.prototype, "bio", void 0);

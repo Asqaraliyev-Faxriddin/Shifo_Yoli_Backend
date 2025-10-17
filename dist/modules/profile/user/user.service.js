@@ -242,8 +242,96 @@ let PublicService = class PublicService {
         ]);
         return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
     }
+    async searchUsersPrivate(dto, role, userId) {
+        const { firstName, lastName, email, ageFrom, ageTo, categoryId, page, limit } = dto;
+        const skip = (page - 1) * limit;
+        const where = { role };
+        if (role === client_1.UserRole.DOCTOR) {
+            const paidDoctorIds = await this.prisma.dailyDoctorAccess.findMany({
+                where: { patientId: userId },
+                select: { doctorId: true },
+                distinct: ["doctorId"],
+            });
+            const paidIds = paidDoctorIds.map((d) => d.doctorId);
+            const chatDoctorIds = await this.prisma.chatParticipant.findMany({
+                where: {
+                    userId: userId,
+                    chat: {
+                        participants: {
+                            some: {
+                                user: {
+                                    role: client_1.UserRole.DOCTOR,
+                                },
+                            },
+                        },
+                    },
+                },
+                select: {
+                    chat: {
+                        select: {
+                            participants: {
+                                where: { user: { role: client_1.UserRole.DOCTOR } },
+                                select: { userId: true },
+                            },
+                        },
+                    },
+                },
+            });
+            const chatIds = chatDoctorIds.flatMap((c) => c.chat.participants.map((p) => p.userId));
+            const uniqueDoctorIds = [...new Set([...paidIds, ...chatIds])];
+            if (uniqueDoctorIds.length === 0) {
+                return {
+                    data: [],
+                    meta: { total: 0, page, limit, totalPages: 0 },
+                };
+            }
+            where.id = { in: uniqueDoctorIds };
+            where.doctorProfile = { published: true };
+        }
+        if (email)
+            where.email = { contains: email, mode: "insensitive" };
+        if (firstName)
+            where.firstName = { contains: firstName, mode: "insensitive" };
+        if (lastName)
+            where.lastName = { contains: lastName, mode: "insensitive" };
+        if (ageFrom || ageTo) {
+            where.age = {};
+            if (ageFrom)
+                where.age.gte = ageFrom;
+            if (ageTo)
+                where.age.lte = ageTo;
+        }
+        if (role === client_1.UserRole.DOCTOR && categoryId) {
+            where.doctorProfile = { published: true, categoryId };
+        }
+        const [data, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+                include: {
+                    doctorProfile: { include: { category: true, salary: true } },
+                    wallet: true,
+                },
+            }),
+            this.prisma.user.count({ where }),
+        ]);
+        return {
+            data,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
     async doctorsAll(dto) {
         return this.searchUsers(dto, client_1.UserRole.DOCTOR);
+    }
+    async doctorsAllPrivate(dto, userId) {
+        return this.searchUsersPrivate(dto, client_1.UserRole.DOCTOR, userId);
     }
     async doctorOne(id) {
         let olddoctor = await this.prisma.user.findFirst({
