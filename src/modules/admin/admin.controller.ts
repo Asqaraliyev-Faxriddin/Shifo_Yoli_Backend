@@ -291,6 +291,8 @@ import { PrismaService } from "src/core/prisma/prisma.service";
       schema: {
         type: 'object',
         properties: {
+          userId: { type: 'string', example: 'uuid' },
+
           firstName: { type: 'string', example: 'Ali' },
           lastName: { type: 'string', example: 'Valiyev' },
           month: { type: 'number', example: 5 },
@@ -302,7 +304,7 @@ import { PrismaService } from "src/core/prisma/prisma.service";
 
           profileImg: { type: 'string', format: 'binary' }, // optional
         },
-        required: [] // ❗ majburiy maydon yo‘q
+        required: [] // userId bor
       },
     })
     
@@ -323,8 +325,17 @@ import { PrismaService } from "src/core/prisma/prisma.service";
         uploadedUrl = response.data.data.url;
       }
   
-      let data = await this.prisma.user.update({
-        where: { id: req.user.id },
+      let olduser = await this.prisma.user.findFirst({
+        where: { id: dto.userId },
+      })
+
+      if(!olduser){
+        throw new NotFoundException("Foydalanuvchi topilmadi");
+      }
+
+
+        let data = await this.prisma.user.update({
+        where: { id: dto.userId },
         data: {
           ...(dto.firstName && { firstName: dto.firstName }),
           ...(dto.lastName && { lastName: dto.lastName }),

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString, IsInt, Min, Max, IsNumberString, Length, ValidateIf, IsPhoneNumber, IsNumber, IsEmail } from "class-validator";
+import { IsOptional, IsString, IsInt, Min, Max, IsNumberString, Length, ValidateIf, IsPhoneNumber, IsNumber, IsEmail, IsNotEmpty, IsUUID } from "class-validator";
 import { Type } from "class-transformer";
 
 export class SearchUserDto {
@@ -118,5 +118,10 @@ export class UpdateProfileUserAdminDto {
     @IsEmail()
     email?:string
 
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsUUID()
+    userId:string
 
 }
