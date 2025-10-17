@@ -259,11 +259,94 @@ async getTopDoctors() {
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
   }
 
+  
+  private async searchUsersPrivate(dto: SearchUserDto, role: UserRole, userId: string) {
+    const { firstName, lastName, email, ageFrom, ageTo, categoryId, page, limit } = dto;
+    const skip = (page - 1) * limit;
+    const where: any = { role };
+  
+    if (role === UserRole.DOCTOR) {
+      const paidDoctorIds = await this.prisma.dailyDoctorAccess.findMany({
+        where: { patientId: userId },
+        select: { doctorId: true },
+        distinct: ["doctorId"],
+      });
+  
+      const doctorIds = paidDoctorIds.map((d) => d.doctorId);
+  
+      // Agar bemor hali hech qaysi doktorga to‘lov qilmagan bo‘lsa
+      if (doctorIds.length === 0) {
+        return {
+          data: [],
+          meta: { total: 0, page, limit, totalPages: 0 },
+        };
+      }
+  
+      // faqat shu doktorlar
+      where.id = { in: doctorIds };
+  
+      // faqat active va publish bo‘lgan doktorlar
+      where.doctorProfile = { published: true };
+    }
+  
+    // 🔹 Qolgan filterlar (hammasi oldingiday)
+    if (email) where.email = { contains: email, mode: "insensitive" };
+    if (firstName) where.firstName = { contains: firstName, mode: "insensitive" };
+    if (lastName) where.lastName = { contains: lastName, mode: "insensitive" };
+    if (ageFrom || ageTo) {
+      where.age = {};
+      if (ageFrom) where.age.gte = ageFrom;
+      if (ageTo) where.age.lte = ageTo;
+    }
+  
+    if (role === UserRole.DOCTOR && categoryId) {
+      where.doctorProfile = { published: true, categoryId };
+    }
+  
+    // 🔹 Natijani olish
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          doctorProfile: { include: { category: true, salary: true } },
+          wallet: true,
+        },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+  
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+  
+
+
 
   async doctorsAll(dto:SearchUserDto){
     return this.searchUsers(dto,UserRole.DOCTOR)
 
   }
+
+
+  async doctorsAllPrivate(dto:SearchUserDto,userId:string){
+    return this.searchUsersPrivate(dto,UserRole.DOCTOR,userId)
+
+  }
+
+
+
+
+
 
 
   async doctorOne(id:string){
