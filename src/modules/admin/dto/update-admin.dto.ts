@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString, IsInt, Min, Max } from "class-validator";
+import { IsOptional, IsString, IsInt, Min, Max, IsNumberString, Length, ValidateIf, IsPhoneNumber, IsNumber, IsEmail } from "class-validator";
 import { Type } from "class-transformer";
 
 export class SearchUserDto {
@@ -48,4 +48,75 @@ export class SearchUserDto {
   @IsInt()
   @Min(1)
   page: number = 1;
+}
+
+
+export class UpdateProfileUserAdminDto {
+  @ApiPropertyOptional({
+    description: 'Foydalanuvchining ismi',
+    example: 'Ali',
+  })
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @ApiPropertyOptional({
+    description: 'Foydalanuvchining familiyasi',
+    example: 'Valiyev',
+  })
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @ApiPropertyOptional({
+    description: 'Foydalanuvchining roli',
+    example: 'BUY',
+    enum: ['BUY', 'SELL'],
+  })
+  @IsOptional()
+  @Length(1,330)
+  age?:number
+
+
+
+    @ApiPropertyOptional()
+    @IsNumberString()
+    @IsOptional()
+    @Type(() => Number)
+    @Length(1,12)
+    month?:number
+
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    day?:number
+
+
+    @ApiPropertyOptional()
+    @ValidateIf(o => o.phoneNumber !== '' && o.phoneNumber !== null && o.phoneNumber !== undefined)
+    @IsPhoneNumber("UZ")
+    phoneNumber?: string;
+    @IsOptional()
+
+    @ApiPropertyOptional({
+      type: 'string',
+      format: 'binary',
+      description: 'Profil rasmi (faqat Swagger uchun)',
+    })
+    @IsOptional()
+    profileImg?: any;
+
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    password?:string;
+
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsEmail()
+    email?:string
+
+
 }

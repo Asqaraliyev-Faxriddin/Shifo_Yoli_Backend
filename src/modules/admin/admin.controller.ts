@@ -12,6 +12,8 @@ import {
     UseGuards,
     Req,
     UploadedFiles,
+    NotFoundException,
+    Patch,
   } from "@nestjs/common";
   import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
   import axios from "axios";
@@ -37,6 +39,8 @@ import { AuthGuard } from "src/common/guards/jwt-auth.guard";
 import { RolesGuard } from "src/common/guards/roles.guard";
 import { Roles } from "src/common/decorators/Roles.decorator";
 import { UserRole } from "@prisma/client";
+import { UpdateProfileUserAdminDto } from "./dto/update-admin.dto";
+import { PrismaService } from "src/core/prisma/prisma.service";
   
   @ApiBearerAuth()
   @ApiTags("Admin") // ✅ Swagger gruppa nomi
@@ -44,7 +48,7 @@ import { UserRole } from "@prisma/client";
   @UseGuards(AuthGuard,RolesGuard)
   @Roles(UserRole.SUPERADMIN)
   export class AdminController {
-    constructor(private readonly adminService: AdminService) {}
+    constructor(private readonly adminService: AdminService,private prisma:PrismaService) {}
   
     private readonly imgbbApiKey = "a22840e1237262e2beec1cf469a82155";
     private readonly imgbbUploadUrl = "https://api.imgbb.com/1/upload";
@@ -278,6 +282,61 @@ import { UserRole } from "@prisma/client";
     ) {
       return this.adminService.toggleDoctorPublish(doctorId, status === "true");
     }
+
+
+    @Patch('update')
+    @UseInterceptors(FileInterceptor('profileImg'))
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+      schema: {
+        type: 'object',
+        properties: {
+          firstName: { type: 'string', example: 'Ali' },
+          lastName: { type: 'string', example: 'Valiyev' },
+          month: { type: 'number', example: 5 },
+          day: { type: 'number', example: 15 },
+          phoneNumber: { type: 'string', example: '+998901234567' },
+          age: { type: 'number' },
+          email: { type: 'string' },
+          password: { type: 'string' },
+
+          profileImg: { type: 'string', format: 'binary' }, // optional
+        },
+        required: [] // ❗ majburiy maydon yo‘q
+      },
+    })
+    
+    async updateProfile(@Req() req,@Body() dto: UpdateProfileUserAdminDto,@UploadedFile() file?: Express.Multer.File,) {
+
+      let uploadedUrl: string | undefined;
+  
+      if (file) {
+        const form = new FormData();
+        form.append('image', file.buffer.toString('base64'));
+  
+        const response = await axios.post(
+          `https://api.imgbb.com/1/upload?key=7b80af0a58ffc5ed794b3d3955d402c0`,
+          form,
+          { headers: form.getHeaders() },
+        );
+  
+        uploadedUrl = response.data.data.url;
+      }
+  
+      let data = await this.prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          ...(dto.firstName && { firstName: dto.firstName }),
+          ...(dto.lastName && { lastName: dto.lastName }),
+          ...(dto.age && { age: dto.age  }),
+          ...(uploadedUrl && { profileImg: uploadedUrl }), 
+        },
+      });
+
+      return data;
+    }
+  
+
 
 
 

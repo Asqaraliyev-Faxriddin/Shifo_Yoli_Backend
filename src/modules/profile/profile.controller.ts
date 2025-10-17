@@ -36,7 +36,6 @@ import { UserRole } from '@prisma/client';
         properties: {
           firstName: { type: 'string', example: 'Ali' },
           lastName: { type: 'string', example: 'Valiyev' },
-          year: { type: 'number', example: 1990 },
           month: { type: 'number', example: 5 },
           day: { type: 'number', example: 15 },
           phoneNumber: { type: 'string', example: '+998901234567' },
