@@ -1,7 +1,8 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query, Req } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PublicService } from './user.service';
 import { SearchUserDto } from 'src/modules/admin/dto/create-admin.dto';
+import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @ApiTags('Public') 
 @Controller('User')
@@ -39,6 +40,7 @@ export class PublicController {
     return this.publicService.doctorsAll(payload)
   }
 
+  @UseGuards(AuthGuard)
   @Get("doctors/All/Private")
   @ApiOperation({summary:"Barcha doktorlar publiished true bolganlar"})
   async DoctorsAllPrivate(@Req()req,@Query() payload:SearchUserDto){
