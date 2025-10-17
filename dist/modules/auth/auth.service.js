@@ -151,6 +151,7 @@ let AuthService = class AuthService {
                     amount: 5000
                 }
             });
+            await this.saveDevice(existingUser.id, req, client_1.DeviceType.register);
         }
         else {
             existingUser = await this.prisma.user.update({
@@ -160,8 +161,8 @@ let AuthService = class AuthService {
                     age: user.age ?? existingUser.age,
                 },
             });
+            await this.saveDevice(existingUser.id, req, client_1.DeviceType.login);
         }
-        await this.saveDevice(existingUser.id, req, client_1.DeviceType.login);
         const tokens = await this.generateToken({
             id: existingUser.id,
             role: existingUser.role,

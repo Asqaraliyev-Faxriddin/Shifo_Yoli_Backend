@@ -349,7 +349,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "toggleDoctorPublish", null);
 __decorate([
-    (0, common_1.Patch)('update'),
+    (0, common_1.Patch)('user/update'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('profileImg')),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiBody)({

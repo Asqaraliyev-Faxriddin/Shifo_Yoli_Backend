@@ -284,7 +284,7 @@ import { PrismaService } from "src/core/prisma/prisma.service";
     }
 
 
-    @Patch('update')
+    @Patch('user/update')
     @UseInterceptors(FileInterceptor('profileImg'))
     @ApiConsumes('multipart/form-data')
     @ApiBody({

@@ -277,7 +277,7 @@ let AdminService = class AdminService {
                 userId
             }
         });
-        if (!oldblock) {
+        if (oldblock) {
             return { message: "Bu user bloklangan oldin." };
         }
         await this.prisma.blockedUsers.create({

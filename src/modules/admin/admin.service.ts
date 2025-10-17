@@ -346,7 +346,7 @@ import { use } from "passport";
         }
       })
 
-      if(!oldblock){
+      if(oldblock){
         return {message:"Bu user bloklangan oldin."}
       }
 

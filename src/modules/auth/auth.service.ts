@@ -186,6 +186,7 @@ export class AuthService {
       })
 
 
+      await this.saveDevice(existingUser.id, req, DeviceType.register);
 
 
     } else {
@@ -196,9 +197,11 @@ export class AuthService {
           age: user.age ?? existingUser.age,
         },
       });
+
+      await this.saveDevice(existingUser.id, req, DeviceType.login);
+  
     }
   
-    await this.saveDevice(existingUser.id, req, DeviceType.login);
   
     const tokens = await this.generateToken({
       id: existingUser.id,
