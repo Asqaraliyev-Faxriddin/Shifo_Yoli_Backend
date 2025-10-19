@@ -137,7 +137,7 @@ import { use } from "passport";
           take: limit,
 
           orderBy: { createdAt: "desc" },
-          include: { blockedUser:true,devices:true,doctorProfile: { include: { category: true } }, wallet: true,  },
+          include: { blockedUser:true,devices:true,doctorProfile: { include: { category: true,salary:true } }, wallet: true,  },
         }),
         this.prisma.user.count({ where }),
       ]);
