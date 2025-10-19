@@ -527,6 +527,35 @@ export class DoctorProfileService {
     };
   }
   
+
+  async GetByUser(userId:string){
+    let olduser = await this.prisma.user.findFirst({
+      where:{id:userId,role:"BEMOR"},
+      select:{
+        id:true,
+        email:true,
+        firstName:true,
+        lastName:true,
+        age:true,
+        phoneNumber:true,
+        role:true,
+        profileImg:true,
+        isActive:true,
+        createdAt:true,
+      }
+    })
+
+    if(!olduser){
+
+      throw new UnauthorizedException("Bunday bemor mavjud emas")
+     }
+
+     return {
+      data:olduser
+     }
+
+  }
+
   
 
 }

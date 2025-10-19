@@ -501,4 +501,14 @@ export class DoctorProfileController {
     return this.doctorProfileService.getDoctorPatients(req.user.id)
   }
 
+
+  @Roles(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPERADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  @ApiOperation({ summary: "Doktor Bemorni profili haqida ma'lumot olish" })
+  @Get('doctor/patient/profile/:id')
+  async DoctorByBemor(@Param('id') id: string) {
+    return this.doctorProfileService.GetByUser(id)
+
+  }
+
 }
