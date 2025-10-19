@@ -492,9 +492,11 @@ export class DoctorProfileController {
   }
 
 
+
   @Roles(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPERADMIN)
   @UseGuards(AuthGuard, RolesGuard)
   @ApiOperation({ summary: "Doktorning bemorlarini olish" })
+  @Get('doctor/patients')
   async DocktorProfileBemors(@Req() req) {
     return this.doctorProfileService.getDoctorPatients(req.user.id)
   }
