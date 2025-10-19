@@ -467,19 +467,18 @@ export class DoctorProfileService {
   
     if (!doctor) throw new NotFoundException('Doctor topilmadi');
   
-    // 2️⃣ To‘lov qilgan yoki yozishgan bemorlarni topamiz
+    // 2️⃣ To‘lov qilgan bemorlarni topamiz
     const paidPatients = await this.prisma.dailyDoctorAccess.findMany({
       where: { doctorId },
       include: { patient: true },
     });
+    console.log(`💰 Paid patients count: ${paidPatients.length}`);
   
     // 3️⃣ Chat orqali yozishgan bemorlar
     const chatPatients = await this.prisma.chat.findMany({
       where: {
         participants: {
-          some: {
-            userId: doctorId,
-          },
+          some: { userId: doctorId },
         },
       },
       include: {
@@ -491,27 +490,43 @@ export class DoctorProfileService {
       },
     });
   
-    // 4️⃣ Chatdagi bemorlarni chiqaramiz
+    console.log(`💬 Chat count: ${chatPatients.length}`);
+  
+    // 4️⃣ Chatdagi foydalanuvchilarni chiqaramiz
     const chattedPatients = chatPatients
       .flatMap((chat) => chat.participants.map((p) => p.user))
-      .filter((u) => u.role === 'BEMOR' || u.role === 'SUPERADMIN' || u.role === 'ADMIN');
+      .filter(
+        (u) =>
+          u.role === 'BEMOR' ||
+          u.role === 'SUPERADMIN' ||
+          u.role === 'ADMIN'
+      );
   
-    // 5️⃣ To‘lov qilgan bemorlar ro‘yxatini olish
+    console.log(`🗣️ Chatted patients count: ${chattedPatients.length}`);
+  
+    // 5️⃣ To‘lov qilgan bemorlar
     const paidPatientUsers = paidPatients.map((p) => p.patient);
   
-    // 6️⃣ Ikkalasini birlashtirib, dublikatlarni olib tashlash
+    // 6️⃣ Birlashtirib, dublikatlarni olib tashlash
     const allPatientsMap = new Map<string, any>();
     [...paidPatientUsers, ...chattedPatients].forEach((p) => {
       allPatientsMap.set(p.id, p);
     });
   
-    console.log('All Patients:', allPatientsMap);
-    
-
     const allPatients = Array.from(allPatientsMap.values());
   
-    return allPatients;
+    const total = allPatients.length;
+  
+    console.log(`📊 Total unique patients: ${total}`);
+  
+    // ✅ Natijani to‘liq qaytaramiz
+    return {
+      message: 'Doctor bemorlari olindi.',
+      total,
+      data: allPatients,
+    };
   }
+  
   
 
 }
