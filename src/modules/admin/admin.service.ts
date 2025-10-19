@@ -52,6 +52,15 @@ import { use } from "passport";
     async createDoctor(dto: CreateDoctorDto, profileImgUrl?: string) {
       await this.ensureEmailUnique(dto.email);
       const hashed = await bcrypt.hash(dto.password, 10);
+
+      let category = await this.prisma.doctorCategory.findFirst({
+        where:{
+          id:dto.categoryId
+        }
+      })
+
+      if(!category) throw new NotFoundException("Kategoriga topilmadi")
+
   
       return this.prisma.user.create({
         data: {
@@ -416,7 +425,7 @@ import { use } from "passport";
   
     async toggleDoctorPublish(doctorId: string, published: boolean) {
       const doctor = await this.prisma.doctorProfile.findUnique({ where: { doctorId } });
-      if (!doctor) throw new NotFoundException("Doktor topilmadi");
+      if (!doctor) throw new NotFoundException("Doktor profili yo'q uni nashr qilib bolmaydi.");
   
       return this.prisma.doctorProfile.update({ where: { doctorId }, data: { published } });
     }
