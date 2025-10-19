@@ -490,4 +490,13 @@ export class DoctorProfileController {
   async DoctorProfiles(@Query() query: FindDoctorProfilesDto) {
     return this.doctorProfileService.DoctorProfiles(query);
   }
+
+
+  @Roles(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPERADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  @ApiOperation({ summary: "Doktorning bemorlarini olish" })
+  async DocktorProfileBemors(@Req() req) {
+    return this.doctorProfileService.getDoctorPatients(req.user.id)
+  }
+
 }

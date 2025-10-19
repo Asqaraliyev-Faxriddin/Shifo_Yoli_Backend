@@ -459,4 +459,56 @@ export class DoctorProfileService {
   }
   
 
+  async getDoctorPatients(doctorId: string) {
+    // 1️⃣ Doctor mavjudligini tekshiramiz
+    const doctor = await this.prisma.user.findUnique({
+      where: { id: doctorId, role: 'DOCTOR' },
+    });
+  
+    if (!doctor) throw new NotFoundException('Doctor topilmadi');
+  
+    // 2️⃣ To‘lov qilgan yoki yozishgan bemorlarni topamiz
+    const paidPatients = await this.prisma.dailyDoctorAccess.findMany({
+      where: { doctorId },
+      include: { patient: true },
+    });
+  
+    // 3️⃣ Chat orqali yozishgan bemorlar
+    const chatPatients = await this.prisma.chat.findMany({
+      where: {
+        participants: {
+          some: {
+            userId: doctorId,
+          },
+        },
+      },
+      include: {
+        participants: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+  
+    // 4️⃣ Chatdagi bemorlarni chiqaramiz
+    const chattedPatients = chatPatients
+      .flatMap((chat) => chat.participants.map((p) => p.user))
+      .filter((u) => u.role === 'BEMOR');
+  
+    // 5️⃣ To‘lov qilgan bemorlar ro‘yxatini olish
+    const paidPatientUsers = paidPatients.map((p) => p.patient);
+  
+    // 6️⃣ Ikkalasini birlashtirib, dublikatlarni olib tashlash
+    const allPatientsMap = new Map<string, any>();
+    [...paidPatientUsers, ...chattedPatients].forEach((p) => {
+      allPatientsMap.set(p.id, p);
+    });
+  
+    const allPatients = Array.from(allPatientsMap.values());
+  
+    return allPatients;
+  }
+  
+
 }
