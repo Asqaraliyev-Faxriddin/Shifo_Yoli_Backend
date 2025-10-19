@@ -494,7 +494,7 @@ export class DoctorProfileService {
     // 4️⃣ Chatdagi bemorlarni chiqaramiz
     const chattedPatients = chatPatients
       .flatMap((chat) => chat.participants.map((p) => p.user))
-      .filter((u) => u.role === 'BEMOR');
+      .filter((u) => u.role === 'BEMOR' || u.role === 'SUPERADMIN' || u.role === 'ADMIN');
   
     // 5️⃣ To‘lov qilgan bemorlar ro‘yxatini olish
     const paidPatientUsers = paidPatients.map((p) => p.patient);
