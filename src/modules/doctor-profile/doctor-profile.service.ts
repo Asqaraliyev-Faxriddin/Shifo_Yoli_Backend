@@ -505,6 +505,9 @@ export class DoctorProfileService {
       allPatientsMap.set(p.id, p);
     });
   
+    console.log('All Patients:', allPatientsMap);
+    
+
     const allPatients = Array.from(allPatientsMap.values());
   
     return allPatients;
