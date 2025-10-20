@@ -462,7 +462,8 @@ export class DoctorProfileService {
   async getDoctorPatients(doctorId: string) {
     // 1️⃣ Doctor mavjudligini tekshiramiz
     const doctor = await this.prisma.user.findUnique({
-      where: { id: doctorId, role: 'DOCTOR' },
+      where: { id: doctorId 
+       },
     });
   
     if (!doctor) throw new NotFoundException('Doctor topilmadi');
