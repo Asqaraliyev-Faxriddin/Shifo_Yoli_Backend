@@ -33,7 +33,7 @@ export class ProfileService {
         month:true,
         day:true,
         doctorProfile: true,
-        
+
         devices: {
           select: {
             id: true,
@@ -175,7 +175,7 @@ export class ProfileService {
   
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      throw new BadRequestException("Password incorrect");
+      throw new BadRequestException("Joriy parol xato");
     }
   
     const hashedPassword = await bcrypt.hash(newPassword, 10);

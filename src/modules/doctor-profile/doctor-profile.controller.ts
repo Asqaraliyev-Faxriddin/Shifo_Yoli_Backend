@@ -291,7 +291,7 @@ export class DoctorProfileController {
       f?.filename ? `videos/${f.filename}` : '',
     );
 
-    return this.doctorProfileService.create(req.user.id, dto, images, videos);
+    return this.doctorProfileService.create2(req.user.id, dto, images, videos);
   }
 
   // ===================== UPDATE PROFILE =====================
@@ -372,7 +372,7 @@ export class DoctorProfileController {
       f?.filename ? `files/${f.filename}` : '',
     );
   
-    return this.doctorProfileService.update(req.user.id, dto, images, videos, docs);
+    return this.doctorProfileService.update2(req.user.id, dto, images, videos, docs);
   }
   
 
