@@ -318,37 +318,34 @@ export class DoctorProfileService {
     dto: UpdateDoctorProfileDto,
     images?: string[],
     videos?: string[],
-    files?:string[]
+    files?: string[],
   ) {
-
-
-    let olddoctor = await this.prisma.user.findFirst({
-      where:{
-        role:"DOCTOR",
-        id
+    // 1️⃣ Doctor mavjudligini tekshir
+    const olddoctor = await this.prisma.user.findFirst({
+      where: {
+        id,
+        role: 'DOCTOR',
       },
-      include:{
-        doctorProfile:true
-      }
-    })
-
-    if(!olddoctor){
-      throw new UnauthorizedException("Bunday doctor mavjud emas")
-
-    }
-
-
-    const doctor = await this.prisma.doctorProfile.findUnique({ where: { id:olddoctor.doctorProfile?.id } });
-    if (!doctor) throw new NotFoundException('Doctor profile not found');
+      include: {
+        doctorProfile: true,
+      },
+    });
   
+    if (!olddoctor) {
+      throw new UnauthorizedException('Bunday doctor mavjud emas');
+    }
+  
+    const doctorProfile = olddoctor.doctorProfile;
+    if (!doctorProfile) {
+      throw new NotFoundException('Doctor profili topilmadi');
+    }
+  
+    // 2️⃣ Yangilanish uchun data tayyorlash
     const data: any = {};
   
-    // ✅ Bio
-    if (dto.bio !== undefined) {
-      data.bio = dto.bio;
-    }
+    if (dto.bio !== undefined) data.bio = dto.bio;
   
-    // ✅ CategoryId bo‘lsa — tekshir
+    // ✅ CategoryId tekshiruv
     if (dto.categoryId !== undefined) {
       if (dto.categoryId.trim()) {
         const categoryExists = await this.prisma.doctorCategory.findUnique({
@@ -359,42 +356,33 @@ export class DoctorProfileService {
         }
         data.categoryId = dto.categoryId;
       } else {
-        data.categoryId = doctor.categoryId;
+        data.categoryId = doctorProfile.categoryId;
       }
     }
   
-    // ✅ Images
-    if (images && images.length) {
-      data.images = images;
-    }
-
-    if (files && files.length) {
-      data.files = files;
-    }
-  
-    // ✅ Videos
-    if (videos && videos.length) {
-      data.videos = videos;
-    }
+    // ✅ Media fayllar
+    if (images?.length) data.images = images;
+    if (files?.length) data.files = files;
+    if (videos?.length) data.videos = videos;
   
     // ✅ Futures
-    if (dto.futures !== undefined) {
-      data.futures = dto.futures;
-    }
+    if (dto.futures !== undefined) data.futures = dto.futures;
   
-    // ✅ DoctorProfile ni yangilash
+    // 3️⃣ DoctorProfile ni yangilash
     await this.prisma.doctorProfile.update({
-      where: { id:olddoctor.doctorProfile?.id },
+      where: { id: doctorProfile.id },
       data,
     });
   
-    // ✅ Maoshni tekshir va yangilash
+    // 4️⃣ Maosh (DoctorSalary) tekshir va yangilash
     if (dto.dailySalary !== undefined || dto.free !== undefined) {
       const existingSalary = await this.prisma.doctorSalary.findFirst({
-        where: { doctorId: id },
+        where: { doctorId: doctorProfile.id }, // 🔥 DoctorProfile.id
       });
   
       const salaryData: any = {};
+  
+      // ✅ Maosh qiymatlari
       if (dto.dailySalary !== undefined) {
         salaryData.daily = dto.dailySalary;
         salaryData.weekly = dto.dailySalary * 7;
@@ -402,10 +390,12 @@ export class DoctorProfileService {
         salaryData.yearly = dto.dailySalary * 365;
       }
   
+      // ✅ Free (bepul xizmat) flag
       if (dto.free !== undefined) {
         salaryData.free = this.parseBoolean(dto.free);
       }
   
+      // ✅ Yangilash yoki yaratish
       if (existingSalary) {
         await this.prisma.doctorSalary.update({
           where: { id: existingSalary.id },
@@ -415,13 +405,13 @@ export class DoctorProfileService {
         await this.prisma.doctorSalary.create({
           data: {
             ...salaryData,
-            doctorId: id,
+            doctorId: doctorProfile.id, // 🔥 asosiy tuzatish shu
           },
         });
       }
     }
   
-    // ✅ SuperAdminlarga email yuborish
+    // 5️⃣ SuperAdminlarga email yuborish
     const superAdmins = await this.prisma.user.findMany({
       where: { role: 'SUPERADMIN' },
     });
@@ -430,12 +420,13 @@ export class DoctorProfileService {
       superAdmins.map((admin) =>
         this.mailerService.sendNotificationEmail(
           admin.email,
-          `Doktor profili yangilandi`,
+          'Doktor profili yangilandi',
           `Doctor profili yangilandi: ${id}`,
         ),
       ),
     );
   
+    // 6️⃣ Javob qaytarish
     return {
       success: true,
       message:
@@ -443,6 +434,7 @@ export class DoctorProfileService {
       data,
     };
   }
+  
   
 
   // ✅ Profilni o‘chirish
