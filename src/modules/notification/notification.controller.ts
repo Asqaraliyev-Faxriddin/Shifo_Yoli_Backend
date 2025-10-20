@@ -14,7 +14,8 @@ import { FindAllNotificationDto } from './dto/create-notification.dto';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags, ApiQuery, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { Request } from 'express';
-import { NameDto } from './dto/update-notification.dto';
+import { CreateNotificationSuperDto, NameDto } from './dto/update-notification.dto';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @ApiTags('Notification')
 @ApiBearerAuth()
@@ -45,6 +46,16 @@ export class NotificationController {
     const userId = req.user['id'];
     return this.notificationService.markAllAsRead(userId);
   }
+
+ 
+  @UseGuards(AuthGuard,RolesGuard)
+  @Post("create/notificatioin/superadmin")
+  @ApiOperation({summary:"juda zorda"})
+  @ApiBody({type:NameDto})
+  async DoctorBySuperadmin(@Body() body:CreateNotificationSuperDto,@Req() req){
+    return this.notificationService.create(body,req)
+  }
+
 
   
   @Post("weweweew")

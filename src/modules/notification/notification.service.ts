@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { FindAllNotificationDto } from './dto/create-notification.dto';
-import { NameDto } from './dto/update-notification.dto';
+import { CreateNotificationSuperDto, NameDto } from './dto/update-notification.dto';
 
 @Injectable()
 export class NotificationService {
@@ -110,6 +110,124 @@ export class NotificationService {
 
     return data
 
+  }
+
+
+  private async  DoctorBySuperadmin(message:string){
+
+
+    let oldsuperadmin = await this.prisma.user.findMany({
+      where:{
+        role:"SUPERADMIN"
+      }
+    })
+
+    if(oldsuperadmin.length === 0){
+      
+      return []
+
+    }
+
+
+    for ( let i of oldsuperadmin){
+      await this.prisma.userNotification.create({
+        data:{
+          userId:i.id,
+          message:message
+        }
+      })
+
+
+    }
+
+    return {
+      message:"Qabul qilindi"
+    }
+
+
+
+  }
+
+
+  async create(createContactDto: CreateNotificationSuperDto, req: any) {
+    const { message } = createContactDto;
+
+    const ip = req.ip || req.connection.remoteAddress || 'unknown_ip';
+    const userAgent = req.headers['user-agent'] || 'unknown_agent';
+    const unique = `${ip}_${userAgent}`;
+
+    const lastContact = await this.prisma.contact.findUnique({
+      where: { unique },
+    });
+
+    if (lastContact) { 
+      const now = new Date();
+      const diffMs = now.getTime() - lastContact.createdAt.getTime();
+      const diffMinutes = Math.floor(diffMs / 1000 / 60);
+
+      if (diffMinutes < 10) {
+        throw new BadRequestException(
+          `❌ Siz faqat har 10 daqiqada 1 ta so‘rov yubora olasiz. Qolgan vaqt: ${
+            10 - diffMinutes
+          } daqiqa`,
+        );
+      }
+
+      const updated = await this.prisma.contact.update({
+        where: { unique },
+        data: {
+          email:"",
+          message,
+          phone: "",
+          createdAt: new Date(),
+        },
+
+        select:{
+          email:true,
+          phone:true,
+          message:true,
+          createdAt:true,
+          updatedAt:true,
+          unique:true,
+        }
+      });
+
+      await this.DoctorBySuperadmin(message);
+
+      
+
+      return {
+        success: true,
+        message: '✅ Sizning murojaatingiz muvaffaqiyatli yuborildi.',
+        data:  updated,
+      };
+    }
+
+    const created = await this.prisma.contact.create({
+      data: {
+        email:"",
+        message,
+        phone: "",
+        unique,
+      },
+
+      select:{
+        email:true,
+        phone:true,
+        message:true,
+        createdAt:true,
+        updatedAt:true,
+        unique:true,
+      }
+    });
+
+    await this.DoctorBySuperadmin(message);
+
+    return {
+      success: true,
+      message: '✅ Sizning murojaatingiz muvaffaqiyatli yuborildi.',
+      data: created,
+    };
   }
 
 

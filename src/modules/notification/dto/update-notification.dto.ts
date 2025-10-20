@@ -7,3 +7,14 @@ export class NameDto {
     @IsNotEmpty()
     name: string;
   }
+
+
+  export class CreateNotificationSuperDto {
+
+
+    @ApiProperty({ example: 'Sizning buyurtmangiz qabul qilindi.', description: 'Bildirishnoma xabari' })
+    @IsString()
+    @IsNotEmpty()
+    message: string;
+
+  }
