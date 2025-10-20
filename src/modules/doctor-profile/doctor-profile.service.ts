@@ -466,9 +466,11 @@ export class DoctorProfileService {
        },
     });
   
-    if (!doctor) throw new NotFoundException('Doctor topilmadi');
-  
-    // 2️⃣ To‘lov qilgan bemorlarni topamiz
+    if (!doctor ) throw new NotFoundException('Doctor topilmadi');
+    if(doctor.role == "BEMOR"){
+      throw new BadRequestException('Siz Shifokor emassiz');
+    } 
+      // 2️⃣ To‘lov qilgan bemorlarni topamiz
     const paidPatients = await this.prisma.dailyDoctorAccess.findMany({
       where: { doctorId },
       include: { patient: true },
