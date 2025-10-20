@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString, Length, MinLength, ValidateIf } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString, Length, Max, Min, MinLength, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -34,7 +34,8 @@ export class UpdateProfileDto {
     @IsNumber()
     @IsOptional()
     @Type(() => Number)
-    @Length(1,12)
+    @Min(1)
+    @Max(12)
     month?:number
 
     @ApiPropertyOptional()
