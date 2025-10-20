@@ -462,20 +462,19 @@ export class DoctorProfileService {
   async getDoctorPatients(doctorId: string) {
     // 1️⃣ Doctor mavjudligini tekshiramiz
     const doctor = await this.prisma.user.findUnique({
-      where: { id: doctorId 
-       },
+      where: { id: doctorId },
     });
   
-    if (!doctor ) throw new NotFoundException('Doctor topilmadi');
-    if(doctor.role == "BEMOR"){
+    if (!doctor) throw new NotFoundException('Doctor topilmadi');
+    if (doctor.role === 'BEMOR') {
       throw new BadRequestException('Siz Shifokor emassiz');
-    } 
-      // 2️⃣ To‘lov qilgan bemorlarni topamiz
+    }
+  
+    // 2️⃣ To‘lov qilgan bemorlarni topamiz
     const paidPatients = await this.prisma.dailyDoctorAccess.findMany({
       where: { doctorId },
       include: { patient: true },
     });
-    console.log(`💰 Paid patients count: ${paidPatients.length}`);
   
     // 3️⃣ Chat orqali yozishgan bemorlar
     const chatPatients = await this.prisma.chat.findMany({
@@ -493,22 +492,19 @@ export class DoctorProfileService {
       },
     });
   
-    console.log(`💬 Chat count: ${chatPatients.length}`);
-  
-    // 4️⃣ Chatdagi foydalanuvchilarni chiqaramiz
+    // 4️⃣ Chatdagi foydalanuvchilarni chiqaramiz (faqat bemorlar, lekin o‘zini emas)
     const chattedPatients = chatPatients
       .flatMap((chat) => chat.participants.map((p) => p.user))
       .filter(
         (u) =>
-          u.role === 'BEMOR' ||
-          u.role === 'SUPERADMIN' ||
-          u.role === 'ADMIN'
+          u.id !== doctorId && // 🔥 o‘zini chiqarib tashlash
+          (u.role === 'BEMOR' || u.role === 'SUPERADMIN' || u.role === 'ADMIN')
       );
   
-    console.log(`🗣️ Chatted patients count: ${chattedPatients.length}`);
-  
     // 5️⃣ To‘lov qilgan bemorlar
-    const paidPatientUsers = paidPatients.map((p) => p.patient);
+    const paidPatientUsers = paidPatients
+      .map((p) => p.patient)
+      .filter((p) => p.id !== doctorId); // 🔥 o‘zini chiqarib tashlash
   
     // 6️⃣ Birlashtirib, dublikatlarni olib tashlash
     const allPatientsMap = new Map<string, any>();
@@ -517,18 +513,15 @@ export class DoctorProfileService {
     });
   
     const allPatients = Array.from(allPatientsMap.values());
-  
     const total = allPatients.length;
   
-    console.log(`📊 Total unique patients: ${total}`);
-  
-    // ✅ Natijani to‘liq qaytaramiz
     return {
       message: 'Doctor bemorlari olindi.',
       total,
       data: allPatients,
     };
   }
+  
   
 
   async GetByUser(userId:string){
