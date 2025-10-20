@@ -119,25 +119,11 @@ export class DoctorProfileService {
   ) {
     
     
-    let olddoctor = await this.prisma.user.findFirst({
-      where:{
-        role:"DOCTOR",
-        id
-      },
-      include:{
-        doctorProfile:true
-      }
-    })
-
-    if(!olddoctor){
-      throw new UnauthorizedException("Bunday doctor mavjud emas")
-
-    }
-
+   
 
 
     
-    const doctor = await this.prisma.doctorProfile.findUnique({ where: { id:olddoctor.doctorProfile?.id } });
+    const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
     if (!doctor) throw new NotFoundException('Doctor profile not found');
   
     const data: any = {};
@@ -334,7 +320,25 @@ export class DoctorProfileService {
     videos?: string[],
     files?:string[]
   ) {
-    const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
+
+
+    let olddoctor = await this.prisma.user.findFirst({
+      where:{
+        role:"DOCTOR",
+        id
+      },
+      include:{
+        doctorProfile:true
+      }
+    })
+
+    if(!olddoctor){
+      throw new UnauthorizedException("Bunday doctor mavjud emas")
+
+    }
+
+
+    const doctor = await this.prisma.doctorProfile.findUnique({ where: { id:olddoctor.doctorProfile?.id } });
     if (!doctor) throw new NotFoundException('Doctor profile not found');
   
     const data: any = {};
