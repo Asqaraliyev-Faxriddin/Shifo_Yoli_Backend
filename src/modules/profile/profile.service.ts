@@ -29,6 +29,11 @@ export class ProfileService {
         createdAt: true,
         updatedAt: true,
         age: true,
+        dailyAccess:true,
+        month:true,
+        day:true,
+        doctorProfile: true,
+        
         devices: {
           select: {
             id: true,
