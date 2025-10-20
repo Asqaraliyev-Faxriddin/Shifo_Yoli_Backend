@@ -384,7 +384,7 @@ export class DoctorProfileService {
   
     // ✅ DoctorProfile ni yangilash
     await this.prisma.doctorProfile.update({
-      where: { id },
+      where: { id:olddoctor.doctorProfile?.id },
       data,
     });
   
