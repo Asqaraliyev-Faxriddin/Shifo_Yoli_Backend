@@ -150,7 +150,9 @@ export class NotificationService {
 
 
   async create(createContactDto: CreateNotificationSuperDto, req: any) {
-    const { message } = createContactDto;
+    const { message:tr,email } = createContactDto;
+
+    let message = "Xabar: " +  tr + "\n" + "Email: " + email
 
     const ip = req.ip || req.connection.remoteAddress || 'unknown_ip';
     const userAgent = req.headers['user-agent'] || 'unknown_agent';
