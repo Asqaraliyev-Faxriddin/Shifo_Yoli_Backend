@@ -76,7 +76,7 @@ import { UserRole } from '@prisma/client';
         data: {
           ...(dto.firstName && { firstName: dto.firstName }),
           ...(dto.lastName && { lastName: dto.lastName }),
-          ...(dto.age && { age: dto.age  }),
+          ...(dto.age && { age: +dto.age  }),
           ...(uploadedUrl && { profileImg: uploadedUrl }), 
         },
       });
