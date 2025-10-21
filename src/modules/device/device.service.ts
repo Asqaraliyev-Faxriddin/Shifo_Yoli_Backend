@@ -16,32 +16,29 @@ export class DeviceService {
     }
   
 
-private async BlockDevice( req: Request) {
-  
-  if (!req) return;                                     
-  
-  const userAgent = req.headers["user-agent"] || "unknown";
-  const ip =  req.ip || (req.headers["x-forwarded-for"] as string) || "unknown";
-  
-  
-  const existingDevice = await this.prisma.device.findFirst({
-    where: {
-      OR: [
-        { address: ip },
-            { name: userAgent },
-          ],
+    private async BlockDevice(req: Request, userId: string) {
+      if (!req) return;
+    
+      const userAgent = req.headers["user-agent"] || "unknown";
+      const ip = req.ip || (req.headers["x-forwarded-for"] as string) || "unknown";
+    
+      const existingDevice = await this.prisma.device.findFirst({
+        where: {
+          userId, // ✅ faqat shu foydalanuvchining qurilmalari
+          address: ip,
+          name: userAgent,
         },
       });
-      
-      if (existingDevice?.deviceType == "register") {
-        return true
+    
+      if (existingDevice?.deviceType === "register") {
+        return true;
       }
-
-      throw new UnauthorizedException("Siz qolgan qurilmalarni bloklashingiz uchun Ro'yxatdan o'tgan qurilmangizda turib bloklashiz kerak.")
-
-  }
-
-
+    
+      throw new UnauthorizedException(
+        "Siz qolgan qurilmalarni bloklashingiz uchun ro'yxatdan o'tgan qurilmangizda turib bloklashiz kerak."
+      );
+    }
+    
 
 
 
@@ -51,7 +48,7 @@ private async BlockDevice( req: Request) {
     let olddevice = await this.prisma.device.findFirst({where:{deviceId:deviceId,}})
     if(!olddevice) return "Bu qurilma topilmadi"
 
-    let oldDevice = await this.BlockDevice(req)
+    let oldDevice = await this.BlockDevice(req,userId)
     if(oldDevice != true) throw new UnauthorizedException("Siz qolgan qurilmalarni bloklashingiz uchun Ro'yxatdan o'tgan qurilmangizda turib bloklashiz kerak.")
 
     if(olddevice.userId != userId) throw new UnauthorizedException("Bu qurilmani o'chirishga sizda ruxsat yo'q")
@@ -72,7 +69,7 @@ private async BlockDevice( req: Request) {
     let olddevice = await this.prisma.device.findFirst({where:{deviceId:deviceId,}})
     if(!olddevice) return "Bu qurilma topilmadi"
 
-    let oldDevice = await this.BlockDevice(req)
+    let oldDevice = await this.BlockDevice(req,userId)
     if(oldDevice != true) throw new UnauthorizedException("Siz qolgan qurilmalarni blokdan chiqarishingiz uchun Ro'yxatdan o'tgan qurilmangizda turib bloklashiz kerak.")
 
     if(olddevice.userId != userId) throw new UnauthorizedException("Bu qurilmani blokdan chiqarish uchun sizda ruxsat yo'q")
