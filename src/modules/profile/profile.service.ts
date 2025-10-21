@@ -32,7 +32,11 @@ export class ProfileService {
         dailyAccess:true,
         month:true,
         day:true,
-        doctorProfile: true,
+        doctorProfile: {
+          include:{
+            salary:true
+          }
+        },
 
         devices: {
           select: {
