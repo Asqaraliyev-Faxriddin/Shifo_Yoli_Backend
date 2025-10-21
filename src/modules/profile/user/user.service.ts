@@ -414,4 +414,17 @@ async getTopDoctors() {
   
     }
 
+    async doctorAll(){
+
+      let data = await this.prisma.doctorCategory.findMany({
+        select:{
+            id:true,
+            name:true  
+          }
+      })
+  
+      return data
+  
+    }
+
 }

@@ -138,6 +138,9 @@ import { Roles } from 'src/common/decorators/Roles.decorator';
       return this.service.update(id, dto, imgUrl);
     }
   
+
+
+
     // DELETE
     @Roles('ADMIN','SUPERADMIN')
     @Delete('delete/:id')

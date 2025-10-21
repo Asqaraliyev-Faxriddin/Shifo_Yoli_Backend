@@ -1,5 +1,5 @@
 import { Controller, Get, Param, ParseUUIDPipe, Query, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PublicService } from './user.service';
 import { SearchUserDto } from 'src/modules/admin/dto/create-admin.dto';
 import { AuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -55,6 +55,14 @@ export class PublicController {
   @ApiOperation({summary:"Bitta doktorni olish"})
   async DoctorOne(@Param("id",ParseUUIDPipe) id:string ){
     return this.publicService.doctorOne(id)
+  }
+
+
+  @Get('doctor-all/category')
+  @ApiOperation({ summary: 'Kategoriya o‘chirish' })
+  @ApiResponse({ status: 200, description: 'Kategoriya o‘chirildi' })
+  async categoryAll() {
+    return this.publicService.doctorAll();
   }
 
 

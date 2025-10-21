@@ -106,4 +106,8 @@ export class DoctorCategoryService {
       include: { doctors: true },
     });
   }
+
+
+
+
 }
