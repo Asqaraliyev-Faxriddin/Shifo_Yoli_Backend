@@ -4,8 +4,8 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 import { UserRole, DeviceType } from '@prisma/client'; // Prisma enum import
 
 @Injectable()
-export class UserSeedService {
-  private readonly logger = new Logger(UserSeedService.name);
+export class SeaderService {
+  private readonly logger = new Logger(SeaderService.name);
 
   constructor(private prisma: PrismaService) {}
 
