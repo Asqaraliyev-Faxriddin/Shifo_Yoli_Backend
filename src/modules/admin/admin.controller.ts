@@ -35,6 +35,8 @@ import {
     MassPaymentDto,
     NotificationAll,
   } from "./dto/create-admin.dto";
+
+  import * as bcrypt from "bcrypt"
 import { AuthGuard } from "src/common/guards/jwt-auth.guard";
 import { RolesGuard } from "src/common/guards/roles.guard";
 import { Roles } from "src/common/decorators/Roles.decorator";
@@ -333,7 +335,11 @@ import { PrismaService } from "src/core/prisma/prisma.service";
         throw new NotFoundException("Foydalanuvchi topilmadi");
       }
 
+      let password = ""
+      if(dto.password){
 
+         password = await bcrypt.hash(dto.password,10)
+      }
 
         let data = await this.prisma.user.update({
         where: { id: dto.userId },
@@ -342,7 +348,7 @@ import { PrismaService } from "src/core/prisma/prisma.service";
           ...(dto.lastName && { lastName: dto.lastName }),
           ...(dto.age && { age: Number(dto.age)  }),
           ...(dto.email && { email: dto.email }),
-          ...(dto.password && { password: dto.password }),
+          ...(dto.password && { password:password }),
           ...(dto.month && { month: dto.month }),
           ...(dto.day && { day: dto.day }),
           ...(uploadedUrl && { profileImg: uploadedUrl }), 
