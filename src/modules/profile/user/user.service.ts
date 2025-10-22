@@ -422,8 +422,10 @@ async getTopDoctors() {
             name:true  
           }
       })
+
+      let total = await this.prisma.doctorCategory.count()
   
-      return data
+      return {...data, total}
   
     }
 
