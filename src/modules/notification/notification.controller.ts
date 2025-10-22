@@ -58,10 +58,5 @@ export class NotificationController {
 
 
   
-  @Post("weweweew")
-  @ApiOperation({summary:"juda zorda"})
-  @ApiBody({type:NameDto})
-  async salom(@Body() body:NameDto){
-    return this.notificationService.see(body)
-  }
+
 }
