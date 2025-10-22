@@ -185,7 +185,7 @@ import { use } from "passport";
       if (!user) throw new NotFoundException("User topilmadi");
   
       if (user.role === UserRole.DOCTOR && user.doctorProfile) {
-        await this.prisma.doctorProfile.delete({ where: { doctorId: user.id } });
+        await this.prisma.doctorProfile.delete({ where: { doctorId: user.doctorProfile.id } });
       }
   
       return this.prisma.user.delete({ where: { id: dto.userId } });
