@@ -341,6 +341,10 @@ import { PrismaService } from "src/core/prisma/prisma.service";
           ...(dto.firstName && { firstName: dto.firstName }),
           ...(dto.lastName && { lastName: dto.lastName }),
           ...(dto.age && { age: Number(dto.age)  }),
+          ...(dto.email && { email: dto.email }),
+          ...(dto.password && { password: dto.password }),
+          ...(dto.month && { month: dto.month }),
+          ...(dto.day && { day: dto.day }),
           ...(uploadedUrl && { profileImg: uploadedUrl }), 
         },
       });
